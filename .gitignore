@@ -1,0 +1,68 @@
+# Environment variables - NEVER commit these!
+.env
+.env.local
+.env.*.local
+**/.env
+**/config/secrets.js
+
+# Dependencies
+node_modules/
+**/node_modules/
+
+# Logs
+logs/
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Runtime data
+pids/
+*.pid
+*.seed
+*.pid.lock
+
+# Test coverage
+coverage/
+.nyc_output/
+*.lcov
+
+# IDE files
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.DS_Store
+
+# OS files
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
+# Build outputs
+dist/
+build/
+.next/
+out/
+
+# Temporary files
+tmp/
+temp/
+*.tmp
+
+# Database files (if using local SQLite, etc.)
+*.sqlite
+*.sqlite3
+*.db
+
+# Sensitive documentation (if any)
+**/SECRETS.md
+**/credentials.txt
+
+# Test data with real credentials
+**/test-data-real.json
