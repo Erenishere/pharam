@@ -235,6 +235,20 @@ class BatchService {
   }
 
   /**
+   * Get expired items by warehouse
+   * @param {string} warehouseId - Warehouse ID
+   * @returns {Promise<Array>} Array of expired items with batch details grouped by item
+   */
+  async getExpiredItemsByWarehouse(warehouseId) {
+    if (!warehouseId) {
+      throw new Error('Warehouse ID is required');
+    }
+
+    const Batch = require('../models/Batch');
+    return Batch.getExpiredItemsByWarehouse(warehouseId);
+  }
+
+  /**
    * Update batch quantity
    * @param {string} id - Batch ID
    * @param {number} quantity - Quantity to add (positive) or remove (negative)

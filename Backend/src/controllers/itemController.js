@@ -1,4 +1,7 @@
 const itemService = require('../services/itemService');
+const stockTransferService = require('../services/stockTransferService');
+const catchAsync = require('../utils/catchAsync');
+const AppError = require('../utils/appError');
 
 /**
  * Item Controller
@@ -34,7 +37,7 @@ const getAllItems = async (req, res) => {
       ...(maxPrice !== undefined && { maxPrice: parseFloat(maxPrice) }),
       ...(lowStock !== undefined && { lowStock: lowStock === 'true' }),
       ...(isActive !== undefined && { isActive: isActive === 'true' }),
-      ...otherFilters
+      ...otherFilters,
     };
 
     // Build sort options
@@ -49,14 +52,11 @@ const getAllItems = async (req, res) => {
     }
 
     // Get paginated items with filters
-    const result = await itemService.getAllItems(
-      filters,
-      {
-        page: parseInt(page, 10),
-        limit: Math.min(parseInt(limit, 10), 100), // Limit to 100 items per page max
-        sort: sortOptions,
-      },
-    );
+    const result = await itemService.getAllItems(filters, {
+      page: parseInt(page, 10),
+      limit: Math.min(parseInt(limit, 10), 100), // Limit to 100 items per page max
+      sort: sortOptions,
+    });
 
     return res.status(200).json({
       success: true,
@@ -337,7 +337,7 @@ const updateItemStock = async (req, res) => {
 const getLowStockItems = async (req, res) => {
   try {
     const items = await itemService.getLowStockItems();
-    
+
     return res.status(200).json({
       success: true,
       data: items,
@@ -346,7 +346,7 @@ const getLowStockItems = async (req, res) => {
     });
   } catch (error) {
     console.error('Get low stock items error:', error);
-    
+
     return res.status(500).json({
       success: false,
       error: {
@@ -365,7 +365,7 @@ const getLowStockItems = async (req, res) => {
 const getItemCategories = async (req, res) => {
   try {
     const categories = await itemService.getCategories();
-    
+
     return res.status(200).json({
       success: true,
       data: categories,
@@ -374,7 +374,7 @@ const getItemCategories = async (req, res) => {
     });
   } catch (error) {
     console.error('Get item categories error:', error);
-    
+
     return res.status(500).json({
       success: false,
       error: {
@@ -395,4 +395,91 @@ module.exports = {
   updateItemStock,
   getLowStockItems,
   getItemCategories,
+};
+
+/**
+ * Scan barcode to find item with batch selection
+ * @route POST /api/items/scan-barcode
+ */
+const scanBarcode = async (req, res) => {
+  try {
+    const { barcode, warehouseId } = req.body;
+
+    if (!barcode) {
+      return res.status(400).json({
+        success: false,
+        message: 'Barcode is required',
+      });
+    }
+
+    const options = {};
+    if (warehouseId) {
+      options.warehouseId = warehouseId;
+    }
+
+    const item = await itemService.findItemByBarcode(barcode, options);
+
+    res.status(200).json({
+      success: true,
+      message: 'Item found',
+      data: item,
+      batchSelectionRequired: item.requiresBatchSelection,
+    });
+  } catch (error) {
+    if (error.message === 'Item not found with the provided barcode') {
+      return res.status(404).json({
+        success: false,
+        message: error.message,
+      });
+    }
+
+    if (error.message === 'Item is not active') {
+      return res.status(400).json({
+        success: false,
+        message: error.message,
+      });
+    }
+
+    res.status(500).json({
+      success: false,
+      message: 'Error scanning barcode',
+      error: error.message,
+    });
+  }
+};
+
+/**
+ * Transfer stock between warehouses
+ * @route POST /api/inventory/transfer
+ */
+const transferStock = catchAsync(async (req, res, next) => {
+  const { itemId, fromWarehouseId, toWarehouseId, quantity, reason } = req.body;
+
+  // Validate required fields
+  if (!itemId || !fromWarehouseId || !toWarehouseId || !quantity) {
+    return next(new AppError('Item ID, source warehouse, destination warehouse, and quantity are required', 400));
+  }
+
+  const transferData = {
+    itemId,
+    fromWarehouseId,
+    toWarehouseId,
+    quantity,
+    reason: reason || 'Stock Transfer',
+    createdBy: req.user?.id,
+  };
+
+  const result = await stockTransferService.transferStock(transferData);
+
+  res.status(201).json({
+    status: 'success',
+    message: 'Stock transferred successfully',
+    data: result,
+  });
+});
+
+module.exports = {
+  ...module.exports,
+  scanBarcode,
+  transferStock,
 };

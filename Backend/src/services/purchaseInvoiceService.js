@@ -3,6 +3,8 @@ const supplierService = require('./supplierService');
 const itemService = require('./itemService');
 const taxService = require('./taxService');
 const stockMovementRepository = require('../repositories/stockMovementRepository');
+const ledgerService = require('./ledgerService');
+const discountCalculationService = require('./discountCalculationService');
 const Item = require('../models/Item');
 
 /**
@@ -83,7 +85,16 @@ class PurchaseInvoiceService {
     const processedItems = [];
 
     for (const item of items) {
-      const { itemId, quantity, unitPrice, discount = 0, batchInfo } = item;
+      const { 
+        itemId, 
+        quantity, 
+        unitPrice, 
+        discount = 0, // Legacy single discount support
+        discount1Percent = 0,
+        discount2Percent = 0,
+        claimAccountId,
+        batchInfo 
+      } = item;
 
       // Validate item
       if (!itemId) {
@@ -95,8 +106,23 @@ class PurchaseInvoiceService {
       if (unitPrice === undefined || unitPrice < 0) {
         throw new Error(`Invalid unit price for item ${itemId}`);
       }
-      if (discount < 0 || discount > 100) {
-        throw new Error(`Discount must be between 0 and 100 for item ${itemId}`);
+
+      // Handle legacy single discount or new multi-level discounts
+      let finalDiscount1Percent = discount1Percent;
+      let finalDiscount2Percent = discount2Percent;
+      let finalClaimAccountId = claimAccountId;
+
+      if (discount > 0 && discount1Percent === 0 && discount2Percent === 0) {
+        // Legacy single discount - treat as discount1
+        finalDiscount1Percent = discount;
+      }
+
+      // Validate discount percentages
+      if (finalDiscount1Percent < 0 || finalDiscount1Percent > 100) {
+        throw new Error(`Discount 1 must be between 0 and 100 for item ${itemId}`);
+      }
+      if (finalDiscount2Percent < 0 || finalDiscount2Percent > 100) {
+        throw new Error(`Discount 2 must be between 0 and 100 for item ${itemId}`);
       }
 
       // Get item details
@@ -116,12 +142,30 @@ class PurchaseInvoiceService {
         }
       }
 
-      // Calculate line amounts
+      // Calculate line subtotal
       const lineSubtotal = quantity * unitPrice;
-      const discountAmount = (lineSubtotal * discount) / 100;
-      const taxableAmount = lineSubtotal - discountAmount;
 
-      // Calculate tax
+      // Apply multi-level discounts using discount calculation service
+      let discountResult;
+      if (finalDiscount2Percent > 0) {
+        // Apply discounts with claim account validation
+        discountResult = await discountCalculationService.applySequentialDiscountsWithValidation(
+          lineSubtotal,
+          finalDiscount1Percent,
+          finalDiscount2Percent,
+          finalClaimAccountId
+        );
+      } else {
+        // Apply only discount1
+        discountResult = discountCalculationService.applySequentialDiscounts(
+          lineSubtotal,
+          finalDiscount1Percent,
+          0
+        );
+      }
+
+      // Calculate tax on amount after discounts
+      const taxableAmount = discountResult.finalAmount;
       const taxAmount = await this.calculateItemTax(itemDetails, taxableAmount);
 
       // Calculate line total
@@ -131,10 +175,23 @@ class PurchaseInvoiceService {
         itemId,
         quantity,
         unitPrice,
-        discount,
+        // Legacy discount support
+        discount: finalDiscount1Percent,
+        // Multi-level discount details
+        discount1Percent: finalDiscount1Percent,
+        discount1Amount: discountResult.discount1.amount,
+        discount2Percent: finalDiscount2Percent,
+        discount2Amount: discountResult.discount2.amount,
+        claimAccountId: finalClaimAccountId,
+        // Totals
+        lineSubtotal,
+        totalDiscountAmount: discountResult.totalDiscount.amount,
+        taxableAmount,
         taxAmount,
         lineTotal,
-        batchInfo: batchInfo || {}
+        batchInfo: batchInfo || {},
+        // Include claim account details if available
+        claimAccount: discountResult.claimAccount || null
       });
     }
 
@@ -168,29 +225,42 @@ class PurchaseInvoiceService {
   }
 
   /**
-   * Calculate invoice totals
+   * Calculate invoice totals with multi-level discounts
    * @param {Array} items - Processed invoice items
    * @returns {Object} Invoice totals
    */
   calculateInvoiceTotals(items) {
     let subtotal = 0;
-    let totalDiscount = 0;
+    let totalDiscount1 = 0;
+    let totalDiscount2 = 0;
     let totalTax = 0;
 
     items.forEach(item => {
-      const itemSubtotal = item.quantity * item.unitPrice;
-      const discountAmount = (itemSubtotal * item.discount) / 100;
-
+      // Use lineSubtotal if available, otherwise calculate
+      const itemSubtotal = item.lineSubtotal || (item.quantity * item.unitPrice);
       subtotal += itemSubtotal;
-      totalDiscount += discountAmount;
-      totalTax += item.taxAmount;
+
+      // Use calculated discount amounts from discount service
+      if (item.discount1Amount !== undefined) {
+        totalDiscount1 += item.discount1Amount;
+      }
+      if (item.discount2Amount !== undefined) {
+        totalDiscount2 += item.discount2Amount;
+      }
+
+      totalTax += item.taxAmount || 0;
     });
 
-    const grandTotal = subtotal - totalDiscount + totalTax;
+    const totalDiscount = totalDiscount1 + totalDiscount2;
+    const taxableAmount = subtotal - totalDiscount;
+    const grandTotal = taxableAmount + totalTax;
 
     return {
       subtotal,
       totalDiscount,
+      totalDiscount1,
+      totalDiscount2,
+      taxableAmount,
       totalTax,
       grandTotal
     };
@@ -400,6 +470,9 @@ class PurchaseInvoiceService {
     // Create batches if batch info is provided
     await this.createBatchesFromInvoice(invoice);
 
+    // Create ledger entries for supplier payables
+    const ledgerEntries = await this.createLedgerEntriesForPurchaseInvoice(invoice, userId);
+
     // Update invoice status to confirmed
     const confirmedInvoice = await invoiceRepository.update(id, {
       status: 'confirmed',
@@ -409,8 +482,47 @@ class PurchaseInvoiceService {
 
     return {
       invoice: confirmedInvoice,
-      stockMovements
+      stockMovements,
+      ledgerEntries
     };
+  }
+
+  /**
+   * Create ledger entries for purchase invoice (supplier payables)
+   * @param {Object} invoice - Invoice object
+   * @param {string} userId - User ID creating the entries
+   * @returns {Promise<Object>} Created ledger entries
+   */
+  async createLedgerEntriesForPurchaseInvoice(invoice, userId) {
+    // For purchase invoice:
+    // Debit: Inventory/Purchase Account - increases inventory asset
+    // Credit: Supplier Account (Accounts Payable) - increases what we owe supplier
+    
+    const description = `Purchase Invoice ${invoice.invoiceNumber} - ${invoice.notes || 'Purchase transaction'}`;
+    
+    // For now, we'll use supplier account for both sides
+    // In a full implementation, debit would be to inventory/purchase GL account
+    const debitAccount = {
+      accountId: invoice.supplierId,
+      accountType: 'Supplier'
+    };
+    
+    const creditAccount = {
+      accountId: invoice.supplierId,
+      accountType: 'Supplier'
+    };
+    
+    const ledgerEntries = await ledgerService.createDoubleEntry(
+      debitAccount,
+      creditAccount,
+      invoice.totals.grandTotal,
+      description,
+      'invoice',
+      invoice._id,
+      userId
+    );
+    
+    return ledgerEntries;
   }
 
   /**
@@ -641,6 +753,70 @@ class PurchaseInvoiceService {
    */
   async getInvoiceStockMovements(invoiceId) {
     return stockMovementRepository.findByReference('purchase_invoice', invoiceId);
+  }
+
+  /**
+   * Check for duplicate supplier bill number
+   * @param {string} supplierId - Supplier ID
+   * @param {string} billNo - Bill number to check
+   * @param {string} excludeInvoiceId - Optional invoice ID to exclude from check (for updates)
+   * @returns {Promise<Object>} Validation result with isDuplicate flag and existing invoice details
+   */
+  async checkDuplicateSupplierBill(supplierId, billNo, excludeInvoiceId = null) {
+    if (!supplierId || !billNo) {
+      return {
+        isDuplicate: false,
+        error: 'Supplier ID and bill number are required'
+      };
+    }
+
+    const Invoice = require('../models/Invoice');
+    
+    // Build query
+    const query = {
+      supplierId,
+      supplierBillNo: billNo,
+      type: { $in: ['purchase', 'return_purchase'] },
+      status: { $ne: 'cancelled' }
+    };
+
+    // Exclude current invoice if provided (for updates)
+    if (excludeInvoiceId) {
+      query._id = { $ne: excludeInvoiceId };
+    }
+
+    // Check for existing invoice with same supplier and bill number
+    const existingInvoice = await Invoice.findOne(query);
+
+    if (existingInvoice) {
+      return {
+        isDuplicate: true,
+        existingInvoiceId: existingInvoice._id,
+        existingInvoiceNumber: existingInvoice.invoiceNumber,
+        existingInvoiceDate: existingInvoice.invoiceDate,
+        message: `Bill number '${billNo}' already exists for this supplier (Invoice: ${existingInvoice.invoiceNumber})`
+      };
+    }
+
+    return {
+      isDuplicate: false,
+      message: 'Bill number is unique for this supplier'
+    };
+  }
+
+  /**
+   * Validate supplier bill number before saving
+   * @param {string} supplierId - Supplier ID
+   * @param {string} billNo - Bill number
+   * @param {string} invoiceId - Current invoice ID (for updates)
+   * @throws {Error} If bill number is duplicate
+   */
+  async validateSupplierBillNumber(supplierId, billNo, invoiceId = null) {
+    const validation = await this.checkDuplicateSupplierBill(supplierId, billNo, invoiceId);
+    
+    if (validation.isDuplicate) {
+      throw new Error(validation.message);
+    }
   }
 }
 

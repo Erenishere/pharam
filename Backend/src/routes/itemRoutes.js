@@ -71,6 +71,38 @@ router.get('/', authenticate, itemController.getAllItems);
 
 /**
  * @swagger
+ * /api/items/scan-barcode:
+ *   post:
+ *     summary: Scan barcode to find item
+ *     tags: [Items]
+ *     security:
+ *       - bearerAuth: []
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - barcode
+ *             properties:
+ *               barcode:
+ *                 type: string
+ *                 description: Item barcode
+ *     responses:
+ *       200:
+ *         description: Item found with stock details
+ *       400:
+ *         description: Barcode is required or item is not active
+ *       404:
+ *         description: Item not found with the provided barcode
+ *       500:
+ *         description: Internal server error
+ */
+router.post('/scan-barcode', authenticate, itemController.scanBarcode);
+
+/**
+ * @swagger
  * /api/items/low-stock:
  *   get:
  *     summary: Get low stock items
@@ -337,5 +369,51 @@ router.delete('/:id', authenticate, authorize(['admin', 'inventory_manager']), i
  *         description: Internal server error
  */
 router.patch('/:id/stock', authenticate, authorize(['admin', 'inventory_manager']), itemController.updateItemStock);
+
+/**
+ * @swagger
+ * /api/inventory/transfer:
+ *   post:
+ *     summary: Transfer stock between warehouses
+ *     tags: [Items]
+ *     security:
+ *       - bearerAuth: []
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - itemId
+ *               - fromWarehouseId
+ *               - toWarehouseId
+ *               - quantity
+ *             properties:
+ *               itemId:
+ *                 type: string
+ *                 description: ID of the item to transfer
+ *               fromWarehouseId:
+ *                 type: string
+ *                 description: Source warehouse ID
+ *               toWarehouseId:
+ *                 type: string
+ *                 description: Destination warehouse ID
+ *               quantity:
+ *                 type: number
+ *                 minimum: 0.0001
+ *                 description: Quantity to transfer
+ *               reason:
+ *                 type: string
+ *                 description: Optional reason for the transfer
+ *     responses:
+ *       201:
+ *         description: Stock transferred successfully
+ *       400:
+ *         description: Invalid input or insufficient stock
+ *       404:
+ *         description: Warehouse or item not found
+ */
+router.post('/transfer', authenticate, authorize(['admin', 'inventory_manager']), itemController.transferStock);
 
 module.exports = router;

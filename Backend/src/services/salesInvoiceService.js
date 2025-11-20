@@ -3,6 +3,8 @@ const customerService = require('./customerService');
 const itemService = require('./itemService');
 const taxService = require('./taxService');
 const stockMovementRepository = require('../repositories/stockMovementRepository');
+const ledgerService = require('./ledgerService');
+const discountCalculationService = require('./discountCalculationService');
 const Item = require('../models/Item');
 
 /**
@@ -19,10 +21,13 @@ class SalesInvoiceService {
    * @param {Array} invoiceData.items - Invoice items
    * @param {string} invoiceData.createdBy - User ID who created the invoice
    * @param {string} invoiceData.notes - Optional notes
+   * @param {string} invoiceData.poId - Optional Purchase Order ID
+   * @param {string} invoiceData.poNumber - Optional Purchase Order Number
+   * @param {string} invoiceData.salesmanId - Optional Salesman ID
    * @returns {Promise<Object>} Created invoice
    */
   async createSalesInvoice(invoiceData) {
-    const { customerId, items, createdBy, invoiceDate, dueDate, notes } = invoiceData;
+    const { customerId, items, createdBy, invoiceDate, dueDate, notes, poId, poNumber, salesmanId } = invoiceData;
 
     // Validate required fields
     if (!customerId) {
@@ -39,6 +44,17 @@ class SalesInvoiceService {
     const customer = await customerService.getCustomerById(customerId);
     if (!customer.isActive) {
       throw new Error('Customer is not active');
+    }
+
+    // Validate salesman if provided
+    if (salesmanId) {
+      await this.validateSalesman(salesmanId);
+    }
+
+    // Validate and link PO if provided
+    let linkedPO = null;
+    if (poId) {
+      linkedPO = await this.validateAndLinkPO(poId);
     }
 
     // Validate and calculate items
@@ -65,6 +81,9 @@ class SalesInvoiceService {
       status: 'draft',
       paymentStatus: 'pending',
       notes: notes || '',
+      poId: poId || null,
+      poNumber: poNumber || (linkedPO ? linkedPO.poNumber : null),
+      salesmanId: salesmanId || null,
       createdBy
     };
 
@@ -79,9 +98,20 @@ class SalesInvoiceService {
    */
   async processInvoiceItems(items) {
     const processedItems = [];
+    const inventoryService = require('./inventoryService');
 
     for (const item of items) {
-      const { itemId, quantity, unitPrice, discount = 0, batchInfo } = item;
+      const { 
+        itemId, 
+        quantity, 
+        unitPrice, 
+        discount = 0, // Legacy single discount support
+        discount1Percent = 0,
+        discount2Percent = 0,
+        claimAccountId,
+        batchInfo, 
+        warehouseId 
+      } = item;
 
       // Validate item
       if (!itemId) {
@@ -93,8 +123,23 @@ class SalesInvoiceService {
       if (unitPrice === undefined || unitPrice < 0) {
         throw new Error(`Invalid unit price for item ${itemId}`);
       }
-      if (discount < 0 || discount > 100) {
-        throw new Error(`Discount must be between 0 and 100 for item ${itemId}`);
+
+      // Handle legacy single discount or new multi-level discounts
+      let finalDiscount1Percent = discount1Percent;
+      let finalDiscount2Percent = discount2Percent;
+      let finalClaimAccountId = claimAccountId;
+
+      if (discount > 0 && discount1Percent === 0 && discount2Percent === 0) {
+        // Legacy single discount - treat as discount1
+        finalDiscount1Percent = discount;
+      }
+
+      // Validate discount percentages
+      if (finalDiscount1Percent < 0 || finalDiscount1Percent > 100) {
+        throw new Error(`Discount 1 must be between 0 and 100 for item ${itemId}`);
+      }
+      if (finalDiscount2Percent < 0 || finalDiscount2Percent > 100) {
+        throw new Error(`Discount 2 must be between 0 and 100 for item ${itemId}`);
       }
 
       // Get item details
@@ -103,17 +148,57 @@ class SalesInvoiceService {
         throw new Error(`Item ${itemDetails.name} is not active`);
       }
 
-      // Check stock availability
-      if (!itemDetails.checkStockAvailability(quantity)) {
-        throw new Error(`Insufficient stock for item ${itemDetails.name}. Available: ${itemDetails.inventory.currentStock}`);
+      // Validate warehouse and check stock availability if warehouse is specified
+      if (warehouseId) {
+        // Validate warehouse exists
+        const Warehouse = require('../models/Warehouse');
+        const warehouse = await Warehouse.findById(warehouseId);
+        if (!warehouse) {
+          throw new Error(`Warehouse not found: ${warehouseId}`);
+        }
+        if (!warehouse.isActive) {
+          throw new Error(`Warehouse ${warehouse.name} is not active`);
+        }
+
+        // Check stock availability in selected warehouse
+        const warehouseStock = await inventoryService.getWarehouseStock(itemId, warehouseId);
+        if (warehouseStock.availableQuantity < quantity) {
+          throw new Error(
+            `Insufficient stock for item ${itemDetails.name} in warehouse ${warehouse.name}. ` +
+            `Available: ${warehouseStock.availableQuantity}, Requested: ${quantity}`
+          );
+        }
+      } else {
+        // Check overall stock availability if no warehouse specified
+        if (!itemDetails.checkStockAvailability(quantity)) {
+          throw new Error(`Insufficient stock for item ${itemDetails.name}. Available: ${itemDetails.inventory.currentStock}`);
+        }
       }
 
-      // Calculate line amounts
+      // Calculate line subtotal
       const lineSubtotal = quantity * unitPrice;
-      const discountAmount = (lineSubtotal * discount) / 100;
-      const taxableAmount = lineSubtotal - discountAmount;
 
-      // Calculate tax
+      // Apply multi-level discounts using discount calculation service
+      let discountResult;
+      if (finalDiscount2Percent > 0) {
+        // Apply discounts with claim account validation
+        discountResult = await discountCalculationService.applySequentialDiscountsWithValidation(
+          lineSubtotal,
+          finalDiscount1Percent,
+          finalDiscount2Percent,
+          finalClaimAccountId
+        );
+      } else {
+        // Apply only discount1
+        discountResult = discountCalculationService.applySequentialDiscounts(
+          lineSubtotal,
+          finalDiscount1Percent,
+          0
+        );
+      }
+
+      // Calculate tax on amount after discounts
+      const taxableAmount = discountResult.finalAmount;
       const taxAmount = await this.calculateItemTax(itemDetails, taxableAmount);
 
       // Calculate line total
@@ -123,10 +208,24 @@ class SalesInvoiceService {
         itemId,
         quantity,
         unitPrice,
-        discount,
+        // Legacy discount support
+        discount: finalDiscount1Percent,
+        // Multi-level discount details
+        discount1Percent: finalDiscount1Percent,
+        discount1Amount: discountResult.discount1.amount,
+        discount2Percent: finalDiscount2Percent,
+        discount2Amount: discountResult.discount2.amount,
+        claimAccountId: finalClaimAccountId,
+        // Totals
+        lineSubtotal,
+        totalDiscountAmount: discountResult.totalDiscount.amount,
+        taxableAmount,
         taxAmount,
         lineTotal,
-        batchInfo: batchInfo || {}
+        batchInfo: batchInfo || {},
+        warehouseId: warehouseId || null,
+        // Include claim account details if available
+        claimAccount: discountResult.claimAccount || null
       });
     }
 
@@ -160,29 +259,42 @@ class SalesInvoiceService {
   }
 
   /**
-   * Calculate invoice totals
+   * Calculate invoice totals with multi-level discounts
    * @param {Array} items - Processed invoice items
    * @returns {Object} Invoice totals
    */
   calculateInvoiceTotals(items) {
     let subtotal = 0;
-    let totalDiscount = 0;
+    let totalDiscount1 = 0;
+    let totalDiscount2 = 0;
     let totalTax = 0;
 
     items.forEach(item => {
-      const itemSubtotal = item.quantity * item.unitPrice;
-      const discountAmount = (itemSubtotal * item.discount) / 100;
-
+      // Use lineSubtotal if available, otherwise calculate
+      const itemSubtotal = item.lineSubtotal || (item.quantity * item.unitPrice);
       subtotal += itemSubtotal;
-      totalDiscount += discountAmount;
-      totalTax += item.taxAmount;
+
+      // Use calculated discount amounts from discount service
+      if (item.discount1Amount !== undefined) {
+        totalDiscount1 += item.discount1Amount;
+      }
+      if (item.discount2Amount !== undefined) {
+        totalDiscount2 += item.discount2Amount;
+      }
+
+      totalTax += item.taxAmount || 0;
     });
 
-    const grandTotal = subtotal - totalDiscount + totalTax;
+    const totalDiscount = totalDiscount1 + totalDiscount2;
+    const taxableAmount = subtotal - totalDiscount;
+    const grandTotal = taxableAmount + totalTax;
 
     return {
       subtotal,
       totalDiscount,
+      totalDiscount1,
+      totalDiscount2,
+      taxableAmount,
       totalTax,
       grandTotal
     };
@@ -430,6 +542,9 @@ class SalesInvoiceService {
     // Update item inventory levels
     await this.updateInventoryLevels(invoice.items, 'subtract');
 
+    // Create ledger entries for customer receivables
+    const ledgerEntries = await this.createLedgerEntriesForSalesInvoice(invoice, userId);
+
     // Update invoice status to confirmed
     const confirmedInvoice = await invoiceRepository.update(id, {
       status: 'confirmed',
@@ -439,8 +554,47 @@ class SalesInvoiceService {
 
     return {
       invoice: confirmedInvoice,
-      stockMovements
+      stockMovements,
+      ledgerEntries
     };
+  }
+
+  /**
+   * Create ledger entries for sales invoice (customer receivables)
+   * @param {Object} invoice - Invoice object
+   * @param {string} userId - User ID creating the entries
+   * @returns {Promise<Object>} Created ledger entries
+   */
+  async createLedgerEntriesForSalesInvoice(invoice, userId) {
+    // For sales invoice:
+    // Debit: Customer Account (Accounts Receivable) - increases what customer owes
+    // Credit: Sales Revenue Account - increases revenue
+    
+    const description = `Sales Invoice ${invoice.invoiceNumber} - ${invoice.notes || 'Sales transaction'}`;
+    
+    const debitAccount = {
+      accountId: invoice.customerId,
+      accountType: 'Customer'
+    };
+    
+    // For now, we'll use a system account for sales revenue
+    // In a full implementation, this would be a proper GL account
+    const creditAccount = {
+      accountId: invoice.customerId, // Using customer as placeholder for sales account
+      accountType: 'Customer'
+    };
+    
+    const ledgerEntries = await ledgerService.createDoubleEntry(
+      debitAccount,
+      creditAccount,
+      invoice.totals.grandTotal,
+      description,
+      'invoice',
+      invoice._id,
+      userId
+    );
+    
+    return ledgerEntries;
   }
 
   /**
@@ -679,6 +833,218 @@ class SalesInvoiceService {
    */
   async getInvoiceStockMovements(invoiceId) {
     return stockMovementRepository.findByReference('sales_invoice', invoiceId);
+  }
+
+  /**
+   * Validate and link Purchase Order to invoice
+   * @param {string} poId - Purchase Order ID
+   * @returns {Promise<Object>} Validated PO
+   */
+  async validateAndLinkPO(poId) {
+    if (!poId) {
+      throw new Error('Purchase Order ID is required');
+    }
+
+    // Get PO model
+    const PurchaseOrder = require('../models/PurchaseOrder');
+    
+    const po = await PurchaseOrder.findById(poId);
+    if (!po) {
+      throw new Error(`Purchase Order not found: ${poId}`);
+    }
+
+    // Validate PO status
+    if (po.status === 'cancelled') {
+      throw new Error('Cannot create invoice from cancelled Purchase Order');
+    }
+
+    if (po.status === 'completed') {
+      throw new Error('Purchase Order is already completed');
+    }
+
+    // Validate PO is approved
+    if (po.status !== 'approved' && po.status !== 'partial') {
+      throw new Error(`Purchase Order must be approved. Current status: ${po.status}`);
+    }
+
+    return po;
+  }
+
+  /**
+   * Validate salesman exists and is active
+   * @param {string} salesmanId - Salesman ID
+   * @returns {Promise<Object>} Validated salesman
+   */
+  async validateSalesman(salesmanId) {
+    if (!salesmanId) {
+      throw new Error('Salesman ID is required');
+    }
+
+    const Salesman = require('../models/Salesman');
+    
+    const salesman = await Salesman.findById(salesmanId);
+    if (!salesman) {
+      throw new Error(`Salesman not found: ${salesmanId}`);
+    }
+
+    if (!salesman.isActive) {
+      throw new Error(`Salesman ${salesman.name} is not active`);
+    }
+
+    return salesman;
+  }
+
+  /**
+   * Create invoice from Purchase Order
+   * @param {string} poId - Purchase Order ID
+   * @param {Object} invoiceData - Additional invoice data
+   * @returns {Promise<Object>} Created invoice
+   */
+  async createInvoiceFromPO(poId, invoiceData = {}) {
+    // Validate and get PO
+    const po = await this.validateAndLinkPO(poId);
+
+    // Extract PO data
+    const { customerId, items: poItems, invoiceDate, dueDate, notes, createdBy } = invoiceData;
+
+    if (!customerId) {
+      throw new Error('Customer ID is required');
+    }
+
+    if (!createdBy) {
+      throw new Error('Created by user ID is required');
+    }
+
+    // Prepare invoice items from PO
+    const invoiceItems = poItems && poItems.length > 0 
+      ? poItems 
+      : poItems.map(poItem => ({
+          itemId: poItem.itemId,
+          quantity: poItem.quantity,
+          unitPrice: poItem.unitPrice,
+          discount: poItem.discount || 0
+        }));
+
+    // Create invoice with PO reference
+    const invoice = await this.createSalesInvoice({
+      customerId,
+      items: invoiceItems,
+      invoiceDate,
+      dueDate,
+      notes: notes || `Created from PO: ${po.poNumber}`,
+      poId: po._id,
+      poNumber: po.poNumber,
+      createdBy
+    });
+
+    // Update PO status to partial if not already
+    if (po.status === 'approved') {
+      po.status = 'partial';
+      await po.save();
+    }
+
+    return invoice;
+  }
+
+  /**
+   * Get PO details for invoice
+   * @param {string} invoiceId - Invoice ID
+   * @returns {Promise<Object>} PO details
+   */
+  async getInvoicePODetails(invoiceId) {
+    const invoice = await this.getSalesInvoiceById(invoiceId);
+
+    if (!invoice.poId) {
+      return null;
+    }
+
+    const PurchaseOrder = require('../models/PurchaseOrder');
+    const po = await PurchaseOrder.findById(invoice.poId)
+      .populate('items.itemId', 'name code')
+      .populate('customerId', 'name code');
+
+    return {
+      poId: po._id,
+      poNumber: po.poNumber,
+      poDate: po.poDate,
+      status: po.status,
+      totalAmount: po.totalAmount,
+      items: po.items,
+      customer: po.customerId
+    };
+  }
+
+  /**
+   * Phase 2: Calculate invoice age (Requirement 8.2)
+   * Returns the number of days old from invoice date to current date
+   * @param {Date} invoiceDate - Invoice date
+   * @returns {number} Days old
+   */
+  calculateInvoiceAge(invoiceDate) {
+    if (!invoiceDate) {
+      throw new Error('Invoice date is required');
+    }
+
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+
+    const invDate = new Date(invoiceDate);
+    invDate.setHours(0, 0, 0, 0);
+
+    const diffTime = today - invDate;
+    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+
+    return diffDays;
+  }
+
+  /**
+   * Phase 2: Get pending invoices for an account (Requirement 8.1, 8.2)
+   * Returns all unpaid or partially paid invoices with aging information
+   * @param {string} accountId - Customer ID
+   * @returns {Promise<Array>} Pending invoices with aging
+   */
+  async getPendingInvoices(accountId) {
+    if (!accountId) {
+      throw new Error('Account ID is required');
+    }
+
+    // Query for unpaid or partially paid invoices
+    const query = {
+      customerId: accountId,
+      status: 'confirmed',
+      paymentStatus: { $in: ['pending', 'partial'] }
+    };
+
+    const invoices = await invoiceRepository.find(query, {
+      sort: { invoiceDate: 1 }, // Sort by oldest first
+      populate: [
+        { path: 'customerId', select: 'code name' },
+        { path: 'createdBy', select: 'username' }
+      ]
+    });
+
+    // Calculate aging and due amount for each invoice
+    const pendingInvoices = invoices.map(invoice => {
+      const daysOld = this.calculateInvoiceAge(invoice.invoiceDate);
+      const totalAmount = invoice.totals.grandTotal;
+      const paidAmount = invoice.totals.paidAmount || 0;
+      const dueAmount = totalAmount - paidAmount;
+
+      return {
+        invoiceId: invoice._id,
+        invoiceNumber: invoice.invoiceNumber,
+        invoiceDate: invoice.invoiceDate,
+        dueDate: invoice.dueDate,
+        daysOld,
+        totalAmount,
+        paidAmount,
+        dueAmount,
+        paymentStatus: invoice.paymentStatus,
+        customer: invoice.customerId
+      };
+    });
+
+    return pendingInvoices;
   }
 }
 

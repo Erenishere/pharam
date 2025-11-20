@@ -16,6 +16,13 @@ class Server {
       // Connect to database
       await database.connect();
 
+      // Create optimized indexes (only in production/development, not in test)
+      if (process.env.NODE_ENV !== 'test') {
+        const { createOptimizedIndexes } = require('./config/indexOptimization');
+        await createOptimizedIndexes();
+        console.log('Database indexes optimized');
+      }
+
       // Start server
       this.server = this.app.listen(this.port, () => {
         console.log(`Server running on port ${this.port}`);

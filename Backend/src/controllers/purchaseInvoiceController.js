@@ -901,3 +901,128 @@ module.exports = {
   cancelPurchaseInvoice,
   getInvoiceStockMovements,
 };
+
+const purchaseReturnService = require('../services/purchaseReturnService');
+
+/**
+ * Create a purchase return invoice
+ * @route POST /api/purchase-invoices/return
+ */
+const createPurchaseReturn = async (req, res) => {
+  try {
+    const { originalInvoiceId, returnItems, returnReason, returnNotes } = req.body;
+
+    // Validate required fields
+    if (!originalInvoiceId) {
+      return res.status(400).json({
+        success: false,
+        message: 'Original invoice ID is required'
+      });
+    }
+
+    if (!returnItems || !Array.isArray(returnItems) || returnItems.length === 0) {
+      return res.status(400).json({
+        success: false,
+        message: 'At least one return item is required'
+      });
+    }
+
+    if (!returnReason) {
+      return res.status(400).json({
+        success: false,
+        message: 'Return reason is required'
+      });
+    }
+
+    // Create return invoice
+    const returnInvoice = await purchaseReturnService.createPurchaseReturn({
+      originalInvoiceId,
+      returnItems,
+      returnReason,
+      returnNotes,
+      createdBy: req.user._id
+    });
+
+    res.status(201).json({
+      success: true,
+      message: 'Purchase return created successfully',
+      data: returnInvoice
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: 'Error creating purchase return',
+      error: error.message
+    });
+  }
+};
+
+/**
+ * Get returnable items for a purchase invoice
+ * @route GET /api/purchase-invoices/:id/returnable
+ */
+const getReturnableItems = async (req, res) => {
+  try {
+    const { id } = req.params;
+
+    const returnableItems = await purchaseReturnService.getReturnableItems(id);
+
+    res.status(200).json({
+      success: true,
+      message: 'Returnable items retrieved successfully',
+      data: returnableItems
+    });
+  } catch (error) {
+    if (error.message === 'Original invoice not found') {
+      return res.status(404).json({
+        success: false,
+        message: error.message
+      });
+    }
+
+    res.status(500).json({
+      success: false,
+      message: 'Error retrieving returnable items',
+      error: error.message
+    });
+  }
+};
+
+/**
+ * Validate return quantities
+ * @route POST /api/purchase-invoices/:id/validate-return
+ */
+const validateReturn = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { returnItems } = req.body;
+
+    if (!returnItems || !Array.isArray(returnItems) || returnItems.length === 0) {
+      return res.status(400).json({
+        success: false,
+        message: 'Return items are required'
+      });
+    }
+
+    const validation = await purchaseReturnService.validateReturnQuantities(id, returnItems);
+
+    res.status(200).json({
+      success: true,
+      message: validation.valid ? 'Return validation passed' : 'Return validation failed',
+      data: validation
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: 'Error validating return',
+      error: error.message
+    });
+  }
+};
+
+module.exports = {
+  ...module.exports,
+  createPurchaseReturn,
+  getReturnableItems,
+  validateReturn
+};

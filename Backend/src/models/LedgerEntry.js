@@ -10,8 +10,8 @@ const ledgerEntrySchema = new mongoose.Schema({
     type: String,
     required: [true, 'Account type is required'],
     enum: {
-      values: ['Customer', 'Supplier', 'User'],
-      message: 'Account type must be one of: Customer, Supplier, User',
+      values: ['Customer', 'Supplier', 'User', 'Account'],
+      message: 'Account type must be one of: Customer, Supplier, User, Account',
     },
   },
   transactionType: {

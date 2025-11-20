@@ -297,4 +297,95 @@ describe('Batch Service Unit Tests', () => {
       expect(batchRepository.updateBatchStatuses).toHaveBeenCalled();
     });
   });
+
+  describe('getExpiredItemsByWarehouse', () => {
+    it('should return expired items grouped by warehouse', async () => {
+      const mockExpiredItems = [
+        {
+          item: {
+            _id: 'item123',
+            name: 'Test Item 1',
+            code: 'ITEM001',
+            unit: 'pcs'
+          },
+          batches: [
+            {
+              batchId: 'batch1',
+              batchNumber: 'BATCH001',
+              expiryDate: new Date('2023-12-01'),
+              quantity: 50,
+              unitCost: 10
+            }
+          ],
+          totalQuantity: 50,
+          totalValue: 500
+        }
+      ];
+
+      // Mock the Batch model
+      const Batch = require('../../src/models/Batch');
+      Batch.getExpiredItemsByWarehouse = jest.fn().mockResolvedValue(mockExpiredItems);
+
+      const result = await batchService.getExpiredItemsByWarehouse('warehouse123');
+
+      expect(result).toEqual(mockExpiredItems);
+      expect(Batch.getExpiredItemsByWarehouse).toHaveBeenCalledWith('warehouse123');
+    });
+
+    it('should throw error when warehouse ID is not provided', async () => {
+      await expect(batchService.getExpiredItemsByWarehouse(null)).rejects.toThrow('Warehouse ID is required');
+      await expect(batchService.getExpiredItemsByWarehouse(undefined)).rejects.toThrow('Warehouse ID is required');
+      await expect(batchService.getExpiredItemsByWarehouse('')).rejects.toThrow('Warehouse ID is required');
+    });
+
+    it('should return empty array when no expired items found', async () => {
+      const Batch = require('../../src/models/Batch');
+      Batch.getExpiredItemsByWarehouse = jest.fn().mockResolvedValue([]);
+
+      const result = await batchService.getExpiredItemsByWarehouse('warehouse123');
+
+      expect(result).toEqual([]);
+      expect(Batch.getExpiredItemsByWarehouse).toHaveBeenCalledWith('warehouse123');
+    });
+
+    it('should group multiple expired batches by item', async () => {
+      const mockExpiredItems = [
+        {
+          item: {
+            _id: 'item123',
+            name: 'Test Item 1',
+            code: 'ITEM001',
+            unit: 'pcs'
+          },
+          batches: [
+            {
+              batchId: 'batch1',
+              batchNumber: 'BATCH001',
+              expiryDate: new Date('2023-12-01'),
+              quantity: 30,
+              unitCost: 10
+            },
+            {
+              batchId: 'batch2',
+              batchNumber: 'BATCH002',
+              expiryDate: new Date('2023-11-15'),
+              quantity: 20,
+              unitCost: 12
+            }
+          ],
+          totalQuantity: 50,
+          totalValue: 540
+        }
+      ];
+
+      const Batch = require('../../src/models/Batch');
+      Batch.getExpiredItemsByWarehouse = jest.fn().mockResolvedValue(mockExpiredItems);
+
+      const result = await batchService.getExpiredItemsByWarehouse('warehouse123');
+
+      expect(result).toEqual(mockExpiredItems);
+      expect(result[0].batches).toHaveLength(2);
+      expect(result[0].totalQuantity).toBe(50);
+    });
+  });
 });

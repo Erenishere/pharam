@@ -232,6 +232,15 @@ class ItemRepository {
     const count = await Item.countDocuments(query);
     return count > 0;
   }
+
+  /**
+   * Find item by barcode
+   * @param {string} barcode - Item barcode
+   * @returns {Promise<Object>} Item document
+   */
+  async findByBarcode(barcode) {
+    return Item.findOne({ barcode, isActive: true });
+  }
 }
 
 module.exports = new ItemRepository();

@@ -48,6 +48,21 @@ Thumbs.db
 dist/
 build/
 .next/
+
+# Large files and archives
+*.zip
+*.rar
+*.7z
+*.tar.gz
+*.iso
+*.dmg
+design-files/
+aspnet-core/
+html-laravel-version/
+**/*.zip
+frontend/vuexy_v10.7.0/design-files/
+frontend/vuexy_v10.7.0/aspnet-core/
+frontend/vuexy_v10.7.0/html-laravel-version/
 out/
 
 # Temporary files

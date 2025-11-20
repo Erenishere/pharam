@@ -5,6 +5,9 @@ const itemService = require('../../src/services/itemService');
 // Mock the dependencies
 jest.mock('../../src/repositories/inventoryRepository');
 jest.mock('../../src/services/itemService');
+jest.mock('../../src/models/Warehouse');
+jest.mock('../../src/models/Inventory');
+jest.mock('../../src/models/Item');
 
 describe('Inventory Service Unit Tests', () => {
   afterEach(() => {
@@ -195,6 +198,384 @@ describe('Inventory Service Unit Tests', () => {
 
       expect(result).toEqual(mockValuation);
       expect(inventoryRepository.getInventoryValuation).toHaveBeenCalledWith(undefined);
+    });
+  });
+
+  describe('getWarehouseStockLevels', () => {
+    const Warehouse = require('../../src/models/Warehouse');
+    const Inventory = require('../../src/models/Inventory');
+
+    it('should return warehouse stock levels with low stock indicators', async () => {
+      const mockWarehouse = {
+        _id: 'warehouse123',
+        code: 'WH001',
+        name: 'Main Warehouse',
+        location: { city: 'Test City' }
+      };
+
+      const mockInventoryRecords = [
+        {
+          _id: 'inv1',
+          item: {
+            _id: 'item1',
+            code: 'ITEM001',
+            name: 'Item 1',
+            unit: 'pcs',
+            category: 'Category A',
+            pricing: { costPrice: 10 },
+            inventory: { minimumStock: 20, maximumStock: 100 },
+            isActive: true
+          },
+          quantity: 15,
+          available: 15,
+          allocated: 0,
+          reorderPoint: 20,
+          lastUpdated: new Date('2024-01-01'),
+          updatedAt: new Date('2024-01-01')
+        },
+        {
+          _id: 'inv2',
+          item: {
+            _id: 'item2',
+            code: 'ITEM002',
+            name: 'Item 2',
+            unit: 'pcs',
+            category: 'Category B',
+            pricing: { costPrice: 25 },
+            inventory: { minimumStock: 10, maximumStock: 50 },
+            isActive: true
+          },
+          quantity: 0,
+          available: 0,
+          allocated: 0,
+          reorderPoint: 10,
+          lastUpdated: new Date('2024-01-01'),
+          updatedAt: new Date('2024-01-01')
+        },
+        {
+          _id: 'inv3',
+          item: {
+            _id: 'item3',
+            code: 'ITEM003',
+            name: 'Item 3',
+            unit: 'pcs',
+            category: 'Category A',
+            pricing: { costPrice: 15 },
+            inventory: { minimumStock: 5, maximumStock: 200 },
+            isActive: true
+          },
+          quantity: 50,
+          available: 50,
+          allocated: 0,
+          reorderPoint: 5,
+          lastUpdated: new Date('2024-01-01'),
+          updatedAt: new Date('2024-01-01')
+        }
+      ];
+
+      Warehouse.findById = jest.fn().mockResolvedValue(mockWarehouse);
+      Inventory.find = jest.fn().mockReturnValue({
+        populate: jest.fn().mockReturnValue({
+          sort: jest.fn().mockResolvedValue(mockInventoryRecords)
+        })
+      });
+
+      const result = await inventoryService.getWarehouseStockLevels('warehouse123');
+
+      expect(result).toHaveProperty('warehouse');
+      expect(result.warehouse.id).toBe('warehouse123');
+      expect(result.items).toHaveLength(3);
+      expect(result.summary.totalItems).toBe(3);
+      expect(result.summary.lowStockItems).toBe(1); // Item 1 (15 <= 20)
+      expect(result.summary.outOfStockItems).toBe(1); // Item 2 (0)
+      expect(result.summary.inStockItems).toBe(1); // Item 3 (50 > 5)
+
+      // Check low stock indicators
+      const item1 = result.items.find(item => item.itemCode === 'ITEM001');
+      expect(item1.isLowStock).toBe(true);
+      expect(item1.isOutOfStock).toBe(false);
+      expect(item1.stockStatus).toBe('low_stock');
+
+      const item2 = result.items.find(item => item.itemCode === 'ITEM002');
+      expect(item2.isLowStock).toBe(true);
+      expect(item2.isOutOfStock).toBe(true);
+      expect(item2.stockStatus).toBe('out_of_stock');
+
+      const item3 = result.items.find(item => item.itemCode === 'ITEM003');
+      expect(item3.isLowStock).toBe(false);
+      expect(item3.isOutOfStock).toBe(false);
+      expect(item3.stockStatus).toBe('in_stock');
+    });
+
+    it('should throw error when warehouse ID is not provided', async () => {
+      await expect(inventoryService.getWarehouseStockLevels(null)).rejects.toThrow('Warehouse ID is required');
+      await expect(inventoryService.getWarehouseStockLevels(undefined)).rejects.toThrow('Warehouse ID is required');
+      await expect(inventoryService.getWarehouseStockLevels('')).rejects.toThrow('Warehouse ID is required');
+    });
+
+    it('should throw error when warehouse not found', async () => {
+      Warehouse.findById = jest.fn().mockResolvedValue(null);
+
+      await expect(inventoryService.getWarehouseStockLevels('invalid')).rejects.toThrow('Warehouse not found');
+    });
+
+    it('should return empty items array when warehouse has no inventory', async () => {
+      const mockWarehouse = {
+        _id: 'warehouse123',
+        code: 'WH001',
+        name: 'Empty Warehouse',
+        location: { city: 'Test City' }
+      };
+
+      Warehouse.findById = jest.fn().mockResolvedValue(mockWarehouse);
+      Inventory.find = jest.fn().mockReturnValue({
+        populate: jest.fn().mockReturnValue({
+          sort: jest.fn().mockResolvedValue([])
+        })
+      });
+
+      const result = await inventoryService.getWarehouseStockLevels('warehouse123');
+
+      expect(result.items).toHaveLength(0);
+      expect(result.summary.totalItems).toBe(0);
+      expect(result.summary.totalValue).toBe(0);
+      expect(result.summary.lowStockItems).toBe(0);
+      expect(result.summary.outOfStockItems).toBe(0);
+      expect(result.summary.inStockItems).toBe(0);
+    });
+
+    it('should calculate stock value correctly', async () => {
+      const mockWarehouse = {
+        _id: 'warehouse123',
+        code: 'WH001',
+        name: 'Test Warehouse',
+        location: { city: 'Test City' }
+      };
+
+      const mockInventoryRecords = [
+        {
+          _id: 'inv1',
+          item: {
+            _id: 'item1',
+            code: 'ITEM001',
+            name: 'Item 1',
+            unit: 'pcs',
+            category: 'Category A',
+            pricing: { costPrice: 10 },
+            inventory: { minimumStock: 5, maximumStock: 100 },
+            isActive: true
+          },
+          quantity: 20,
+          available: 20,
+          allocated: 0,
+          reorderPoint: 5,
+          lastUpdated: new Date('2024-01-01'),
+          updatedAt: new Date('2024-01-01')
+        }
+      ];
+
+      Warehouse.findById = jest.fn().mockResolvedValue(mockWarehouse);
+      Inventory.find = jest.fn().mockReturnValue({
+        populate: jest.fn().mockReturnValue({
+          sort: jest.fn().mockResolvedValue(mockInventoryRecords)
+        })
+      });
+
+      const result = await inventoryService.getWarehouseStockLevels('warehouse123');
+
+      expect(result.items[0].stockValue).toBe(200); // 20 * 10
+      expect(result.summary.totalValue).toBe(200);
+    });
+  });
+
+  describe('compareWarehouseStock', () => {
+    const Item = require('../../src/models/Item');
+    const Inventory = require('../../src/models/Inventory');
+
+    it('should return stock comparison across all warehouses for an item', async () => {
+      const mockItem = {
+        _id: 'item123',
+        code: 'ITEM001',
+        name: 'Test Item',
+        unit: 'pcs',
+        category: 'Category A',
+        pricing: { costPrice: 10 },
+        inventory: { minimumStock: 5, maximumStock: 100 }
+      };
+
+      const mockInventoryRecords = [
+        {
+          _id: 'inv1',
+          warehouse: {
+            _id: 'wh1',
+            code: 'WH001',
+            name: 'Warehouse 1',
+            location: { city: 'City A' },
+            isActive: true
+          },
+          quantity: 50,
+          available: 45,
+          allocated: 5,
+          reorderPoint: 10,
+          lastUpdated: new Date('2024-01-01'),
+          updatedAt: new Date('2024-01-01')
+        },
+        {
+          _id: 'inv2',
+          warehouse: {
+            _id: 'wh2',
+            code: 'WH002',
+            name: 'Warehouse 2',
+            location: { city: 'City B' },
+            isActive: true
+          },
+          quantity: 30,
+          available: 30,
+          allocated: 0,
+          reorderPoint: 10,
+          lastUpdated: new Date('2024-01-02'),
+          updatedAt: new Date('2024-01-02')
+        },
+        {
+          _id: 'inv3',
+          warehouse: {
+            _id: 'wh3',
+            code: 'WH003',
+            name: 'Warehouse 3',
+            location: { city: 'City C' },
+            isActive: true
+          },
+          quantity: 0,
+          available: 0,
+          allocated: 0,
+          reorderPoint: 10,
+          lastUpdated: new Date('2024-01-03'),
+          updatedAt: new Date('2024-01-03')
+        }
+      ];
+
+      itemService.getItemById = jest.fn().mockResolvedValue(mockItem);
+      Inventory.find = jest.fn().mockReturnValue({
+        populate: jest.fn().mockReturnValue({
+          sort: jest.fn().mockResolvedValue(mockInventoryRecords)
+        })
+      });
+
+      const result = await inventoryService.compareWarehouseStock('item123');
+
+      expect(result).toHaveProperty('item');
+      expect(result.item.id).toBe('item123');
+      expect(result.warehouses).toHaveLength(3);
+      expect(result.summary.totalWarehouses).toBe(3);
+      expect(result.summary.warehousesWithStock).toBe(2);
+      expect(result.summary.warehousesWithoutStock).toBe(1);
+      expect(result.summary.totalQuantity).toBe(80); // 50 + 30 + 0
+      expect(result.summary.totalValue).toBe(800); // 80 * 10
+      expect(result.summary.largestStock).toBe(50);
+      expect(result.summary.smallestStock).toBe(0);
+      expect(result.summary.averageStockPerWarehouse).toBeCloseTo(26.67, 2);
+    });
+
+    it('should throw error when item ID is not provided', async () => {
+      await expect(inventoryService.compareWarehouseStock(null)).rejects.toThrow('Item ID is required');
+      await expect(inventoryService.compareWarehouseStock(undefined)).rejects.toThrow('Item ID is required');
+      await expect(inventoryService.compareWarehouseStock('')).rejects.toThrow('Item ID is required');
+    });
+
+    it('should throw error when item not found', async () => {
+      itemService.getItemById = jest.fn().mockResolvedValue(null);
+
+      await expect(inventoryService.compareWarehouseStock('invalid')).rejects.toThrow('Item not found');
+    });
+
+    it('should return empty warehouses array when item has no inventory', async () => {
+      const mockItem = {
+        _id: 'item123',
+        code: 'ITEM001',
+        name: 'Test Item',
+        unit: 'pcs',
+        category: 'Category A',
+        pricing: { costPrice: 10 },
+        inventory: { minimumStock: 5, maximumStock: 100 }
+      };
+
+      itemService.getItemById = jest.fn().mockResolvedValue(mockItem);
+      Inventory.find = jest.fn().mockReturnValue({
+        populate: jest.fn().mockReturnValue({
+          sort: jest.fn().mockResolvedValue([])
+        })
+      });
+
+      const result = await inventoryService.compareWarehouseStock('item123');
+
+      expect(result.warehouses).toHaveLength(0);
+      expect(result.summary.totalWarehouses).toBe(0);
+      expect(result.summary.totalQuantity).toBe(0);
+      expect(result.summary.totalValue).toBe(0);
+    });
+
+    it('should calculate summary statistics correctly', async () => {
+      const mockItem = {
+        _id: 'item123',
+        code: 'ITEM001',
+        name: 'Test Item',
+        unit: 'pcs',
+        category: 'Category A',
+        pricing: { costPrice: 20 },
+        inventory: { minimumStock: 10, maximumStock: 200 }
+      };
+
+      const mockInventoryRecords = [
+        {
+          _id: 'inv1',
+          warehouse: {
+            _id: 'wh1',
+            code: 'WH001',
+            name: 'Warehouse 1',
+            location: { city: 'City A' },
+            isActive: true
+          },
+          quantity: 100,
+          available: 100,
+          allocated: 0,
+          reorderPoint: 10,
+          lastUpdated: new Date('2024-01-01'),
+          updatedAt: new Date('2024-01-01')
+        },
+        {
+          _id: 'inv2',
+          warehouse: {
+            _id: 'wh2',
+            code: 'WH002',
+            name: 'Warehouse 2',
+            location: { city: 'City B' },
+            isActive: true
+          },
+          quantity: 50,
+          available: 50,
+          allocated: 0,
+          reorderPoint: 10,
+          lastUpdated: new Date('2024-01-02'),
+          updatedAt: new Date('2024-01-02')
+        }
+      ];
+
+      itemService.getItemById = jest.fn().mockResolvedValue(mockItem);
+      Inventory.find = jest.fn().mockReturnValue({
+        populate: jest.fn().mockReturnValue({
+          sort: jest.fn().mockResolvedValue(mockInventoryRecords)
+        })
+      });
+
+      const result = await inventoryService.compareWarehouseStock('item123');
+
+      expect(result.summary.totalQuantity).toBe(150);
+      expect(result.summary.totalAvailable).toBe(150);
+      expect(result.summary.totalAllocated).toBe(0);
+      expect(result.summary.totalValue).toBe(3000); // 150 * 20
+      expect(result.summary.largestStock).toBe(100);
+      expect(result.summary.smallestStock).toBe(50);
+      expect(result.summary.averageStockPerWarehouse).toBe(75);
     });
   });
 });

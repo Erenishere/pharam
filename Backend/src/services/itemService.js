@@ -258,6 +258,79 @@ class ItemService {
   async getCategories() {
     return itemRepository.findAll().distinct('category');
   }
+
+  /**
+   * Find item by barcode
+   * @param {string} barcode - Item barcode
+   * @param {Object} options - Additional options
+   * @param {string} options.warehouseId - Optional warehouse ID to filter batches
+   * @returns {Promise<Object>} Item with stock details and batch information
+   */
+  async findItemByBarcode(barcode, options = {}) {
+    if (!barcode) {
+      throw new Error('Barcode is required');
+    }
+
+    const item = await itemRepository.findByBarcode(barcode);
+    
+    if (!item) {
+      throw new Error('Item not found with the provided barcode');
+    }
+
+    if (!item.isActive) {
+      throw new Error('Item is not active');
+    }
+
+    // Get batches for this item
+    const Batch = require('../models/Batch');
+    let batches = [];
+    
+    if (options.warehouseId) {
+      // Get batches for specific warehouse
+      batches = await Batch.findByItemAndWarehouse(item._id, options.warehouseId);
+    } else {
+      // Get all active batches for this item across all warehouses
+      batches = await Batch.find({
+        item: item._id,
+        remainingQuantity: { $gt: 0 },
+        expiryDate: { $gte: new Date() },
+        status: 'active'
+      })
+      .populate('warehouse', 'name code')
+      .sort({ expiryDate: 1 }); // Sort by expiry date (FIFO)
+    }
+
+    // Format batch information
+    const batchList = batches.map(batch => ({
+      batchId: batch._id,
+      batchNumber: batch.batchNumber,
+      warehouseId: batch.warehouse?._id,
+      warehouseName: batch.warehouse?.name,
+      warehouseCode: batch.warehouse?.code,
+      expiryDate: batch.expiryDate,
+      manufacturingDate: batch.manufacturingDate,
+      availableQuantity: batch.remainingQuantity,
+      unitCost: batch.unitCost,
+      isExpiringSoon: batch.isExpiringSoon
+    }));
+
+    // Return item with available stock information and batches
+    return {
+      _id: item._id,
+      code: item.code,
+      name: item.name,
+      barcode: item.barcode,
+      category: item.category,
+      unit: item.unit,
+      pricing: item.pricing,
+      inventory: item.inventory,
+      availableStock: item.inventory?.currentStock || 0,
+      isLowStock: item.inventory?.currentStock <= item.inventory?.minimumStock,
+      batches: batchList,
+      hasBatches: batchList.length > 0,
+      requiresBatchSelection: batchList.length > 1
+    };
+  }
 }
 
 module.exports = new ItemService();

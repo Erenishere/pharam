@@ -416,7 +416,27 @@ class InventoryRepository {
       }
     ]);
   }
+
+  /**
+   * Get stock by warehouse for a specific item
+   * @param {string} itemId - Item ID
+   * @param {string} warehouseId - Warehouse ID
+   * @returns {Promise<Object>} Stock record
+   */
+  async getStockByWarehouse(itemId, warehouseId) {
+    return Inventory.findOne({ itemId, warehouseId });
+  }
+
+  /**
+   * Get all warehouse stock for an item
+   * @param {string} itemId - Item ID
+   * @returns {Promise<Array>} Stock records across all warehouses
+   */
+  async getAllWarehouseStock(itemId) {
+    return Inventory.find({ itemId })
+      .populate('warehouseId', 'name code location')
+      .sort({ 'warehouseId.name': 1 });
+  }
 }
 
 module.exports = new InventoryRepository();
-

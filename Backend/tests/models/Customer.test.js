@@ -233,4 +233,231 @@ describe('Customer Model', () => {
       await expect(customer.save()).rejects.toThrow('Payment terms cannot exceed 365 days');
     });
   });
+
+  describe('Account-Based Tax Determination - Phase 2 (Requirement 6.3, 6.4)', () => {
+    describe('Advance Tax Rate', () => {
+      it('should return 0% advance tax rate by default', async () => {
+        const customer = new Customer({
+          name: 'Test Customer',
+          type: 'customer'
+        });
+        await customer.save();
+
+        expect(customer.getAdvanceTaxRate()).toBe(0);
+      });
+
+      it('should return 0.5% advance tax rate when set', async () => {
+        const customer = new Customer({
+          name: 'Test Customer',
+          type: 'customer',
+          financialInfo: {
+            advanceTaxRate: 0.5
+          }
+        });
+        await customer.save();
+
+        expect(customer.getAdvanceTaxRate()).toBe(0.5);
+      });
+
+      it('should return 2.5% advance tax rate when set', async () => {
+        const customer = new Customer({
+          name: 'Test Customer',
+          type: 'customer',
+          financialInfo: {
+            advanceTaxRate: 2.5
+          }
+        });
+        await customer.save();
+
+        expect(customer.getAdvanceTaxRate()).toBe(2.5);
+      });
+
+      it('should validate advance tax rate enum values', async () => {
+        const customer = new Customer({
+          name: 'Test Customer',
+          type: 'customer',
+          financialInfo: {
+            advanceTaxRate: 5.0 // Invalid value
+          }
+        });
+
+        await expect(customer.save()).rejects.toThrow();
+      });
+    });
+
+    describe('Non-Filer Status', () => {
+      it('should return false for non-filer status by default', async () => {
+        const customer = new Customer({
+          name: 'Test Customer',
+          type: 'customer'
+        });
+        await customer.save();
+
+        expect(customer.isNonFilerAccount()).toBe(false);
+      });
+
+      it('should return true when customer is marked as non-filer', async () => {
+        const customer = new Customer({
+          name: 'Test Customer',
+          type: 'customer',
+          financialInfo: {
+            isNonFiler: true
+          }
+        });
+        await customer.save();
+
+        expect(customer.isNonFilerAccount()).toBe(true);
+      });
+    });
+
+    describe('Advance Tax Calculation', () => {
+      it('should calculate 0% advance tax when rate is 0', async () => {
+        const customer = new Customer({
+          name: 'Test Customer',
+          type: 'customer',
+          financialInfo: {
+            advanceTaxRate: 0
+          }
+        });
+        await customer.save();
+
+        const amount = 10000;
+        const advanceTax = customer.calculateAdvanceTax(amount);
+        expect(advanceTax).toBe(0);
+      });
+
+      it('should calculate 0.5% advance tax correctly', async () => {
+        const customer = new Customer({
+          name: 'Test Customer',
+          type: 'customer',
+          financialInfo: {
+            advanceTaxRate: 0.5
+          }
+        });
+        await customer.save();
+
+        const amount = 10000;
+        const advanceTax = customer.calculateAdvanceTax(amount);
+        expect(advanceTax).toBe(50); // 0.5% of 10000
+      });
+
+      it('should calculate 2.5% advance tax correctly', async () => {
+        const customer = new Customer({
+          name: 'Test Customer',
+          type: 'customer',
+          financialInfo: {
+            advanceTaxRate: 2.5
+          }
+        });
+        await customer.save();
+
+        const amount = 10000;
+        const advanceTax = customer.calculateAdvanceTax(amount);
+        expect(advanceTax).toBe(250); // 2.5% of 10000
+      });
+
+      it('should handle decimal amounts correctly', async () => {
+        const customer = new Customer({
+          name: 'Test Customer',
+          type: 'customer',
+          financialInfo: {
+            advanceTaxRate: 0.5
+          }
+        });
+        await customer.save();
+
+        const amount = 12345.67;
+        const advanceTax = customer.calculateAdvanceTax(amount);
+        expect(advanceTax).toBeCloseTo(61.73, 2); // 0.5% of 12345.67
+      });
+    });
+
+    describe('Non-Filer GST Calculation', () => {
+      it('should return 0 for non-filer GST when customer is not a non-filer', async () => {
+        const customer = new Customer({
+          name: 'Test Customer',
+          type: 'customer',
+          financialInfo: {
+            isNonFiler: false
+          }
+        });
+        await customer.save();
+
+        const amount = 10000;
+        const nonFilerGST = customer.calculateNonFilerGST(amount);
+        expect(nonFilerGST).toBe(0);
+      });
+
+      it('should calculate 0.1% non-filer GST correctly', async () => {
+        const customer = new Customer({
+          name: 'Test Customer',
+          type: 'customer',
+          financialInfo: {
+            isNonFiler: true
+          }
+        });
+        await customer.save();
+
+        const amount = 10000;
+        const nonFilerGST = customer.calculateNonFilerGST(amount);
+        expect(nonFilerGST).toBe(10); // 0.1% of 10000
+      });
+
+      it('should handle decimal amounts for non-filer GST', async () => {
+        const customer = new Customer({
+          name: 'Test Customer',
+          type: 'customer',
+          financialInfo: {
+            isNonFiler: true
+          }
+        });
+        await customer.save();
+
+        const amount = 12345.67;
+        const nonFilerGST = customer.calculateNonFilerGST(amount);
+        expect(nonFilerGST).toBeCloseTo(12.35, 2); // 0.1% of 12345.67
+      });
+    });
+
+    describe('Combined Tax Scenarios', () => {
+      it('should handle customer with both advance tax and non-filer status', async () => {
+        const customer = new Customer({
+          name: 'Test Customer',
+          type: 'customer',
+          financialInfo: {
+            advanceTaxRate: 2.5,
+            isNonFiler: true
+          }
+        });
+        await customer.save();
+
+        const amount = 10000;
+        const advanceTax = customer.calculateAdvanceTax(amount);
+        const nonFilerGST = customer.calculateNonFilerGST(amount);
+
+        expect(advanceTax).toBe(250); // 2.5% of 10000
+        expect(nonFilerGST).toBe(10); // 0.1% of 10000
+        expect(advanceTax + nonFilerGST).toBe(260);
+      });
+
+      it('should handle registered filer with advance tax', async () => {
+        const customer = new Customer({
+          name: 'Test Customer',
+          type: 'customer',
+          financialInfo: {
+            advanceTaxRate: 0.5,
+            isNonFiler: false
+          }
+        });
+        await customer.save();
+
+        const amount = 10000;
+        const advanceTax = customer.calculateAdvanceTax(amount);
+        const nonFilerGST = customer.calculateNonFilerGST(amount);
+
+        expect(advanceTax).toBe(50); // 0.5% of 10000
+        expect(nonFilerGST).toBe(0); // No non-filer GST
+      });
+    });
+  });
 });

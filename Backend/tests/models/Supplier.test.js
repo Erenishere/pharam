@@ -306,4 +306,246 @@ describe('Supplier Model', () => {
       expect(indexes.code_1).toEqual([['code', 1]]);
     });
   });
+
+  describe('Account-Based Tax Determination - Phase 2 (Requirement 6.3, 6.4)', () => {
+    describe('Advance Tax Rate', () => {
+      it('should return 0% advance tax rate by default', async () => {
+        const supplier = new Supplier({
+          code: 'SUPP001',
+          name: 'Test Supplier',
+          type: 'supplier'
+        });
+        await supplier.save();
+
+        expect(supplier.getAdvanceTaxRate()).toBe(0);
+      });
+
+      it('should return 0.5% advance tax rate when set', async () => {
+        const supplier = new Supplier({
+          code: 'SUPP001',
+          name: 'Test Supplier',
+          type: 'supplier',
+          financialInfo: {
+            advanceTaxRate: 0.5
+          }
+        });
+        await supplier.save();
+
+        expect(supplier.getAdvanceTaxRate()).toBe(0.5);
+      });
+
+      it('should return 2.5% advance tax rate when set', async () => {
+        const supplier = new Supplier({
+          code: 'SUPP001',
+          name: 'Test Supplier',
+          type: 'supplier',
+          financialInfo: {
+            advanceTaxRate: 2.5
+          }
+        });
+        await supplier.save();
+
+        expect(supplier.getAdvanceTaxRate()).toBe(2.5);
+      });
+
+      it('should validate advance tax rate enum values', async () => {
+        const supplier = new Supplier({
+          code: 'SUPP001',
+          name: 'Test Supplier',
+          type: 'supplier',
+          financialInfo: {
+            advanceTaxRate: 5.0 // Invalid value
+          }
+        });
+
+        await expect(supplier.save()).rejects.toThrow();
+      });
+    });
+
+    describe('Non-Filer Status', () => {
+      it('should return false for non-filer status by default', async () => {
+        const supplier = new Supplier({
+          code: 'SUPP001',
+          name: 'Test Supplier',
+          type: 'supplier'
+        });
+        await supplier.save();
+
+        expect(supplier.isNonFilerAccount()).toBe(false);
+      });
+
+      it('should return true when supplier is marked as non-filer', async () => {
+        const supplier = new Supplier({
+          code: 'SUPP001',
+          name: 'Test Supplier',
+          type: 'supplier',
+          financialInfo: {
+            isNonFiler: true
+          }
+        });
+        await supplier.save();
+
+        expect(supplier.isNonFilerAccount()).toBe(true);
+      });
+    });
+
+    describe('Advance Tax Calculation', () => {
+      it('should calculate 0% advance tax when rate is 0', async () => {
+        const supplier = new Supplier({
+          code: 'SUPP001',
+          name: 'Test Supplier',
+          type: 'supplier',
+          financialInfo: {
+            advanceTaxRate: 0
+          }
+        });
+        await supplier.save();
+
+        const amount = 10000;
+        const advanceTax = supplier.calculateAdvanceTax(amount);
+        expect(advanceTax).toBe(0);
+      });
+
+      it('should calculate 0.5% advance tax correctly', async () => {
+        const supplier = new Supplier({
+          code: 'SUPP001',
+          name: 'Test Supplier',
+          type: 'supplier',
+          financialInfo: {
+            advanceTaxRate: 0.5
+          }
+        });
+        await supplier.save();
+
+        const amount = 10000;
+        const advanceTax = supplier.calculateAdvanceTax(amount);
+        expect(advanceTax).toBe(50); // 0.5% of 10000
+      });
+
+      it('should calculate 2.5% advance tax correctly', async () => {
+        const supplier = new Supplier({
+          code: 'SUPP001',
+          name: 'Test Supplier',
+          type: 'supplier',
+          financialInfo: {
+            advanceTaxRate: 2.5
+          }
+        });
+        await supplier.save();
+
+        const amount = 10000;
+        const advanceTax = supplier.calculateAdvanceTax(amount);
+        expect(advanceTax).toBe(250); // 2.5% of 10000
+      });
+
+      it('should handle decimal amounts correctly', async () => {
+        const supplier = new Supplier({
+          code: 'SUPP001',
+          name: 'Test Supplier',
+          type: 'supplier',
+          financialInfo: {
+            advanceTaxRate: 0.5
+          }
+        });
+        await supplier.save();
+
+        const amount = 12345.67;
+        const advanceTax = supplier.calculateAdvanceTax(amount);
+        expect(advanceTax).toBeCloseTo(61.73, 2); // 0.5% of 12345.67
+      });
+    });
+
+    describe('Non-Filer GST Calculation', () => {
+      it('should return 0 for non-filer GST when supplier is not a non-filer', async () => {
+        const supplier = new Supplier({
+          code: 'SUPP001',
+          name: 'Test Supplier',
+          type: 'supplier',
+          financialInfo: {
+            isNonFiler: false
+          }
+        });
+        await supplier.save();
+
+        const amount = 10000;
+        const nonFilerGST = supplier.calculateNonFilerGST(amount);
+        expect(nonFilerGST).toBe(0);
+      });
+
+      it('should calculate 0.1% non-filer GST correctly', async () => {
+        const supplier = new Supplier({
+          code: 'SUPP001',
+          name: 'Test Supplier',
+          type: 'supplier',
+          financialInfo: {
+            isNonFiler: true
+          }
+        });
+        await supplier.save();
+
+        const amount = 10000;
+        const nonFilerGST = supplier.calculateNonFilerGST(amount);
+        expect(nonFilerGST).toBe(10); // 0.1% of 10000
+      });
+
+      it('should handle decimal amounts for non-filer GST', async () => {
+        const supplier = new Supplier({
+          code: 'SUPP001',
+          name: 'Test Supplier',
+          type: 'supplier',
+          financialInfo: {
+            isNonFiler: true
+          }
+        });
+        await supplier.save();
+
+        const amount = 12345.67;
+        const nonFilerGST = supplier.calculateNonFilerGST(amount);
+        expect(nonFilerGST).toBeCloseTo(12.35, 2); // 0.1% of 12345.67
+      });
+    });
+
+    describe('Combined Tax Scenarios', () => {
+      it('should handle supplier with both advance tax and non-filer status', async () => {
+        const supplier = new Supplier({
+          code: 'SUPP001',
+          name: 'Test Supplier',
+          type: 'supplier',
+          financialInfo: {
+            advanceTaxRate: 2.5,
+            isNonFiler: true
+          }
+        });
+        await supplier.save();
+
+        const amount = 10000;
+        const advanceTax = supplier.calculateAdvanceTax(amount);
+        const nonFilerGST = supplier.calculateNonFilerGST(amount);
+
+        expect(advanceTax).toBe(250); // 2.5% of 10000
+        expect(nonFilerGST).toBe(10); // 0.1% of 10000
+        expect(advanceTax + nonFilerGST).toBe(260);
+      });
+
+      it('should handle registered filer with advance tax', async () => {
+        const supplier = new Supplier({
+          code: 'SUPP001',
+          name: 'Test Supplier',
+          type: 'supplier',
+          financialInfo: {
+            advanceTaxRate: 0.5,
+            isNonFiler: false
+          }
+        });
+        await supplier.save();
+
+        const amount = 10000;
+        const advanceTax = supplier.calculateAdvanceTax(amount);
+        const nonFilerGST = supplier.calculateNonFilerGST(amount);
+
+        expect(advanceTax).toBe(50); // 0.5% of 10000
+        expect(nonFilerGST).toBe(0); // No non-filer GST
+      });
+    });
+  });
 });

@@ -1,6 +1,43 @@
 const mongoose = require('mongoose');
 
 const stockMovementSchema = new mongoose.Schema({
+  // Warehouse information
+  warehouse: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'Warehouse',
+    required: [
+      function() { 
+        return !this.referenceType || this.referenceType !== 'transfer' || this.movementType === 'out';
+      },
+      'Warehouse is required for non-transfer movements or outbound transfers'
+    ],
+    index: true,
+  },
+  // For transfers, track the source and destination warehouses
+  transferInfo: {
+    fromWarehouse: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'Warehouse',
+      required: [
+        function() { return this.referenceType === 'transfer' && this.movementType === 'in'; },
+        'Source warehouse is required for transfer-in movements'
+      ],
+      index: true,
+    },
+    toWarehouse: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'Warehouse',
+      required: [
+        function() { return this.referenceType === 'transfer' && this.movementType === 'out'; },
+        'Destination warehouse is required for transfer-out movements'
+      ],
+      index: true,
+    },
+    transferId: {
+      type: mongoose.Schema.Types.ObjectId,
+      index: true,
+    },
+  },
   itemId: {
     type: mongoose.Schema.Types.ObjectId,
     ref: 'Item',
@@ -28,8 +65,8 @@ const stockMovementSchema = new mongoose.Schema({
     type: String,
     required: [true, 'Reference type is required'],
     enum: {
-      values: ['sales_invoice', 'purchase_invoice', 'adjustment', 'opening_balance', 'transfer'],
-      message: 'Reference type must be one of: sales_invoice, purchase_invoice, adjustment, opening_balance, transfer',
+      values: ['sales_invoice', 'purchase_invoice', 'adjustment', 'opening_balance', 'transfer', 'warehouse_transfer'],
+      message: 'Reference type must be one of: sales_invoice, purchase_invoice, adjustment, opening_balance, transfer, warehouse_transfer',
     },
   },
   referenceId: {
@@ -134,69 +171,368 @@ stockMovementSchema.statics.findByReference = function (referenceType, reference
   return this.find({ referenceType, referenceId });
 };
 
-// Static method to calculate stock balance for an item
-stockMovementSchema.statics.calculateStockBalance = async function (itemId, asOfDate = new Date()) {
-  const movements = await this.find({
-    itemId,
+// Static method to calculate stock balance for an item in a warehouse
+stockMovementSchema.statics.calculateStockBalance = async function (itemId, warehouseId, asOfDate = new Date()) {
+  const match = {
+    itemId: new mongoose.Types.ObjectId(itemId),
     movementDate: { $lte: asOfDate },
-  }).sort({ movementDate: 1 });
+  };
 
-  let balance = 0;
-  movements.forEach((movement) => {
-    if (movement.movementType === 'in' || (movement.movementType === 'adjustment' && movement.quantity > 0)) {
-      balance += Math.abs(movement.quantity);
-    } else if (movement.movementType === 'out' || (movement.movementType === 'adjustment' && movement.quantity < 0)) {
-      balance -= Math.abs(movement.quantity);
-    }
-  });
+  if (warehouseId) {
+    match.$or = [
+      { warehouse: new mongoose.Types.ObjectId(warehouseId) },
+      { 'transferInfo.toWarehouse': new mongoose.Types.ObjectId(warehouseId) }
+    ];
+  }
 
-  return Math.max(0, balance); // Ensure balance is never negative
-};
-
-// Static method to find expired batches
-stockMovementSchema.statics.findExpiredBatches = function () {
-  return this.find({
-    'batchInfo.expiryDate': { $lt: new Date() },
-    movementType: 'in', // Only consider inward movements for expired stock
-  }).populate('itemId', 'code name');
-};
-
-// Static method to get stock movements summary
-stockMovementSchema.statics.getMovementsSummary = async function (itemId, days = 30) {
-  const startDate = new Date();
-  startDate.setDate(startDate.getDate() - days);
-
-  const summary = await this.aggregate([
+  return this.aggregate([
+    { $match: match },
     {
-      $match: {
-        itemId: new mongoose.Types.ObjectId(itemId),
-        movementDate: { $gte: startDate },
-      },
+      $project: {
+        quantity: {
+          $switch: {
+            branches: [
+              // For outbound transfers, we need to handle them specially
+              {
+                case: {
+                  $and: [
+                    { $eq: ['$referenceType', 'warehouse_transfer'] },
+                    { $eq: ['$movementType', 'out'] }
+                  ]
+                },
+                then: { $multiply: ['$quantity', -1] }
+              },
+              // Standard movement types
+              {
+                case: { $eq: ['$movementType', 'in'] },
+                then: '$quantity'
+              },
+              {
+                case: { $eq: ['$movementType', 'out'] },
+                then: { $multiply: ['$quantity', -1] }
+              }
+            ],
+            default: 0
+          }
+        }
+      }
     },
     {
       $group: {
-        _id: '$movementType',
-        totalQuantity: { $sum: '$quantity' },
-        count: { $sum: 1 },
-      },
+        _id: {
+          itemId: '$itemId',
+          warehouse: {
+            $cond: [
+              { $eq: ['$referenceType', 'warehouse_transfer'] },
+              '$transferInfo.toWarehouse',
+              '$warehouse'
+            ]
+          }
+        },
+        balance: { $sum: '$quantity' },
+        lastMovement: { $max: '$movementDate' }
+      }
     },
+    {
+      $lookup: {
+        from: 'warehouses',
+        localField: '_id.warehouse',
+        foreignField: '_id',
+        as: 'warehouse'
+      }
+    },
+    { $unwind: '$warehouse' },
+    {
+      $project: {
+        _id: 0,
+        itemId: '$_id.itemId',
+        warehouse: {
+          _id: '$warehouse._id',
+          name: '$warehouse.name',
+          code: '$warehouse.code'
+        },
+        balance: 1,
+        lastMovement: 1
+      }
+    }
   ]);
+};
 
-  return summary;
+// Static method to get stock balance for an item across all warehouses
+stockMovementSchema.statics.getItemStockLevels = async function (itemId) {
+  return this.aggregate([
+    { $match: { itemId: new mongoose.Types.ObjectId(itemId) } },
+    {
+      $group: {
+        _id: {
+          warehouse: {
+            $cond: [
+              { $eq: ['$referenceType', 'warehouse_transfer'] },
+              '$transferInfo.toWarehouse',
+              '$warehouse'
+            ]
+          }
+        },
+        totalIn: {
+          $sum: {
+            $cond: [
+              { $eq: ['$movementType', 'in'] },
+              '$quantity',
+              { $cond: [
+                { $and: [
+                  { $eq: ['$referenceType', 'warehouse_transfer'] },
+                  { $eq: ['$movementType', 'out'] }
+                ]},
+                { $multiply: ['$quantity', -1] },
+                0
+              ]}
+            ]
+          }
+        },
+        totalOut: {
+          $sum: {
+            $cond: [
+              { $and: [
+                { $eq: ['$movementType', 'out'] },
+                { $ne: ['$referenceType', 'warehouse_transfer'] }
+              ]},
+              '$quantity',
+              0
+            ]
+          }
+        },
+        lastMovement: { $max: '$movementDate' }
+      }
+    },
+    {
+      $lookup: {
+        from: 'warehouses',
+        localField: '_id.warehouse',
+        foreignField: '_id',
+        as: 'warehouse'
+      }
+    },
+    { $unwind: '$warehouse' },
+    {
+      $project: {
+        _id: 0,
+        warehouse: {
+          _id: '$warehouse._id',
+          name: '$warehouse.name',
+          code: '$warehouse.code'
+        },
+        quantity: { $subtract: ['$totalIn', '$totalOut'] },
+        lastMovement: 1
+      }
+    },
+    { $match: { quantity: { $gt: 0 } } },
+    { $sort: { 'warehouse.name': 1 } }
+  ]);
+};
+
+// Static method to get stock movement history for an item in a warehouse
+stockMovementSchema.statics.getMovementHistory = function (itemId, warehouseId, options = {}) {
+  const { startDate, endDate, limit = 100, page = 1 } = options;
+  const skip = (page - 1) * limit;
+
+  const match = {
+    itemId: new mongoose.Types.ObjectId(itemId),
+    $or: [
+      { warehouse: new mongoose.Types.ObjectId(warehouseId) },
+      { 'transferInfo.toWarehouse': new mongoose.Types.ObjectId(warehouseId) }
+    ]
+  };
+
+  if (startDate || endDate) {
+    match.movementDate = {};
+    if (startDate) match.movementDate.$gte = new Date(startDate);
+    if (endDate) match.movementDate.$lte = new Date(endDate);
+  }
+
+  return this.aggregate([
+    { $match: match },
+    {
+      $lookup: {
+        from: 'items',
+        localField: 'itemId',
+        foreignField: '_id',
+        as: 'item'
+      }
+    },
+    { $unwind: '$item' },
+    {
+      $lookup: {
+        from: 'warehouses',
+        localField: 'warehouse',
+        foreignField: '_id',
+        as: 'warehouse'
+      }
+    },
+    { $unwind: { path: '$warehouse', preserveNullAndEmptyArrays: true } },
+    {
+      $lookup: {
+        from: 'warehouses',
+        localField: 'transferInfo.fromWarehouse',
+        foreignField: '_id',
+        as: 'fromWarehouse'
+      }
+    },
+    { $unwind: { path: '$fromWarehouse', preserveNullAndEmptyArrays: true } },
+    {
+      $lookup: {
+        from: 'warehouses',
+        localField: 'transferInfo.toWarehouse',
+        foreignField: '_id',
+        as: 'toWarehouse'
+      }
+    },
+    { $unwind: { path: '$toWarehouse', preserveNullAndEmptyArrays: true } },
+    {
+      $project: {
+        _id: 1,
+        movementType: 1,
+        referenceType: 1,
+        referenceId: 1,
+        quantity: {
+          $cond: [
+            { $and: [
+              { $eq: ['$referenceType', 'warehouse_transfer'] },
+              { $eq: ['$movementType', 'out'] }
+            ]},
+            { $multiply: ['$quantity', -1] },
+            {
+              $cond: [
+                { $eq: ['$movementType', 'in'] },
+                '$quantity',
+                { $multiply: ['$quantity', -1] }
+              ]
+            }
+          ]
+        },
+        item: {
+          _id: '$item._id',
+          name: '$item.name',
+          code: '$item.code',
+          unit: '$item.unit'
+        },
+        warehouse: {
+          $cond: [
+            { $eq: ['$referenceType', 'warehouse_transfer'] },
+            {
+              $cond: [
+                { $eq: ['$movementType', 'in'] },
+                {
+                  _id: '$toWarehouse._id',
+                  name: '$toWarehouse.name',
+                  code: '$toWarehouse.code'
+                },
+                {
+                  _id: '$fromWarehouse._id',
+                  name: '$fromWarehouse.name',
+                  code: '$fromWarehouse.code'
+                }
+              ]
+            },
+            {
+              _id: '$warehouse._id',
+              name: '$warehouse.name',
+              code: '$warehouse.code'
+            }
+          ]
+        },
+        movementDate: 1,
+        notes: 1,
+        batchInfo: 1,
+        referenceType: 1,
+        transferInfo: {
+          fromWarehouse: {
+            $cond: [
+              { $eq: ['$referenceType', 'warehouse_transfer'] },
+              {
+                _id: '$fromWarehouse._id',
+                name: '$fromWarehouse.name',
+                code: '$fromWarehouse.code'
+              },
+              '$$REMOVE'
+            ]
+          },
+          toWarehouse: {
+            $cond: [
+              { $eq: ['$referenceType', 'warehouse_transfer'] },
+              {
+                _id: '$toWarehouse._id',
+                name: '$toWarehouse.name',
+                code: '$toWarehouse.code'
+              },
+              '$$REMOVE'
+            ]
+          },
+          transferId: 1
+        }
+      }
+    },
+    { $sort: { movementDate: -1 } },
+    { $skip: skip },
+    { $limit: limit },
+    {
+      $group: {
+        _id: null,
+        total: { $sum: 1 },
+        movements: { $push: '$$ROOT' }
+      }
+    },
+    {
+      $project: {
+        _id: 0,
+        total: 1,
+        movements: 1,
+        hasMore: { $gt: ['$total', skip + limit] }
+      }
+    }
+  ]);
 };
 
 // Pre-save validation
 stockMovementSchema.pre('save', function (next) {
   // Validate batch dates
-  if (this.batchInfo.manufacturingDate && this.batchInfo.expiryDate) {
+  if (this.batchInfo?.manufacturingDate && this.batchInfo?.expiryDate) {
     if (this.batchInfo.manufacturingDate > this.batchInfo.expiryDate) {
-      return next(new Error('Manufacturing date cannot be after expiry date'));
+      throw new Error('Manufacturing date cannot be after expiry date');
     }
   }
 
-  // Validate movement date is not in the future
-  if (this.movementDate > new Date()) {
-    return next(new Error('Movement date cannot be in the future'));
+  // Set movement date to now if not provided
+  if (!this.movementDate) {
+    this.movementDate = new Date();
+  }
+
+  // Ensure quantity is positive
+  if (this.quantity <= 0) {
+    throw new Error('Quantity must be a positive number');
+  }
+
+  // Validate warehouse requirements for transfer movements
+  if (this.referenceType === 'warehouse_transfer') {
+    if (this.movementType === 'in' && !this.transferInfo?.fromWarehouse) {
+      throw new Error('Source warehouse is required for transfer-in movements');
+    }
+    
+    if (this.movementType === 'out' && !this.warehouse) {
+      throw new Error('Warehouse is required for transfer-out movements');
+    }
+    
+    if (this.movementType === 'in' && !this.warehouse) {
+      this.warehouse = this.transferInfo.toWarehouse;
+    }
+    
+    // Ensure from and to warehouses are different for transfers
+    if (
+      this.movementType === 'out' && 
+      this.transferInfo?.toWarehouse && 
+      this.warehouse?.equals(this.transferInfo.toWarehouse)
+    ) {
+      throw new Error('Source and destination warehouses must be different');
+    }
   }
 
   // Ensure quantity sign matches movement type for non-adjustment movements

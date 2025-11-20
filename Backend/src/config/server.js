@@ -5,6 +5,11 @@ const morgan = require('morgan');
 const compression = require('compression');
 const rateLimit = require('express-rate-limit');
 const apiRoutes = require('../routes');
+const { errorHandler, notFoundHandler } = require('../middleware/errorHandler');
+const {
+  responseTimeMiddleware,
+  requestTrackingMiddleware,
+} = require('../middleware/performanceMonitoring');
 
 class ServerConfig {
   constructor() {
@@ -15,6 +20,10 @@ class ServerConfig {
   }
 
   setupMiddleware() {
+    // Performance monitoring middleware (should be first)
+    this.app.use(responseTimeMiddleware);
+    this.app.use(requestTrackingMiddleware);
+
     // Security middleware
     this.app.use(helmet());
 
@@ -67,29 +76,13 @@ class ServerConfig {
     // API routes
     this.app.use('/api', apiRoutes);
 
-    // 404 handler
-    this.app.use('*', (req, res) => {
-      res.status(404).json({
-        error: 'Route not found',
-        message: `Cannot ${req.method} ${req.originalUrl}`,
-      });
-    });
+    // 404 handler - must be after all routes
+    this.app.use('*', notFoundHandler);
   }
 
   setupErrorHandling() {
-    // Global error handler
-    this.app.use((err, req, res, _next) => {
-      console.error('Error:', err);
-
-      // Default error response
-      const statusCode = err.statusCode || 500;
-      const message = err.message || 'Internal Server Error';
-
-      res.status(statusCode).json({
-        error: message,
-        ...(process.env.NODE_ENV === 'development' && { stack: err.stack }),
-      });
-    });
+    // Global error handler - must be last middleware
+    this.app.use(errorHandler);
   }
 
   getApp() {

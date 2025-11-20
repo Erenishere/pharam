@@ -77,6 +77,16 @@ const supplierSchema = new mongoose.Schema({
       default: 'PKR',
       maxlength: [3, 'Currency code must be 3 characters'],
     },
+    // Phase 2 - Account-based tax determination (Requirement 6.3, 6.4)
+    advanceTaxRate: {
+      type: Number,
+      enum: [0, 0.5, 2.5],
+      default: 0,
+    },
+    isNonFiler: {
+      type: Boolean,
+      default: false,
+    },
   },
   isActive: {
     type: Boolean,
@@ -113,6 +123,30 @@ supplierSchema.methods.getPaymentDueDate = function (invoiceDate = new Date()) {
   const dueDate = new Date(invoiceDate);
   dueDate.setDate(dueDate.getDate() + this.financialInfo.paymentTerms);
   return dueDate;
+};
+
+// Phase 2 - Instance method to get advance tax rate (Requirement 6.3)
+supplierSchema.methods.getAdvanceTaxRate = function () {
+  return this.financialInfo.advanceTaxRate || 0;
+};
+
+// Phase 2 - Instance method to check if supplier is non-filer (Requirement 6.4)
+supplierSchema.methods.isNonFilerAccount = function () {
+  return this.financialInfo.isNonFiler === true;
+};
+
+// Phase 2 - Instance method to calculate advance tax amount (Requirement 6.3)
+supplierSchema.methods.calculateAdvanceTax = function (amount) {
+  const rate = this.getAdvanceTaxRate();
+  return (amount * rate) / 100;
+};
+
+// Phase 2 - Instance method to calculate non-filer GST amount (Requirement 6.4)
+supplierSchema.methods.calculateNonFilerGST = function (amount) {
+  if (this.isNonFilerAccount()) {
+    return (amount * 0.1) / 100; // 0.1% additional GST for non-filers
+  }
+  return 0;
 };
 
 // Static method to find suppliers with payment terms

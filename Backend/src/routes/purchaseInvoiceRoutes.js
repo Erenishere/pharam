@@ -488,3 +488,117 @@ router.get(
 );
 
 module.exports = router;
+
+/**
+ * @swagger
+ * /api/purchase-invoices/return:
+ *   post:
+ *     summary: Create a purchase return invoice
+ *     tags: [Purchase Invoices]
+ *     security:
+ *       - bearerAuth: []
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - originalInvoiceId
+ *               - returnItems
+ *               - returnReason
+ *             properties:
+ *               originalInvoiceId:
+ *                 type: string
+ *                 description: ID of the original purchase invoice
+ *               returnItems:
+ *                 type: array
+ *                 items:
+ *                   type: object
+ *                   properties:
+ *                     itemId:
+ *                       type: string
+ *                     quantity:
+ *                       type: number
+ *               returnReason:
+ *                 type: string
+ *                 enum: [damaged, expired, wrong_item, quality_issue, other]
+ *               returnNotes:
+ *                 type: string
+ *     responses:
+ *       201:
+ *         description: Purchase return created successfully
+ *       400:
+ *         description: Validation error
+ *       500:
+ *         description: Internal server error
+ */
+router.post('/return', authenticate, requireRoles(['admin', 'purchase_manager']), purchaseInvoiceController.createPurchaseReturn);
+
+/**
+ * @swagger
+ * /api/purchase-invoices/{id}/returnable:
+ *   get:
+ *     summary: Get returnable items for a purchase invoice
+ *     tags: [Purchase Invoices]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: Purchase invoice ID
+ *     responses:
+ *       200:
+ *         description: Returnable items retrieved successfully
+ *       404:
+ *         description: Invoice not found
+ *       500:
+ *         description: Internal server error
+ */
+router.get('/:id/returnable', authenticate, purchaseInvoiceController.getReturnableItems);
+
+/**
+ * @swagger
+ * /api/purchase-invoices/{id}/validate-return:
+ *   post:
+ *     summary: Validate return quantities for a purchase invoice
+ *     tags: [Purchase Invoices]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: Purchase invoice ID
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - returnItems
+ *             properties:
+ *               returnItems:
+ *                 type: array
+ *                 items:
+ *                   type: object
+ *                   properties:
+ *                     itemId:
+ *                       type: string
+ *                     quantity:
+ *                       type: number
+ *     responses:
+ *       200:
+ *         description: Validation result
+ *       400:
+ *         description: Validation error
+ *       500:
+ *         description: Internal server error
+ */
+router.post('/:id/validate-return', authenticate, purchaseInvoiceController.validateReturn);
