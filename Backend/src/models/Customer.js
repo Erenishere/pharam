@@ -46,6 +46,11 @@ const customerSchema = new mongoose.Schema({
       trim: true,
       maxlength: [100, 'City cannot exceed 100 characters'],
     },
+    town: {
+      type: String,
+      trim: true,
+      maxlength: [100, 'Town cannot exceed 100 characters'],
+    },
     country: {
       type: String,
       trim: true,
@@ -70,6 +75,45 @@ const customerSchema = new mongoose.Schema({
       trim: true,
       maxlength: [50, 'Tax number cannot exceed 50 characters'],
     },
+    // Phase 2 - Requirement 16.1: Tax Registration Fields
+    licenseNo: {
+      type: String,
+      trim: true,
+      maxlength: [50, 'License number cannot exceed 50 characters'],
+    },
+    srbNo: {
+      type: String,
+      trim: true,
+      maxlength: [50, 'SRB number cannot exceed 50 characters'],
+    },
+    ntn: {
+      type: String,
+      trim: true,
+      maxlength: [50, 'NTN cannot exceed 50 characters'],
+    },
+    strn: {
+      type: String,
+      trim: true,
+      maxlength: [50, 'STRN cannot exceed 50 characters'],
+    },
+    nicNumber: {
+      type: String,
+      trim: true,
+      maxlength: [20, 'CNIC number cannot exceed 20 characters'],
+    },
+    whtPercent: {
+      type: Number,
+      default: 0,
+      min: [0, 'WHT percent cannot be negative'],
+      max: [100, 'WHT percent cannot exceed 100'],
+    },
+    // Phase 2 - Requirement 16.2: Credit and Route Fields
+    creditDays: {
+      type: Number,
+      default: 0,
+      min: [0, 'Credit days cannot be negative'],
+      max: [365, 'Credit days cannot exceed 365'],
+    },
     currency: {
       type: String,
       trim: true,
@@ -88,6 +132,17 @@ const customerSchema = new mongoose.Schema({
       default: false,
     },
   },
+  routeId: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'Route',
+    default: null,
+  },
+  // Phase 2 - Due invoice tracking (Requirement 30)
+  dueInvoiceQty: {
+    type: Number,
+    default: 0,
+    min: [0, 'Due invoice quantity cannot be negative'],
+  },
   isActive: {
     type: Boolean,
     default: true,
@@ -102,7 +157,9 @@ customerSchema.index({ name: 1 });
 customerSchema.index({ type: 1 });
 customerSchema.index({ isActive: 1 });
 customerSchema.index({ 'contactInfo.city': 1 });
+customerSchema.index({ 'contactInfo.town': 1 });
 customerSchema.index({ 'financialInfo.creditLimit': 1 });
+customerSchema.index({ dueInvoiceQty: 1 }); // Phase 2 - Due invoice tracking
 
 // Virtual for full contact info
 customerSchema.virtual('fullAddress').get(function () {

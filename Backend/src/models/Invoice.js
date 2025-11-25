@@ -144,6 +144,12 @@ const invoiceItemSchema = new mongoose.Schema({
     trim: true,
     maxlength: [200, 'Warranty details cannot exceed 200 characters'],
   },
+  // Phase 2 - Carton quantity per item (Requirement 28)
+  cartonQty: {
+    type: Number,
+    default: 0,
+    min: [0, 'Carton quantity cannot be negative'],
+  },
 }, { _id: false });
 
 const invoiceSchema = new mongoose.Schema({
@@ -275,6 +281,14 @@ const invoiceSchema = new mongoose.Schema({
     default: 0,
     min: [0, 'Transport charges cannot be negative'],
   },
+  biltyStatus: {
+    type: String,
+    enum: {
+      values: ['pending', 'in_transit', 'received'],
+      message: 'Bilty status must be one of: pending, in_transit, received',
+    },
+    default: 'pending',
+  },
   // Phase 2 - Trade offers (Requirement 20)
   to1Percent: {
     type: Number,
@@ -310,10 +324,45 @@ const invoiceSchema = new mongoose.Schema({
     default: 0,
     min: [0, 'Carton quantity cannot be negative'],
   },
+  // Phase 2 - Previous balance display (Requirement 29)
+  previousBalance: {
+    type: Number,
+    default: 0,
+    min: [0, 'Previous balance cannot be negative'],
+  },
+  totalBalance: {
+    type: Number,
+    default: 0,
+    min: [0, 'Total balance cannot be negative'],
+  },
+  creditLimitExceeded: {
+    type: Boolean,
+    default: false,
+  },
+  availableCredit: {
+    type: Number,
+    default: 0,
+  },
+  creditLimitWarning: {
+    type: String,
+    trim: true,
+  },
   // Phase 2 - Estimate/Quotation (Requirement 31)
   estimatePrint: {
     type: Boolean,
     default: false,
+  },
+  expiryDate: {
+    type: Date,
+    validate: {
+      validator(value) {
+        // Only validate if expiryDate is provided
+        if (!value) return true;
+        // Expiry date must be after invoice date
+        return !this.invoiceDate || value >= this.invoiceDate;
+      },
+      message: 'Expiry date must be after invoice date',
+    },
   },
   printFormat: {
     type: String,
@@ -434,6 +483,7 @@ invoiceSchema.index({ supplierBillNo: 1, supplierId: 1 }); // For duplicate supp
 invoiceSchema.index({ dimension: 1 }); // For dimension-based reporting
 invoiceSchema.index({ salesmanId: 1 }); // For salesman performance tracking
 invoiceSchema.index({ poId: 1 }); // For PO linking
+invoiceSchema.index({ expiryDate: 1 }); // For estimate expiry tracking
 
 // Virtual for days until due
 invoiceSchema.virtual('daysUntilDue').get(function () {
@@ -445,6 +495,15 @@ invoiceSchema.virtual('daysUntilDue').get(function () {
 // Virtual for overdue status
 invoiceSchema.virtual('isOverdue').get(function () {
   return this.dueDate < new Date() && this.paymentStatus !== 'paid';
+});
+
+// Virtual for expired estimate status (Task 75.5)
+invoiceSchema.virtual('isExpired').get(function () {
+  // Only estimates can expire
+  if (!this.estimatePrint || !this.expiryDate) {
+    return false;
+  }
+  return this.expiryDate < new Date() && this.status === 'draft';
 });
 
 // Phase 2 - Instance method to calculate all applicable taxes (Requirement 6.1, 6.2, 6.3, 6.4)
@@ -469,7 +528,7 @@ invoiceSchema.methods.calculateTotals = async function () {
 
   this.items.forEach((item) => {
     let itemSubtotal;
-    
+
     // Phase 2: Calculate subtotal using box/unit quantities if provided
     if ((item.boxQuantity && item.boxQuantity > 0) || (item.unitQuantity && item.unitQuantity > 0)) {
       // Use box/unit calculation: (boxQty × boxRate) + (unitQty × unitRate)
@@ -491,7 +550,7 @@ invoiceSchema.methods.calculateTotals = async function () {
     if (item.gstRate && item.gstRate > 0) {
       const gstAmount = (taxableAmount * item.gstRate) / 100;
       item.gstAmount = gstAmount;
-      
+
       // Separate GST by rate (Requirement 2.2, 2.7)
       if (item.gstRate === 18) {
         gst18Total += gstAmount;
@@ -531,12 +590,28 @@ invoiceSchema.methods.calculateTotals = async function () {
 
   // Preserve existing tax breakdown fields if they exist
   const existingTotals = this.totals || {};
-  
+
+  // Phase 2: Calculate Trade Offers (Requirement 20)
+  // If percent is provided, calculate amount. Otherwise use provided amount (fixed).
+  if (this.to1Percent > 0) {
+    this.to1Amount = (subtotal * this.to1Percent) / 100;
+  }
+
+  // TO2 is calculated on (Subtotal - TO1)
+  const afterTO1 = subtotal - (this.to1Amount || 0);
+
+  if (this.to2Percent > 0) {
+    this.to2Amount = (afterTO1 * this.to2Percent) / 100;
+  }
+
+  const to1Amount = this.to1Amount || 0;
+  const to2Amount = this.to2Amount || 0;
+
   this.totals = {
     subtotal,
     totalDiscount,
     totalTax,
-    grandTotal: subtotal - totalDiscount + totalTax,
+    grandTotal: subtotal - totalDiscount - to1Amount - to2Amount + totalTax,
     // Phase 2 tax breakdown fields - use calculated values
     gst18Total: gst18Total || 0,
     gst4Total: gst4Total || 0,
@@ -613,23 +688,77 @@ invoiceSchema.pre('save', async function (next) {
     this.invoiceNumber = await this.constructor.generateInvoiceNumber(this.type);
   }
 
-  // Phase 2: Auto-calculate carton quantity from box quantities
-  // Assuming 12 boxes per carton as default (can be made configurable)
-  const boxesPerCarton = 12;
-  let totalBoxes = 0;
-  
+  // Phase 2: Auto-calculate carton quantities using cartonCalculationService
+  const cartonCalculationService = require('../services/cartonCalculationService');
+
+  // Calculate carton quantity for each item
   this.items.forEach((item) => {
     if (item.boxQuantity && item.boxQuantity > 0) {
-      totalBoxes += item.boxQuantity;
+      item.cartonQty = cartonCalculationService.calculateItemCartonQty(item);
+    } else {
+      item.cartonQty = 0;
     }
   });
-  
-  if (totalBoxes > 0) {
-    this.cartonQty = Math.ceil(totalBoxes / boxesPerCarton);
-  }
+
+  // Calculate total carton quantity for the invoice
+  this.cartonQty = cartonCalculationService.calculateInvoiceCartonQty(this);
 
   // Phase 2: Calculate totals with account-based taxes before saving
   await this.calculateTotals();
+
+  // Phase 2: Calculate previous balance and check credit limit (Requirement 29)
+  if (this.isNew || this.isModified('totals.grandTotal')) {
+    const balanceCalculationService = require('../services/balanceCalculationService');
+
+    // Only calculate for sales and purchase invoices with customer/supplier
+    if ((this.type === 'sales' || this.type === 'return_sales') && this.customerId) {
+      try {
+        const balanceSummary = await balanceCalculationService.calculateBalanceSummary(
+          this.customerId,
+          this.invoiceDate,
+          this.totals.grandTotal,
+          'Customer'
+        );
+
+        this.previousBalance = balanceSummary.previousBalance;
+        this.totalBalance = balanceSummary.totalBalance;
+        this.creditLimitExceeded = balanceSummary.creditLimitExceeded;
+        this.availableCredit = balanceSummary.availableCredit;
+        this.creditLimitWarning = balanceSummary.warning || '';
+      } catch (error) {
+        console.error('Error calculating previous balance for customer:', error);
+        // Set defaults if calculation fails
+        this.previousBalance = 0;
+        this.totalBalance = this.totals.grandTotal;
+        this.creditLimitExceeded = false;
+        this.availableCredit = 0;
+        this.creditLimitWarning = '';
+      }
+    } else if ((this.type === 'purchase' || this.type === 'return_purchase') && this.supplierId) {
+      try {
+        const balanceSummary = await balanceCalculationService.calculateBalanceSummary(
+          this.supplierId,
+          this.invoiceDate,
+          this.totals.grandTotal,
+          'Supplier'
+        );
+
+        this.previousBalance = balanceSummary.previousBalance;
+        this.totalBalance = balanceSummary.totalBalance;
+        this.creditLimitExceeded = balanceSummary.creditLimitExceeded;
+        this.availableCredit = balanceSummary.availableCredit;
+        this.creditLimitWarning = balanceSummary.warning || '';
+      } catch (error) {
+        console.error('Error calculating previous balance for supplier:', error);
+        // Set defaults if calculation fails
+        this.previousBalance = 0;
+        this.totalBalance = this.totals.grandTotal;
+        this.creditLimitExceeded = false;
+        this.availableCredit = 0;
+        this.creditLimitWarning = '';
+      }
+    }
+  }
 
   next();
 });

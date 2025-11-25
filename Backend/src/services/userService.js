@@ -372,14 +372,30 @@ class UserService {
   /**
    * Search users
    * @param {String} keyword - Search keyword
-   * @param {Object} options - Search options
-   * @returns {Promise<Array>} Array of matching users
+   * @param {Object} options - Search options (limit, page)
+   * @returns {Promise<Object>} Object with users array and pagination metadata
    */
   async searchUsers(keyword, options = {}) {
     if (!keyword || keyword.trim().length === 0) {
       throw new Error('Search keyword is required');
     }
-    return userRepository.search(keyword.trim(), options);
+
+    const { limit = 10, page = 1 } = options;
+    const skip = (page - 1) * limit;
+
+    const { users, total } = await userRepository.search(keyword.trim(), { limit, skip });
+
+    return {
+      users,
+      pagination: {
+        currentPage: page,
+        totalPages: Math.ceil(total / limit),
+        totalItems: total,
+        itemsPerPage: limit,
+        hasNextPage: page < Math.ceil(total / limit),
+        hasPrevPage: page > 1,
+      },
+    };
   }
 
   /**

@@ -552,6 +552,100 @@ class InventoryService {
 
     return itemDoc;
   }
+
+  /**
+   * Adjust inventory using box/unit quantities
+   * Phase 2 - Requirement 12.4 - Task 45.4
+   * @param {string} itemId - Item ID
+   * @param {number} boxQty - Box quantity
+   * @param {number} unitQty - Unit quantity
+   * @param {string} operation - Operation type ('increase' or 'decrease')
+   * @param {string} reason - Reason for adjustment
+   * @param {Object} [options] - Additional options
+   * @returns {Promise<Object>} Updated inventory with conversion details
+   */
+  async adjustInventoryBoxUnit(itemId, boxQty = 0, unitQty = 0, operation, reason, options = {}) {
+    if (!itemId) {
+      throw new Error('Item ID is required');
+    }
+
+    if (boxQty < 0 || unitQty < 0) {
+      throw new Error('Box and unit quantities cannot be negative');
+    }
+
+    if (boxQty === 0 && unitQty === 0) {
+      throw new Error('At least one of box quantity or unit quantity must be greater than 0');
+    }
+
+    // Get item to retrieve packSize
+    const Item = require('../models/Item');
+    const item = await Item.findById(itemId);
+    
+    if (!item) {
+      throw new Error('Item not found');
+    }
+
+    const packSize = item.packSize || 1;
+
+    // Convert boxes to units using packSize
+    const boxUnitConversionService = require('./boxUnitConversionService');
+    const totalUnits = boxUnitConversionService.calculateTotalUnits(boxQty, unitQty, packSize);
+
+    // Use existing adjustInventory method with total units
+    const result = await this.adjustInventory(itemId, totalUnits, operation, reason, options);
+
+    // Return result with conversion details
+    return {
+      ...result.toObject(),
+      conversionDetails: {
+        boxQuantity: boxQty,
+        unitQuantity: unitQty,
+        packSize,
+        totalUnits,
+        operation,
+      },
+    };
+  }
+
+  /**
+   * Get current stock in box/unit format
+   * Phase 2 - Requirement 12.5 - Task 45.5
+   * @param {string} itemId - Item ID
+   * @returns {Promise<Object>} Stock details in box/unit format
+   */
+  async getStockBoxUnit(itemId) {
+    const Item = require('../models/Item');
+    const item = await Item.findById(itemId);
+    
+    if (!item) {
+      throw new Error('Item not found');
+    }
+
+    const currentStock = item.inventory?.currentStock || 0;
+    const packSize = item.packSize || 1;
+
+    const boxUnitConversionService = require('./boxUnitConversionService');
+    const conversion = boxUnitConversionService.convertUnitsToBoxes(currentStock, packSize);
+
+    return {
+      itemId: item._id,
+      itemCode: item.code,
+      itemName: item.name,
+      packSize,
+      currentStockUnits: currentStock,
+      currentStockBoxes: conversion.boxes,
+      currentStockRemainingUnits: conversion.remainingUnits,
+      displayString: boxUnitConversionService.formatBoxUnitDisplay(
+        conversion.boxes,
+        conversion.remainingUnits,
+        'Box',
+        'Unit'
+      ),
+      minimumStock: item.inventory?.minimumStock || 0,
+      maximumStock: item.inventory?.maximumStock || 0,
+      stockStatus: item.stockStatus,
+    };
+  }
 }
 
 module.exports = new InventoryService();

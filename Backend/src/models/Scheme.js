@@ -40,6 +40,20 @@ const schemeSchema = new mongoose.Schema({
     min: [0, 'Discount percent cannot be negative'],
     max: [100, 'Discount percent cannot exceed 100']
   },
+  discount2Percent: {
+    type: Number,
+    default: 0,
+    min: [0, 'Discount 2 percent cannot be negative'],
+    max: [100, 'Discount 2 percent cannot exceed 100'],
+    description: 'Second discount percentage (e.g., 7.69%)'
+  },
+  to2Percent: {
+    type: Number,
+    default: 0,
+    min: [0, 'TO2 percent cannot be negative'],
+    max: [100, 'TO2 percent cannot exceed 100'],
+    description: 'Trade Offer 2 percentage for this scheme'
+  },
   claimAccountId: {
     type: mongoose.Schema.Types.ObjectId,
     ref: 'Account',
@@ -113,13 +127,13 @@ schemeSchema.index({ company: 1, isActive: 1 });
 schemeSchema.index({ startDate: 1, endDate: 1 });
 
 // Virtual for checking if scheme is currently active (date-wise)
-schemeSchema.virtual('isCurrentlyActive').get(function() {
+schemeSchema.virtual('isCurrentlyActive').get(function () {
   const now = new Date();
   return this.isActive && this.startDate <= now && this.endDate >= now;
 });
 
 // Pre-save middleware
-schemeSchema.pre('save', function(next) {
+schemeSchema.pre('save', function (next) {
   if (this.endDate < this.startDate) {
     return next(new Error('End date cannot be before start date'));
   }
@@ -128,7 +142,7 @@ schemeSchema.pre('save', function(next) {
 });
 
 // Static method to get active schemes
-schemeSchema.statics.getActiveSchemes = function(companyId = null) {
+schemeSchema.statics.getActiveSchemes = function (companyId = null) {
   const now = new Date();
   const query = {
     isActive: true,
@@ -144,7 +158,7 @@ schemeSchema.statics.getActiveSchemes = function(companyId = null) {
 };
 
 // Static method to get schemes by type
-schemeSchema.statics.getSchemesByType = function(type, companyId = null) {
+schemeSchema.statics.getSchemesByType = function (type, companyId = null) {
   const query = { type, isActive: true };
 
   if (companyId) {
@@ -155,7 +169,7 @@ schemeSchema.statics.getSchemesByType = function(type, companyId = null) {
 };
 
 // Static method to get schemes by group
-schemeSchema.statics.getSchemesByGroup = function(group, companyId = null) {
+schemeSchema.statics.getSchemesByGroup = function (group, companyId = null) {
   const query = { group, isActive: true };
 
   if (companyId) {
@@ -166,7 +180,7 @@ schemeSchema.statics.getSchemesByGroup = function(group, companyId = null) {
 };
 
 // Instance method to check if item is eligible
-schemeSchema.methods.isItemEligible = function(itemId) {
+schemeSchema.methods.isItemEligible = function (itemId) {
   if (this.applicableItems.length === 0) {
     return true; // All items eligible if no specific items listed
   }
@@ -174,7 +188,7 @@ schemeSchema.methods.isItemEligible = function(itemId) {
 };
 
 // Instance method to check if customer is eligible
-schemeSchema.methods.isCustomerEligible = function(customerId) {
+schemeSchema.methods.isCustomerEligible = function (customerId) {
   if (this.applicableCustomers.length === 0) {
     return true; // All customers eligible if no specific customers listed
   }
@@ -182,7 +196,7 @@ schemeSchema.methods.isCustomerEligible = function(customerId) {
 };
 
 // Instance method to check if quantity qualifies
-schemeSchema.methods.qualifiesForScheme = function(quantity) {
+schemeSchema.methods.qualifiesForScheme = function (quantity) {
   if (quantity < this.minimumQuantity) {
     return false;
   }

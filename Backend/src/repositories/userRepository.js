@@ -259,21 +259,28 @@ class UserRepository {
    * Search users by keyword
    * @param {String} keyword - Search keyword
    * @param {Object} options - Query options
-   * @returns {Promise<Array>} Array of matching users
+   * @returns {Promise<Object>} Object with users array and total count
    */
   async search(keyword, options = {}) {
     const { limit = 10, skip = 0 } = options;
 
     const searchRegex = new RegExp(keyword, 'i');
-    return User.find({
+    const query = {
       $or: [
         { username: searchRegex },
         { email: searchRegex },
       ],
-    })
-      .limit(limit)
-      .skip(skip)
-      .sort({ username: 1 });
+    };
+
+    const [users, total] = await Promise.all([
+      User.find(query)
+        .limit(limit)
+        .skip(skip)
+        .sort({ username: 1 }),
+      User.countDocuments(query),
+    ]);
+
+    return { users, total };
   }
 
   /**

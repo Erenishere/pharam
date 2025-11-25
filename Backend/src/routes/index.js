@@ -17,6 +17,12 @@ const monitoringRoutes = require('./monitoring');
 const warehouseRoutes = require('./warehouseRoutes');
 const schemeRoutes = require('./schemeRoutes');
 const salesmanRoutes = require('./salesmanRoutes');
+const purchaseOrderRoutes = require('./purchaseOrderRoutes');
+const routeRoutes = require('./routeRoutes');
+const quotationHistoryRoutes = require('./quotationHistory');
+const rateSuggestionRoutes = require('./rateSuggestions');
+const printRoutes = require('./printRoutes');
+const smsRoutes = require('./smsRoutes');
 
 const router = express.Router();
 
@@ -43,6 +49,11 @@ router.get('/', (req, res) => {
       stockMovements: '/api/stock-movements',
       warehouses: '/api/warehouses',
       schemes: '/api/schemes',
+      routes: '/api/routes',
+      quotationHistory: '/api/quotation-history',
+      rateSuggestions: '/api/rate-suggestions',
+      print: '/api/print',
+      sms: '/api/sms',
     },
   });
 });
@@ -67,6 +78,12 @@ router.use('/warehouses', warehouseRoutes); // Warehouse routes (mounted at /api
 router.use('/inventory', itemRoutes); // Inventory routes (mounted at /api/inventory to support /api/inventory/transfer)
 router.use('/schemes', schemeRoutes); // Scheme routes (mounted at /api/schemes)
 router.use('/v1/salesmen', salesmanRoutes); // Salesman routes
+router.use('/v1/purchase-orders', purchaseOrderRoutes); // Purchase order routes
+router.use('/routes', routeRoutes); // Route routes
+router.use('/quotation-history', quotationHistoryRoutes); // Quotation history routes
+router.use('/rate-suggestions', rateSuggestionRoutes); // Rate suggestion routes
+router.use('/print', printRoutes); // Print routes
+router.use('/v1/sms', smsRoutes); // SMS routes
 
 // Health check for API
 router.get('/health', (req, res) => {

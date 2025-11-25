@@ -64,6 +64,37 @@ router.get(
 );
 
 /**
+ * @route   POST /api/invoices/sales/search
+ * @desc    Advanced search for sales invoices
+ * @access  Private
+ * @body    filters, sort, page, limit, searchText, searchFields
+ */
+router.post(
+  '/search',
+  authenticate,
+  [
+    body('filters')
+      .optional()
+      .isArray()
+      .withMessage('Filters must be an array'),
+    body('sort')
+      .optional()
+      .isArray()
+      .withMessage('Sort must be an array'),
+    body('page')
+      .optional()
+      .isInt({ min: 1 })
+      .withMessage('Page must be a positive integer'),
+    body('limit')
+      .optional()
+      .isInt({ min: 1, max: 100 })
+      .withMessage('Limit must be between 1 and 100'),
+    validate,
+  ],
+  salesInvoiceController.advancedSearch,
+);
+
+/**
  * @route   GET /api/invoices/sales
  * @desc    Get all sales invoices with optional filters and pagination
  * @access  Private
@@ -461,4 +492,172 @@ router.get(
   salesInvoiceController.getInvoiceStockMovements,
 );
 
+/**
+ * @route   POST /api/invoices/sales/:id/send-sms
+ * @desc    Send SMS for sales invoice
+ * @access  Private
+ */
+router.post(
+  '/:id/send-sms',
+  authenticate,
+  [
+    param('id')
+      .custom(isValidObjectId)
+      .withMessage('Invalid invoice ID format'),
+    body('message')
+      .optional()
+      .trim()
+      .isLength({ max: 500 })
+      .withMessage('Message cannot exceed 500 characters'),
+    body('templateId')
+      .optional()
+      .trim()
+      .notEmpty()
+      .withMessage('Template ID cannot be empty'),
+    validate,
+  ],
+  require('../controllers/smsController').sendInvoiceSMS,
+);
+
+/**
+ * Task 75: Estimate/Quotation Printing Routes
+ */
+
+/**
+ * @route   POST /api/invoices/sales/:id/convert-estimate
+ * @desc    Convert estimate to invoice
+ * @access  Private (Admin, Sales, Accountant)
+ */
+router.post(
+  '/:id/convert-estimate',
+  authenticate,
+  requireRoles(['admin', 'sales', 'accountant']),
+  [
+    param('id')
+      .custom(isValidObjectId)
+      .withMessage('Invalid invoice ID format'),
+    validate,
+  ],
+  salesInvoiceController.convertEstimateToInvoice,
+);
+
+/**
+ * @route   GET /api/invoices/sales/estimates/pending
+ * @desc    Get pending estimates
+ * @access  Private
+ */
+router.get(
+  '/estimates/pending',
+  authenticate,
+  [
+    query('page')
+      .optional()
+      .isInt({ min: 1 })
+      .withMessage('Page must be a positive integer'),
+    query('limit')
+      .optional()
+      .isInt({ min: 1, max: 100 })
+      .withMessage('Limit must be between 1 and 100'),
+    query('customerId')
+      .optional()
+      .custom(isValidObjectId)
+      .withMessage('Invalid customer ID format'),
+    validate,
+  ],
+  salesInvoiceController.getPendingEstimates,
+);
+
+/**
+ * @route   GET /api/invoices/sales/estimates/expired
+ * @desc    Get expired estimates
+ * @access  Private
+ */
+router.get(
+  '/estimates/expired',
+  authenticate,
+  [
+    query('page')
+      .optional()
+      .isInt({ min: 1 })
+      .withMessage('Page must be a positive integer'),
+    query('limit')
+      .optional()
+      .isInt({ min: 1, max: 100 })
+      .withMessage('Limit must be between 1 and 100'),
+    query('customerId')
+      .optional()
+      .custom(isValidObjectId)
+      .withMessage('Invalid customer ID format'),
+    validate,
+  ],
+  salesInvoiceController.getExpiredEstimates,
+);
+
+/**
+ * Task 76: Warranty Management Routes
+ */
+
+/**
+ * @route   GET /api/invoices/sales/:id/warranty
+ * @desc    Get warranty information for an invoice
+ * @access  Private
+ */
+router.get(
+  '/:id/warranty',
+  authenticate,
+  [
+    param('id')
+      .custom(isValidObjectId)
+      .withMessage('Invalid invoice ID format'),
+    validate,
+  ],
+  salesInvoiceController.getWarrantyInfo,
+);
+
+/**
+ * @route   PUT /api/invoices/sales/:id/warranty
+ * @desc    Update warranty information for an invoice
+ * @access  Private (Admin, Sales, Data Entry)
+ */
+router.put(
+  '/:id/warranty',
+  authenticate,
+  requireRoles(['admin', 'sales', 'data_entry']),
+  [
+    param('id')
+      .custom(isValidObjectId)
+      .withMessage('Invalid invoice ID format'),
+    body('warrantyInfo')
+      .optional()
+      .trim()
+      .isLength({ max: 500 })
+      .withMessage('Warranty info cannot exceed 500 characters'),
+    body('warrantyPaste')
+      .optional()
+      .isBoolean()
+      .withMessage('Warranty paste must be a boolean'),
+    body('items')
+      .optional()
+      .isArray()
+      .withMessage('Items must be an array'),
+    body('items.*.itemId')
+      .optional()
+      .custom(isValidObjectId)
+      .withMessage('Invalid item ID format'),
+    body('items.*.warrantyMonths')
+      .optional()
+      .isInt({ min: 0 })
+      .withMessage('Warranty months must be a non-negative integer'),
+    body('items.*.warrantyDetails')
+      .optional()
+      .trim()
+      .isLength({ max: 200 })
+      .withMessage('Warranty details cannot exceed 200 characters'),
+    validate,
+  ],
+  salesInvoiceController.updateWarrantyInfo,
+);
+
+
 module.exports = router;
+

@@ -276,4 +276,34 @@ router.get('/salesman-performance', reportController.getSalesmanPerformanceRepor
  */
 router.get('/salesman-commission', reportController.getSalesmanCommissionReport);
 
+/**
+ * Phase 2: Dimension Reporting (Task 68 - Requirement 24)
+ */
+
+/**
+ * @route   GET /api/reports/dimension-expenses
+ * @desc    Get dimension expense analysis
+ * @access  Private
+ * @query   startDate (required), endDate (required), format (optional)
+ */
+router.get('/dimension-expenses', reportController.getDimensionExpenses);
+
+/**
+ * @route   GET /api/reports/dimension-budget/:dimension
+ * @desc    Get dimension budget comparison
+ * @access  Private
+ * @param   dimension - Dimension value
+ * @query   startDate (required), endDate (required), format (optional)
+ */
+router.get('/dimension-budget/:dimension', reportController.getDimensionBudgetComparison);
+
+/**
+ * @route   GET /api/reports/dimension/:dimension
+ * @desc    Get dimension report
+ * @access  Private
+ * @param   dimension - Dimension value
+ * @query   startDate (required), endDate (required), format (optional)
+ */
+router.get('/dimension/:dimension', reportController.getDimensionReport);
+
 module.exports = router;

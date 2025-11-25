@@ -209,7 +209,7 @@ describe('Invoice Model - Phase 2 Enhancements', () => {
       });
 
       const validReasons = ['damaged', 'expired', 'wrong_item', 'quality_issue', 'other'];
-      
+
       for (const reason of validReasons) {
         const returnInvoice = new Invoice({
           type: 'return_sales',
@@ -286,7 +286,7 @@ describe('Invoice Model - Phase 2 Enhancements', () => {
     it('should store adjustment and claim account IDs', async () => {
       const adjustmentAccountId = new mongoose.Types.ObjectId();
       const claimAccountId = new mongoose.Types.ObjectId();
-      
+
       const invoice = await Invoice.create({
         type: 'sales',
         customerId: customer._id,
@@ -1007,7 +1007,7 @@ describe('Invoice Model - Phase 2 Enhancements', () => {
 
     it('should handle claim-based scheme (scheme2) with discount2', async () => {
       const claimAccountId = new mongoose.Types.ObjectId();
-      
+
       const invoice = await Invoice.create({
         type: 'sales',
         customerId: customer._id,
@@ -1118,7 +1118,7 @@ describe('Invoice Model - Phase 2 Enhancements', () => {
 
     it('should validate advance tax percent enum values', async () => {
       const validRates = [0, 0.5, 2.5];
-      
+
       for (const rate of validRates) {
         const invoice = await Invoice.create({
           type: 'sales',
@@ -1338,7 +1338,7 @@ describe('Invoice Model - Phase 2 Enhancements', () => {
   describe('Print Formats (Requirement 19)', () => {
     it('should store print format', async () => {
       const formats = ['standard', 'logo', 'letterhead', 'thermal', 'estimate', 'voucher', 'store_copy', 'tax_invoice', 'warranty_bill'];
-      
+
       for (const format of formats) {
         const invoice = await Invoice.create({
           type: 'sales',
@@ -1421,6 +1421,220 @@ describe('Invoice Model - Phase 2 Enhancements', () => {
       });
 
       expect(invoice.items[0].dimension).toBe('Department-A');
+    });
+
+    // Task 68.1: Comprehensive dimension validation tests
+    it('should accept valid dimension formats', async () => {
+      const validDimensions = [
+        'PROJECT-001',
+        'CC-123',
+        'DEPT_A',
+        'Cost-Center-1',
+        'Project_2024_Q1',
+        'A1B2C3'
+      ];
+
+      for (const dimension of validDimensions) {
+        const invoice = await Invoice.create({
+          type: 'purchase',
+          supplierId: supplier._id,
+          supplierBillNo: `SUP-${dimension}`,
+          dimension,
+          invoiceDate: new Date(),
+          dueDate: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000),
+          items: [{
+            itemId: item._id,
+            quantity: 10,
+            unitPrice: 100,
+            lineTotal: 1000
+          }],
+          totals: { subtotal: 1000, grandTotal: 1000 },
+          createdBy: user._id
+        });
+
+        expect(invoice.dimension).toBe(dimension);
+      }
+    });
+
+    it('should trim whitespace from dimension field', async () => {
+      const invoice = await Invoice.create({
+        type: 'purchase',
+        supplierId: supplier._id,
+        supplierBillNo: 'SUP-2024-002',
+        dimension: '  PROJECT-001  ',
+        invoiceDate: new Date(),
+        dueDate: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000),
+        items: [{
+          itemId: item._id,
+          quantity: 10,
+          unitPrice: 100,
+          lineTotal: 1000
+        }],
+        totals: { subtotal: 1000, grandTotal: 1000 },
+        createdBy: user._id
+      });
+
+      expect(invoice.dimension).toBe('PROJECT-001');
+    });
+
+    it('should enforce dimension max length of 100 characters', async () => {
+      const longDimension = 'A'.repeat(101);
+      const invoice = new Invoice({
+        type: 'purchase',
+        supplierId: supplier._id,
+        supplierBillNo: 'SUP-2024-003',
+        dimension: longDimension,
+        invoiceDate: new Date(),
+        dueDate: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000),
+        items: [{
+          itemId: item._id,
+          quantity: 10,
+          unitPrice: 100,
+          lineTotal: 1000
+        }],
+        totals: { subtotal: 1000, grandTotal: 1000 },
+        createdBy: user._id
+      });
+
+      await expect(invoice.save()).rejects.toThrow('Dimension cannot exceed 100 characters');
+    });
+
+    it('should accept dimension with exactly 100 characters', async () => {
+      const maxDimension = 'A'.repeat(100);
+      const invoice = await Invoice.create({
+        type: 'purchase',
+        supplierId: supplier._id,
+        supplierBillNo: 'SUP-2024-004',
+        dimension: maxDimension,
+        invoiceDate: new Date(),
+        dueDate: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000),
+        items: [{
+          itemId: item._id,
+          quantity: 10,
+          unitPrice: 100,
+          lineTotal: 1000
+        }],
+        totals: { subtotal: 1000, grandTotal: 1000 },
+        createdBy: user._id
+      });
+
+      expect(invoice.dimension).toBe(maxDimension);
+      expect(invoice.dimension.length).toBe(100);
+    });
+
+    it('should allow dimension to be optional', async () => {
+      const invoice = await Invoice.create({
+        type: 'purchase',
+        supplierId: supplier._id,
+        supplierBillNo: 'SUP-2024-005',
+        invoiceDate: new Date(),
+        dueDate: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000),
+        items: [{
+          itemId: item._id,
+          quantity: 10,
+          unitPrice: 100,
+          lineTotal: 1000
+        }],
+        totals: { subtotal: 1000, grandTotal: 1000 },
+        createdBy: user._id
+      });
+
+      expect(invoice.dimension).toBeUndefined();
+    });
+
+    it('should trim whitespace from item dimension field', async () => {
+      const invoice = await Invoice.create({
+        type: 'purchase',
+        supplierId: supplier._id,
+        supplierBillNo: 'SUP-2024-006',
+        invoiceDate: new Date(),
+        dueDate: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000),
+        items: [{
+          itemId: item._id,
+          quantity: 10,
+          unitPrice: 100,
+          dimension: '  CC-001  ',
+          lineTotal: 1000
+        }],
+        totals: { subtotal: 1000, grandTotal: 1000 },
+        createdBy: user._id
+      });
+
+      expect(invoice.items[0].dimension).toBe('CC-001');
+    });
+
+    it('should enforce item dimension max length of 100 characters', async () => {
+      const longDimension = 'B'.repeat(101);
+      const invoice = new Invoice({
+        type: 'purchase',
+        supplierId: supplier._id,
+        supplierBillNo: 'SUP-2024-007',
+        invoiceDate: new Date(),
+        dueDate: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000),
+        items: [{
+          itemId: item._id,
+          quantity: 10,
+          unitPrice: 100,
+          dimension: longDimension,
+          lineTotal: 1000
+        }],
+        totals: { subtotal: 1000, grandTotal: 1000 },
+        createdBy: user._id
+      });
+
+      await expect(invoice.save()).rejects.toThrow('Dimension cannot exceed 100 characters');
+    });
+
+    it('should allow different dimensions for different items', async () => {
+      const invoice = await Invoice.create({
+        type: 'purchase',
+        supplierId: supplier._id,
+        supplierBillNo: 'SUP-2024-008',
+        dimension: 'PROJECT-A',
+        invoiceDate: new Date(),
+        dueDate: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000),
+        items: [{
+          itemId: item._id,
+          quantity: 10,
+          unitPrice: 100,
+          dimension: 'CC-001',
+          lineTotal: 1000
+        }, {
+          itemId: item._id,
+          quantity: 5,
+          unitPrice: 100,
+          dimension: 'CC-002',
+          lineTotal: 500
+        }],
+        totals: { subtotal: 1500, grandTotal: 1500 },
+        createdBy: user._id
+      });
+
+      expect(invoice.dimension).toBe('PROJECT-A');
+      expect(invoice.items[0].dimension).toBe('CC-001');
+      expect(invoice.items[1].dimension).toBe('CC-002');
+    });
+
+    it('should allow null dimension on items', async () => {
+      const invoice = await Invoice.create({
+        type: 'purchase',
+        supplierId: supplier._id,
+        supplierBillNo: 'SUP-2024-009',
+        dimension: 'PROJECT-B',
+        invoiceDate: new Date(),
+        dueDate: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000),
+        items: [{
+          itemId: item._id,
+          quantity: 10,
+          unitPrice: 100,
+          lineTotal: 1000
+        }],
+        totals: { subtotal: 1000, grandTotal: 1000 },
+        createdBy: user._id
+      });
+
+      expect(invoice.dimension).toBe('PROJECT-B');
+      expect(invoice.items[0].dimension).toBeUndefined();
     });
   });
 
@@ -1514,7 +1728,7 @@ describe('Invoice Model - Phase 2 Enhancements', () => {
   describe('Indexes for Phase 2 Features', () => {
     it('should have index on originalInvoiceId', async () => {
       const indexes = Invoice.collection.getIndexes();
-      const hasIndex = Object.values(indexes).some(index => 
+      const hasIndex = Object.values(indexes).some(index =>
         index.key && index.key.originalInvoiceId === 1
       );
       expect(hasIndex).toBe(true);
@@ -1522,7 +1736,7 @@ describe('Invoice Model - Phase 2 Enhancements', () => {
 
     it('should have compound index on supplierBillNo and supplierId', async () => {
       const indexes = Invoice.collection.getIndexes();
-      const hasIndex = Object.values(indexes).some(index => 
+      const hasIndex = Object.values(indexes).some(index =>
         index.key && index.key.supplierBillNo === 1 && index.key.supplierId === 1
       );
       expect(hasIndex).toBe(true);
@@ -1530,7 +1744,7 @@ describe('Invoice Model - Phase 2 Enhancements', () => {
 
     it('should have index on dimension', async () => {
       const indexes = Invoice.collection.getIndexes();
-      const hasIndex = Object.values(indexes).some(index => 
+      const hasIndex = Object.values(indexes).some(index =>
         index.key && index.key.dimension === 1
       );
       expect(hasIndex).toBe(true);
@@ -1538,7 +1752,7 @@ describe('Invoice Model - Phase 2 Enhancements', () => {
 
     it('should have index on salesmanId', async () => {
       const indexes = Invoice.collection.getIndexes();
-      const hasIndex = Object.values(indexes).some(index => 
+      const hasIndex = Object.values(indexes).some(index =>
         index.key && index.key.salesmanId === 1
       );
       expect(hasIndex).toBe(true);
@@ -1546,7 +1760,7 @@ describe('Invoice Model - Phase 2 Enhancements', () => {
 
     it('should have index on poId', async () => {
       const indexes = Invoice.collection.getIndexes();
-      const hasIndex = Object.values(indexes).some(index => 
+      const hasIndex = Object.values(indexes).some(index =>
         index.key && index.key.poId === 1
       );
       expect(hasIndex).toBe(true);

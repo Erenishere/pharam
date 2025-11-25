@@ -487,6 +487,33 @@ router.get(
   purchaseInvoiceController.getInvoiceStockMovements,
 );
 
+/**
+ * @route   POST /api/invoices/purchase/:id/send-sms
+ * @desc    Send SMS for purchase invoice
+ * @access  Private
+ */
+router.post(
+  '/:id/send-sms',
+  authenticate,
+  [
+    param('id')
+      .custom(isValidObjectId)
+      .withMessage('Invalid invoice ID format'),
+    body('message')
+      .optional()
+      .trim()
+      .isLength({ max: 500 })
+      .withMessage('Message cannot exceed 500 characters'),
+    body('templateId')
+      .optional()
+      .trim()
+      .notEmpty()
+      .withMessage('Template ID cannot be empty'),
+    validate,
+  ],
+  require('../controllers/smsController').sendInvoiceSMS,
+);
+
 module.exports = router;
 
 /**

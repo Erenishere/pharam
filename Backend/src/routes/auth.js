@@ -28,7 +28,7 @@ router.post(
       .withMessage('Password must be at least 6 characters long'),
     validate,
   ],
-  authController.login,
+  authController.login
 );
 
 /**
@@ -47,7 +47,7 @@ router.post(
       .withMessage('Refresh token must be a string'),
     validate,
   ],
-  authController.refreshToken,
+  authController.refreshToken
 );
 
 /**

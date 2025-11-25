@@ -1,428 +1,699 @@
-const reportService = require('../../src/services/reportService');
+const mongoose = require('mongoose');
+const ReportService = require('../../src/services/reportService');
 const Invoice = require('../../src/models/Invoice');
+const Item = require('../../src/models/Item');
 
-// Mock Invoice model
-jest.mock('../../src/models/Invoice');
+describe('Scheme Dimension Reporting - Task 48', () => {
+  let customerId, itemId1, itemId2, createdBy;
 
-describe('ReportService - Scheme Reporting', () => {
-  beforeEach(() => {
-    jest.clearAllMocks();
+  beforeEach(async () => {
+    // Clean up
+    await Invoice.deleteMany({});
+    await Item.deleteMany({});
+
+    // Create dummy IDs
+    customerId = new mongoose.Types.ObjectId();
+    createdBy = new mongoose.Types.ObjectId();
+
+    // Create actual Item documents
+    const item1 = await Item.create({
+      code: 'ITEM-001',
+      name: 'Test Item 1',
+      category: 'Test Category',
+      unit: 'piece',
+      pricing: {
+        costPrice: 40,
+        salePrice: 50,
+        sellingPrice: 50,
+        mrp: 60
+      },
+      stock: {
+        currentStock: 1000,
+        minStock: 10,
+        maxStock: 5000
+      },
+      createdBy
+    });
+    itemId1 = item1._id;
+
+    const item2 = await Item.create({
+      code: 'ITEM-002',
+      name: 'Test Item 2',
+      category: 'Test Category',
+      unit: 'piece',
+      pricing: {
+        costPrice: 80,
+        salePrice: 100,
+        sellingPrice: 100,
+        mrp: 120
+      },
+      stock: {
+        currentStock: 500,
+        minStock: 10,
+        maxStock: 2000
+      },
+      createdBy
+    });
+    itemId2 = item2._id;
   });
 
-  describe('getSchemeAnalysis', () => {
-    test('should generate scheme analysis report', async () => {
-      const mockInvoices = [
+  afterEach(async () => {
+    await Invoice.deleteMany({});
+    await Item.deleteMany({});
+  });
+
+  describe('Task 48.1: Scheme Analysis Report', () => {
+    test('should generate scheme report with scheme1 and scheme2 quantities', async () => {
+      // Create invoices with scheme quantities
+      await Invoice.create([
         {
-          _id: 'inv1',
+          invoiceNumber: 'INV-001',
           type: 'sales',
+          customerId,
           invoiceDate: new Date('2024-01-15'),
-          items: [
-            {
-              itemId: { _id: 'item1', code: 'I001', name: 'Item 1' },
-              quantity: 13,
-              unitPrice: 100,
-              scheme1Quantity: 1,
-              scheme2Quantity: 0
-            }
-          ]
+          dueDate: new Date('2024-02-15'),
+          items: [{
+            itemId: itemId1,
+            quantity: 100,
+            unitPrice: 50,
+            discount: 0,
+            taxAmount: 900,
+            lineTotal: 5900,
+            scheme1Quantity: 10, // Regular bonus
+            scheme2Quantity: 5   // Claim-based
+          }],
+          totals: {
+            subtotal: 5000,
+            totalDiscount: 0,
+            totalTax: 900,
+            grandTotal: 5900
+          },
+          status: 'confirmed',
+          createdBy
         },
         {
-          _id: 'inv2',
+          invoiceNumber: 'INV-002',
           type: 'sales',
+          customerId,
           invoiceDate: new Date('2024-01-20'),
-          items: [
-            {
-              itemId: { _id: 'item1', code: 'I001', name: 'Item 1' },
-              quantity: 27,
-              unitPrice: 100,
-              scheme1Quantity: 2,
-              scheme2Quantity: 1
-            }
-          ]
+          dueDate: new Date('2024-02-20'),
+          items: [{
+            itemId: itemId2,
+            quantity: 50,
+            unitPrice: 100,
+            discount: 0,
+            taxAmount: 900,
+            lineTotal: 5900,
+            scheme1Quantity: 5,
+            scheme2Quantity: 0
+          }],
+          totals: {
+            subtotal: 5000,
+            totalDiscount: 0,
+            totalTax: 900,
+            grandTotal: 5900
+          },
+          status: 'confirmed',
+          createdBy
         }
-      ];
+      ]);
 
-      Invoice.find.mockReturnValue({
-        populate: jest.fn().mockReturnThis(),
-        sort: jest.fn().mockResolvedValue(mockInvoices)
-      });
+      const report = await ReportService.getSchemeReport(
+        new Date('2024-01-01'),
+        new Date('2024-01-31')
+      );
 
-      const params = {
-        startDate: '2024-01-01',
-        endDate: '2024-01-31',
-        invoiceType: 'sales'
-      };
-
-      const result = await reportService.getSchemeAnalysis(params);
-
-      expect(result.reportType).toBe('scheme_analysis');
-      expect(result.summary.totalScheme1Quantity).toBe(3);
-      expect(result.summary.totalScheme2Quantity).toBe(1);
-      expect(result.summary.totalSchemeQuantity).toBe(4);
+      expect(report.reportType).toBe('scheme_analysis');
+      expect(report.summary.totalScheme1Quantity).toBe(15); // 10 + 5
+      expect(report.summary.totalScheme2Quantity).toBe(5);
+      expect(report.summary.totalSchemeQuantity).toBe(20);
+      expect(report.schemeByType.scheme1.invoiceCount).toBe(2);
+      expect(report.schemeByType.scheme2.invoiceCount).toBe(1);
     });
 
     test('should calculate scheme values correctly', async () => {
-      const mockInvoices = [
-        {
-          _id: 'inv1',
-          type: 'sales',
-          invoiceDate: new Date('2024-01-15'),
-          items: [
-            {
-              itemId: { _id: 'item1', code: 'I001', name: 'Item 1' },
-              quantity: 13,
-              unitPrice: 100,
-              scheme1Quantity: 1,
-              scheme2Quantity: 0
-            }
-          ]
-        }
-      ];
-
-      Invoice.find.mockReturnValue({
-        populate: jest.fn().mockReturnThis(),
-        sort: jest.fn().mockResolvedValue(mockInvoices)
+      await Invoice.create({
+        invoiceNumber: 'INV-001',
+        type: 'sales',
+        customerId,
+        invoiceDate: new Date('2024-01-15'),
+        dueDate: new Date('2024-02-15'),
+        items: [{
+          itemId: itemId1,
+          quantity: 100,
+          unitPrice: 50,
+          discount: 0,
+          taxAmount: 900,
+          lineTotal: 5900,
+          scheme1Quantity: 10,
+          scheme2Quantity: 5
+        }],
+        totals: {
+          subtotal: 5000,
+          totalDiscount: 0,
+          totalTax: 900,
+          grandTotal: 5900
+        },
+        status: 'confirmed',
+        createdBy
       });
 
-      const params = {
-        startDate: '2024-01-01',
-        endDate: '2024-01-31',
-        invoiceType: 'sales'
-      };
+      const report = await ReportService.getSchemeReport(
+        new Date('2024-01-01'),
+        new Date('2024-01-31')
+      );
 
-      const result = await reportService.getSchemeAnalysis(params);
-
-      expect(result.summary.totalScheme1Value).toBe(100); // 1 * 100
-      expect(result.summary.totalScheme2Value).toBe(0);
-      expect(result.summary.totalSchemeValue).toBe(100);
+      // Scheme1: 10 qty * 50 price = 500
+      // Scheme2: 5 qty * 50 price = 250
+      expect(report.summary.totalScheme1Value).toBe(500);
+      expect(report.summary.totalScheme2Value).toBe(250);
+      expect(report.summary.totalSchemeValue).toBe(750);
     });
 
-    test('should separate scheme1 and scheme2', async () => {
-      const mockInvoices = [
+    test('should group schemes by item', async () => {
+      await Invoice.create([
         {
-          _id: 'inv1',
+          invoiceNumber: 'INV-001',
           type: 'sales',
+          customerId,
           invoiceDate: new Date('2024-01-15'),
-          items: [
-            {
-              itemId: { _id: 'item1', code: 'I001', name: 'Item 1' },
-              quantity: 15,
-              unitPrice: 100,
-              scheme1Quantity: 2,
-              scheme2Quantity: 1
-            }
-          ]
-        }
-      ];
-
-      Invoice.find.mockReturnValue({
-        populate: jest.fn().mockReturnThis(),
-        sort: jest.fn().mockResolvedValue(mockInvoices)
-      });
-
-      const params = {
-        startDate: '2024-01-01',
-        endDate: '2024-01-31',
-        invoiceType: 'sales'
-      };
-
-      const result = await reportService.getSchemeAnalysis(params);
-
-      expect(result.schemeByType.scheme1.totalQuantity).toBe(2);
-      expect(result.schemeByType.scheme2.totalQuantity).toBe(1);
-      expect(result.schemeByType.scheme1.totalValue).toBe(200);
-      expect(result.schemeByType.scheme2.totalValue).toBe(100);
-    });
-
-    test('should aggregate by item', async () => {
-      const mockInvoices = [
-        {
-          _id: 'inv1',
-          type: 'sales',
-          invoiceDate: new Date('2024-01-15'),
-          items: [
-            {
-              itemId: { _id: 'item1', code: 'I001', name: 'Item 1' },
-              quantity: 13,
-              unitPrice: 100,
-              scheme1Quantity: 1,
-              scheme2Quantity: 0
-            },
-            {
-              itemId: { _id: 'item2', code: 'I002', name: 'Item 2' },
-              quantity: 25,
-              unitPrice: 200,
-              scheme1Quantity: 2,
-              scheme2Quantity: 0
-            }
-          ]
-        }
-      ];
-
-      Invoice.find.mockReturnValue({
-        populate: jest.fn().mockReturnThis(),
-        sort: jest.fn().mockResolvedValue(mockInvoices)
-      });
-
-      const params = {
-        startDate: '2024-01-01',
-        endDate: '2024-01-31',
-        invoiceType: 'sales'
-      };
-
-      const result = await reportService.getSchemeAnalysis(params);
-
-      expect(result.schemeByItem).toHaveLength(2);
-      expect(result.schemeByItem[0].itemCode).toBe('I002'); // Sorted by value descending
-      expect(result.schemeByItem[0].totalValue).toBe(400); // 2 * 200
-      expect(result.schemeByItem[1].itemCode).toBe('I001');
-      expect(result.schemeByItem[1].totalValue).toBe(100); // 1 * 100
-    });
-
-    test('should count invoices with schemes', async () => {
-      const mockInvoices = [
-        {
-          _id: 'inv1',
-          type: 'sales',
-          invoiceDate: new Date('2024-01-15'),
-          items: [
-            {
-              itemId: { _id: 'item1', code: 'I001', name: 'Item 1' },
-              quantity: 13,
-              unitPrice: 100,
-              scheme1Quantity: 1,
-              scheme2Quantity: 0
-            }
-          ]
+          dueDate: new Date('2024-02-15'),
+          items: [{
+            itemId: itemId1,
+            quantity: 100,
+            unitPrice: 50,
+            discount: 0,
+            taxAmount: 900,
+            lineTotal: 5900,
+            scheme1Quantity: 10,
+            scheme2Quantity: 5
+          }],
+          totals: {
+            subtotal: 5000,
+            totalDiscount: 0,
+            totalTax: 900,
+            grandTotal: 5900
+          },
+          status: 'confirmed',
+          createdBy
         },
         {
-          _id: 'inv2',
+          invoiceNumber: 'INV-002',
           type: 'sales',
+          customerId,
           invoiceDate: new Date('2024-01-20'),
-          items: [
-            {
-              itemId: { _id: 'item1', code: 'I001', name: 'Item 1' },
-              quantity: 25,
-              unitPrice: 100,
-              scheme1Quantity: 0,
-              scheme2Quantity: 2
-            }
-          ]
+          dueDate: new Date('2024-02-20'),
+          items: [{
+            itemId: itemId1,
+            quantity: 50,
+            unitPrice: 50,
+            discount: 0,
+            taxAmount: 450,
+            lineTotal: 2950,
+            scheme1Quantity: 5,
+            scheme2Quantity: 2
+          }],
+          totals: {
+            subtotal: 2500,
+            totalDiscount: 0,
+            totalTax: 450,
+            grandTotal: 2950
+          },
+          status: 'confirmed',
+          createdBy
         }
-      ];
+      ]);
 
-      Invoice.find.mockReturnValue({
-        populate: jest.fn().mockReturnThis(),
-        sort: jest.fn().mockResolvedValue(mockInvoices)
-      });
-
-      const params = {
-        startDate: '2024-01-01',
-        endDate: '2024-01-31',
-        invoiceType: 'sales'
-      };
-
-      const result = await reportService.getSchemeAnalysis(params);
-
-      expect(result.schemeByType.scheme1.invoiceCount).toBe(1);
-      expect(result.schemeByType.scheme2.invoiceCount).toBe(1);
-    });
-
-    test('should filter by customer', async () => {
-      Invoice.find.mockReturnValue({
-        populate: jest.fn().mockReturnThis(),
-        sort: jest.fn().mockResolvedValue([])
-      });
-
-      const params = {
-        startDate: '2024-01-01',
-        endDate: '2024-01-31',
-        customerId: 'customer123',
-        invoiceType: 'sales'
-      };
-
-      await reportService.getSchemeAnalysis(params);
-
-      expect(Invoice.find).toHaveBeenCalledWith(
-        expect.objectContaining({
-          customerId: 'customer123'
-        })
+      const report = await ReportService.getSchemeReport(
+        new Date('2024-01-01'),
+        new Date('2024-01-31')
       );
+
+      expect(report.schemeByItem).toHaveLength(1);
+      expect(report.schemeByItem[0].scheme1Quantity).toBe(15); // 10 + 5
+      expect(report.schemeByItem[0].scheme2Quantity).toBe(7);  // 5 + 2
+      expect(report.schemeByItem[0].totalSchemeQuantity).toBe(22);
     });
 
-    test('should filter by supplier for purchase invoices', async () => {
-      Invoice.find.mockReturnValue({
-        populate: jest.fn().mockReturnThis(),
-        sort: jest.fn().mockResolvedValue([])
-      });
-
-      const params = {
-        startDate: '2024-01-01',
-        endDate: '2024-01-31',
-        supplierId: 'supplier123',
-        invoiceType: 'purchase'
-      };
-
-      await reportService.getSchemeAnalysis(params);
-
-      expect(Invoice.find).toHaveBeenCalledWith(
-        expect.objectContaining({
-          type: 'purchase',
-          supplierId: 'supplier123'
-        })
-      );
-    });
-
-    test('should exclude cancelled invoices', async () => {
-      Invoice.find.mockReturnValue({
-        populate: jest.fn().mockReturnThis(),
-        sort: jest.fn().mockResolvedValue([])
-      });
-
-      const params = {
-        startDate: '2024-01-01',
-        endDate: '2024-01-31',
-        invoiceType: 'sales'
-      };
-
-      await reportService.getSchemeAnalysis(params);
-
-      expect(Invoice.find).toHaveBeenCalledWith(
-        expect.objectContaining({
-          status: { $ne: 'cancelled' }
-        })
-      );
-    });
-
-    test('should handle invoices with no schemes', async () => {
-      const mockInvoices = [
+    test('should filter by invoice type', async () => {
+      await Invoice.create([
         {
-          _id: 'inv1',
+          invoiceNumber: 'INV-001',
           type: 'sales',
+          customerId,
           invoiceDate: new Date('2024-01-15'),
-          items: [
-            {
-              itemId: { _id: 'item1', code: 'I001', name: 'Item 1' },
-              quantity: 10,
-              unitPrice: 100,
-              scheme1Quantity: 0,
-              scheme2Quantity: 0
-            }
-          ]
+          dueDate: new Date('2024-02-15'),
+          items: [{
+            itemId: itemId1,
+            quantity: 100,
+            unitPrice: 50,
+            discount: 0,
+            taxAmount: 900,
+            lineTotal: 5900,
+            scheme1Quantity: 10,
+            scheme2Quantity: 0
+          }],
+          totals: {
+            subtotal: 5000,
+            totalDiscount: 0,
+            totalTax: 900,
+            grandTotal: 5900
+          },
+          status: 'confirmed',
+          createdBy
+        },
+        {
+          invoiceNumber: 'PINV-001',
+          type: 'purchase',
+          supplierId: customerId, // Reusing as supplier ID
+          supplierBillNo: 'SBILL-001',
+          invoiceDate: new Date('2024-01-20'),
+          dueDate: new Date('2024-02-20'),
+          items: [{
+            itemId: itemId1,
+            quantity: 50,
+            unitPrice: 40,
+            discount: 0,
+            taxAmount: 360,
+            lineTotal: 2360,
+            scheme1Quantity: 5,
+            scheme2Quantity: 0
+          }],
+          totals: {
+            subtotal: 2000,
+            totalDiscount: 0,
+            totalTax: 360,
+            grandTotal: 2360
+          },
+          status: 'confirmed',
+          createdBy
         }
-      ];
+      ]);
 
-      Invoice.find.mockReturnValue({
-        populate: jest.fn().mockReturnThis(),
-        sort: jest.fn().mockResolvedValue(mockInvoices)
-      });
+      const salesReport = await ReportService.getSchemeReport(
+        new Date('2024-01-01'),
+        new Date('2024-01-31'),
+        { invoiceType: 'sales' }
+      );
 
-      const params = {
-        startDate: '2024-01-01',
-        endDate: '2024-01-31',
-        invoiceType: 'sales'
-      };
+      const purchaseReport = await ReportService.getSchemeReport(
+        new Date('2024-01-01'),
+        new Date('2024-01-31'),
+        { invoiceType: 'purchase' }
+      );
 
-      const result = await reportService.getSchemeAnalysis(params);
-
-      expect(result.summary.totalSchemeQuantity).toBe(0);
-      expect(result.summary.totalSchemeValue).toBe(0);
-      expect(result.schemeByItem).toHaveLength(0);
+      expect(salesReport.summary.totalScheme1Quantity).toBe(10);
+      expect(purchaseReport.summary.totalScheme1Quantity).toBe(5);
     });
 
-    test('should require start and end dates', async () => {
-      const params = {
-        invoiceType: 'sales'
-      };
+    test('should handle invoices without schemes', async () => {
+      await Invoice.create({
+        invoiceNumber: 'INV-001',
+        type: 'sales',
+        customerId,
+        invoiceDate: new Date('2024-01-15'),
+        dueDate: new Date('2024-02-15'),
+        items: [{
+          itemId: itemId1,
+          quantity: 100,
+          unitPrice: 50,
+          discount: 0,
+          taxAmount: 900,
+          lineTotal: 5900
+          // No scheme quantities
+        }],
+        totals: {
+          subtotal: 5000,
+          totalDiscount: 0,
+          totalTax: 900,
+          grandTotal: 5900
+        },
+        status: 'confirmed',
+        createdBy
+      });
 
+      const report = await ReportService.getSchemeReport(
+        new Date('2024-01-01'),
+        new Date('2024-01-31')
+      );
+
+      expect(report.summary.totalScheme1Quantity).toBe(0);
+      expect(report.summary.totalScheme2Quantity).toBe(0);
+      expect(report.schemeByItem).toHaveLength(0);
+    });
+
+    test('should throw error if dates not provided', async () => {
       await expect(
-        reportService.getSchemeAnalysis(params)
+        ReportService.getSchemeReport(null, null)
       ).rejects.toThrow('Start date and end date are required');
     });
+  });
 
-    test('should handle multiple items in single invoice', async () => {
-      const mockInvoices = [
+  describe('Task 48.2: Scheme Comparison Report', () => {
+    test('should compare scheme performance across two periods', async () => {
+      // Period 1: January
+      await Invoice.create([
         {
-          _id: 'inv1',
+          invoiceNumber: 'INV-001',
           type: 'sales',
+          customerId,
           invoiceDate: new Date('2024-01-15'),
-          items: [
-            {
-              itemId: { _id: 'item1', code: 'I001', name: 'Item 1' },
-              quantity: 13,
-              unitPrice: 100,
-              scheme1Quantity: 1,
-              scheme2Quantity: 0
-            },
-            {
-              itemId: { _id: 'item2', code: 'I002', name: 'Item 2' },
-              quantity: 25,
-              unitPrice: 200,
-              scheme1Quantity: 2,
-              scheme2Quantity: 0
-            },
-            {
-              itemId: { _id: 'item3', code: 'I003', name: 'Item 3' },
-              quantity: 15,
-              unitPrice: 150,
-              scheme1Quantity: 0,
-              scheme2Quantity: 1
-            }
-          ]
+          dueDate: new Date('2024-02-15'),
+          items: [{
+            itemId: itemId1,
+            quantity: 100,
+            unitPrice: 50,
+            discount: 0,
+            taxAmount: 900,
+            lineTotal: 5900,
+            scheme1Quantity: 10,
+            scheme2Quantity: 5
+          }],
+          totals: {
+            subtotal: 5000,
+            totalDiscount: 0,
+            totalTax: 900,
+            grandTotal: 5900
+          },
+          status: 'confirmed',
+          createdBy
         }
-      ];
+      ]);
 
-      Invoice.find.mockReturnValue({
-        populate: jest.fn().mockReturnThis(),
-        sort: jest.fn().mockResolvedValue(mockInvoices)
-      });
+      // Period 2: February (increased schemes)
+      await Invoice.create([
+        {
+          invoiceNumber: 'INV-002',
+          type: 'sales',
+          customerId,
+          invoiceDate: new Date('2024-02-15'),
+          dueDate: new Date('2024-03-15'),
+          items: [{
+            itemId: itemId1,
+            quantity: 100,
+            unitPrice: 50,
+            discount: 0,
+            taxAmount: 900,
+            lineTotal: 5900,
+            scheme1Quantity: 15, // Increased from 10
+            scheme2Quantity: 8   // Increased from 5
+          }],
+          totals: {
+            subtotal: 5000,
+            totalDiscount: 0,
+            totalTax: 900,
+            grandTotal: 5900
+          },
+          status: 'confirmed',
+          createdBy
+        }
+      ]);
 
-      const params = {
-        startDate: '2024-01-01',
-        endDate: '2024-01-31',
-        invoiceType: 'sales'
-      };
+      const comparison = await ReportService.getSchemeComparison(
+        new Date('2024-01-01'),
+        new Date('2024-01-31'),
+        new Date('2024-02-01'),
+        new Date('2024-02-29')
+      );
 
-      const result = await reportService.getSchemeAnalysis(params);
-
-      expect(result.summary.totalScheme1Quantity).toBe(3);
-      expect(result.summary.totalScheme2Quantity).toBe(1);
-      expect(result.schemeByItem).toHaveLength(3);
+      expect(comparison.reportType).toBe('scheme_comparison');
+      expect(comparison.period1.summary.totalScheme1Quantity).toBe(10);
+      expect(comparison.period2.summary.totalScheme1Quantity).toBe(15);
+      expect(comparison.comparison.scheme1.quantityChange).toBe(5);
+      expect(comparison.comparison.scheme1.quantityChangePercent).toBe(50);
+      expect(comparison.comparison.scheme1.trend).toBe('increasing');
     });
 
-    test('should round values to 2 decimal places', async () => {
-      const mockInvoices = [
-        {
-          _id: 'inv1',
-          type: 'sales',
-          invoiceDate: new Date('2024-01-15'),
-          items: [
-            {
-              itemId: { _id: 'item1', code: 'I001', name: 'Item 1' },
-              quantity: 13,
-              unitPrice: 33.33,
-              scheme1Quantity: 1,
-              scheme2Quantity: 0
-            }
-          ]
-        }
-      ];
-
-      Invoice.find.mockReturnValue({
-        populate: jest.fn().mockReturnThis(),
-        sort: jest.fn().mockResolvedValue(mockInvoices)
+    test('should detect decreasing trend', async () => {
+      // Period 1: January (higher schemes)
+      await Invoice.create({
+        invoiceNumber: 'INV-001',
+        type: 'sales',
+        customerId,
+        invoiceDate: new Date('2024-01-15'),
+        dueDate: new Date('2024-02-15'),
+        items: [{
+          itemId: itemId1,
+          quantity: 100,
+          unitPrice: 50,
+          discount: 0,
+          taxAmount: 900,
+          lineTotal: 5900,
+          scheme1Quantity: 20,
+          scheme2Quantity: 10
+        }],
+        totals: {
+          subtotal: 5000,
+          totalDiscount: 0,
+          totalTax: 900,
+          grandTotal: 5900
+        },
+        status: 'confirmed',
+        createdBy
       });
 
-      const params = {
-        startDate: '2024-01-01',
-        endDate: '2024-01-31',
-        invoiceType: 'sales'
-      };
+      // Period 2: February (lower schemes)
+      await Invoice.create({
+        invoiceNumber: 'INV-002',
+        type: 'sales',
+        customerId,
+        invoiceDate: new Date('2024-02-15'),
+        dueDate: new Date('2024-03-15'),
+        items: [{
+          itemId: itemId1,
+          quantity: 100,
+          unitPrice: 50,
+          discount: 0,
+          taxAmount: 900,
+          lineTotal: 5900,
+          scheme1Quantity: 10, // Decreased from 20
+          scheme2Quantity: 5   // Decreased from 10
+        }],
+        totals: {
+          subtotal: 5000,
+          totalDiscount: 0,
+          totalTax: 900,
+          grandTotal: 5900
+        },
+        status: 'confirmed',
+        createdBy
+      });
 
-      const result = await reportService.getSchemeAnalysis(params);
+      const comparison = await ReportService.getSchemeComparison(
+        new Date('2024-01-01'),
+        new Date('2024-01-31'),
+        new Date('2024-02-01'),
+        new Date('2024-02-29')
+      );
 
-      expect(result.summary.totalScheme1Value).toBe(33.33);
-      expect(result.summary.totalSchemeValue).toBe(33.33);
+      expect(comparison.comparison.scheme1.quantityChange).toBe(-10);
+      expect(comparison.comparison.scheme1.quantityChangePercent).toBe(-50);
+      expect(comparison.comparison.scheme1.trend).toBe('decreasing');
+    });
+
+    test('should detect stable trend', async () => {
+      // Period 1: January
+      await Invoice.create({
+        invoiceNumber: 'INV-001',
+        type: 'sales',
+        customerId,
+        invoiceDate: new Date('2024-01-15'),
+        dueDate: new Date('2024-02-15'),
+        items: [{
+          itemId: itemId1,
+          quantity: 100,
+          unitPrice: 50,
+          discount: 0,
+          taxAmount: 900,
+          lineTotal: 5900,
+          scheme1Quantity: 100,
+          scheme2Quantity: 50
+        }],
+        totals: {
+          subtotal: 5000,
+          totalDiscount: 0,
+          totalTax: 900,
+          grandTotal: 5900
+        },
+        status: 'confirmed',
+        createdBy
+      });
+
+      // Period 2: February (slight increase, within 10%)
+      await Invoice.create({
+        invoiceNumber: 'INV-002',
+        type: 'sales',
+        customerId,
+        invoiceDate: new Date('2024-02-15'),
+        dueDate: new Date('2024-03-15'),
+        items: [{
+          itemId: itemId1,
+          quantity: 100,
+          unitPrice: 50,
+          discount: 0,
+          taxAmount: 900,
+          lineTotal: 5900,
+          scheme1Quantity: 105, // 5% increase
+          scheme2Quantity: 52   // 4% increase
+        }],
+        totals: {
+          subtotal: 5000,
+          totalDiscount: 0,
+          totalTax: 900,
+          grandTotal: 5900
+        },
+        status: 'confirmed',
+        createdBy
+      });
+
+      const comparison = await ReportService.getSchemeComparison(
+        new Date('2024-01-01'),
+        new Date('2024-01-31'),
+        new Date('2024-02-01'),
+        new Date('2024-02-29')
+      );
+
+      expect(comparison.comparison.scheme1.trend).toBe('stable');
+      expect(comparison.comparison.scheme2.trend).toBe('stable');
+    });
+
+    test('should calculate value changes correctly', async () => {
+      // Period 1
+      await Invoice.create({
+        invoiceNumber: 'INV-001',
+        type: 'sales',
+        customerId,
+        invoiceDate: new Date('2024-01-15'),
+        dueDate: new Date('2024-02-15'),
+        items: [{
+          itemId: itemId1,
+          quantity: 100,
+          unitPrice: 50,
+          discount: 0,
+          taxAmount: 900,
+          lineTotal: 5900,
+          scheme1Quantity: 10, // Value: 10 * 50 = 500
+          scheme2Quantity: 5   // Value: 5 * 50 = 250
+        }],
+        totals: {
+          subtotal: 5000,
+          totalDiscount: 0,
+          totalTax: 900,
+          grandTotal: 5900
+        },
+        status: 'confirmed',
+        createdBy
+      });
+
+      // Period 2
+      await Invoice.create({
+        invoiceNumber: 'INV-002',
+        type: 'sales',
+        customerId,
+        invoiceDate: new Date('2024-02-15'),
+        dueDate: new Date('2024-03-15'),
+        items: [{
+          itemId: itemId1,
+          quantity: 100,
+          unitPrice: 50,
+          discount: 0,
+          taxAmount: 900,
+          lineTotal: 5900,
+          scheme1Quantity: 20, // Value: 20 * 50 = 1000
+          scheme2Quantity: 10  // Value: 10 * 50 = 500
+        }],
+        totals: {
+          subtotal: 5000,
+          totalDiscount: 0,
+          totalTax: 900,
+          grandTotal: 5900
+        },
+        status: 'confirmed',
+        createdBy
+      });
+
+      const comparison = await ReportService.getSchemeComparison(
+        new Date('2024-01-01'),
+        new Date('2024-01-31'),
+        new Date('2024-02-01'),
+        new Date('2024-02-29')
+      );
+
+      expect(comparison.comparison.scheme1.valueChange).toBe(500); // 1000 - 500
+      expect(comparison.comparison.scheme2.valueChange).toBe(250); // 500 - 250
+      expect(comparison.comparison.total.valueChange).toBe(750);   // 1500 - 750
+    });
+
+    test('should handle zero values in first period', async () => {
+      // Period 1: No schemes
+      await Invoice.create({
+        invoiceNumber: 'INV-001',
+        type: 'sales',
+        customerId,
+        invoiceDate: new Date('2024-01-15'),
+        dueDate: new Date('2024-02-15'),
+        items: [{
+          itemId: itemId1,
+          quantity: 100,
+          unitPrice: 50,
+          discount: 0,
+          taxAmount: 900,
+          lineTotal: 5900
+          // No schemes
+        }],
+        totals: {
+          subtotal: 5000,
+          totalDiscount: 0,
+          totalTax: 900,
+          grandTotal: 5900
+        },
+        status: 'confirmed',
+        createdBy
+      });
+
+      // Period 2: With schemes
+      await Invoice.create({
+        invoiceNumber: 'INV-002',
+        type: 'sales',
+        customerId,
+        invoiceDate: new Date('2024-02-15'),
+        dueDate: new Date('2024-03-15'),
+        items: [{
+          itemId: itemId1,
+          quantity: 100,
+          unitPrice: 50,
+          discount: 0,
+          taxAmount: 900,
+          lineTotal: 5900,
+          scheme1Quantity: 10,
+          scheme2Quantity: 5
+        }],
+        totals: {
+          subtotal: 5000,
+          totalDiscount: 0,
+          totalTax: 900,
+          grandTotal: 5900
+        },
+        status: 'confirmed',
+        createdBy
+      });
+
+      const comparison = await ReportService.getSchemeComparison(
+        new Date('2024-01-01'),
+        new Date('2024-01-31'),
+        new Date('2024-02-01'),
+        new Date('2024-02-29')
+      );
+
+      // Should not throw error and should show 0% change when dividing by zero
+      expect(comparison.comparison.scheme1.quantityChangePercent).toBe(0);
+      expect(comparison.comparison.scheme2.quantityChangePercent).toBe(0);
+    });
+
+    test('should throw error if period dates not provided', async () => {
+      await expect(
+        ReportService.getSchemeComparison(null, null, null, null)
+      ).rejects.toThrow('All period dates are required');
     });
   });
 });

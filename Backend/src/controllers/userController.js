@@ -22,14 +22,15 @@ const getAllUsers = async (req, res) => {
 
     // Handle search
     if (search) {
-      const users = await userService.searchUsers(search, {
+      const result = await userService.searchUsers(search, {
         limit: parseInt(limit, 10),
-        skip: (parseInt(page, 10) - 1) * parseInt(limit, 10),
+        page: parseInt(page, 10),
       });
 
       return res.status(200).json({
         success: true,
-        data: users,
+        data: result.users,
+        pagination: result.pagination, // Critical for frontend pagination
         message: 'Users retrieved successfully',
         timestamp: new Date().toISOString(),
       });

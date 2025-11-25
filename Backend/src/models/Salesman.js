@@ -28,6 +28,12 @@ const salesmanSchema = new mongoose.Schema(
       maxlength: [100, 'Email cannot exceed 100 characters'],
       match: [/^\S+@\S+\.\S+$/, 'Please provide a valid email address'],
     },
+    userId: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'User',
+      unique: true,
+      sparse: true, // Allows null values, only enforces uniqueness for non-null
+    },
     commissionRate: {
       type: Number,
       default: 0,

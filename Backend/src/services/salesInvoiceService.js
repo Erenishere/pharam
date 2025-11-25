@@ -61,7 +61,7 @@ class SalesInvoiceService {
     const processedItems = await this.processInvoiceItems(items);
 
     // Calculate totals
-    const totals = this.calculateInvoiceTotals(processedItems);
+    const totals = this.calculateInvoiceTotals(processedItems, customer);
 
     // Validate credit limit
     await this.validateCreditLimit(customerId, totals.grandTotal);
@@ -101,16 +101,16 @@ class SalesInvoiceService {
     const inventoryService = require('./inventoryService');
 
     for (const item of items) {
-      const { 
-        itemId, 
-        quantity, 
-        unitPrice, 
+      const {
+        itemId,
+        quantity,
+        unitPrice,
         discount = 0, // Legacy single discount support
         discount1Percent = 0,
         discount2Percent = 0,
         claimAccountId,
-        batchInfo, 
-        warehouseId 
+        batchInfo,
+        warehouseId
       } = item;
 
       // Validate item
@@ -259,11 +259,12 @@ class SalesInvoiceService {
   }
 
   /**
-   * Calculate invoice totals with multi-level discounts
+   * Calculate invoice totals with multi-level discounts and customer taxes
    * @param {Array} items - Processed invoice items
+   * @param {Object} customer - Customer details (optional)
    * @returns {Object} Invoice totals
    */
-  calculateInvoiceTotals(items) {
+  calculateInvoiceTotals(items, customer = null) {
     let subtotal = 0;
     let totalDiscount1 = 0;
     let totalDiscount2 = 0;
@@ -287,7 +288,32 @@ class SalesInvoiceService {
 
     const totalDiscount = totalDiscount1 + totalDiscount2;
     const taxableAmount = subtotal - totalDiscount;
-    const grandTotal = taxableAmount + totalTax;
+
+    // Calculate customer-specific taxes (Phase 2 - Requirement 16.5)
+    let advanceTax = 0;
+    let nonFilerTax = 0;
+    let whtAmount = 0;
+
+    if (customer && customer.financialInfo) {
+      // Use helper methods from Customer model if available, otherwise manual calc
+      if (typeof customer.calculateAdvanceTax === 'function') {
+        advanceTax = customer.calculateAdvanceTax(taxableAmount);
+      } else if (customer.financialInfo.advanceTaxRate) {
+        advanceTax = (taxableAmount * customer.financialInfo.advanceTaxRate) / 100;
+      }
+
+      if (typeof customer.calculateNonFilerGST === 'function') {
+        nonFilerTax = customer.calculateNonFilerGST(taxableAmount);
+      } else if (customer.financialInfo.isNonFiler) {
+        nonFilerTax = (taxableAmount * 0.1) / 100;
+      }
+
+      if (customer.financialInfo.whtPercent) {
+        whtAmount = (taxableAmount * customer.financialInfo.whtPercent) / 100;
+      }
+    }
+
+    const grandTotal = taxableAmount + totalTax + advanceTax + nonFilerTax;
 
     return {
       subtotal,
@@ -296,6 +322,9 @@ class SalesInvoiceService {
       totalDiscount2,
       taxableAmount,
       totalTax,
+      advanceTax,
+      nonFilerTax,
+      whtAmount, // Included for reference/reporting, usually not added to grandTotal for sales
       grandTotal
     };
   }
@@ -308,7 +337,7 @@ class SalesInvoiceService {
    */
   async validateCreditLimit(customerId, invoiceAmount) {
     const customer = await customerService.getCustomerById(customerId);
-    
+
     // If no credit limit set, allow transaction
     if (!customer.financialInfo.creditLimit || customer.financialInfo.creditLimit === 0) {
       return true;
@@ -453,7 +482,7 @@ class SalesInvoiceService {
   async getSalesInvoicesByCustomer(customerId, options = {}) {
     // Validate customer exists
     await customerService.getCustomerById(customerId);
-    
+
     return invoiceRepository.findByCustomer(customerId, options);
   }
 
@@ -478,10 +507,14 @@ class SalesInvoiceService {
     // If items are being updated, reprocess them
     if (updateData.items) {
       updateData.items = await this.processInvoiceItems(updateData.items);
-      updateData.totals = this.calculateInvoiceTotals(updateData.items);
+
+      // Fetch customer to recalculate taxes
+      const customerId = updateData.customerId || existingInvoice.customerId;
+      const customer = await customerService.getCustomerById(customerId);
+
+      updateData.totals = this.calculateInvoiceTotals(updateData.items, customer);
 
       // Revalidate credit limit if customer or total changed
-      const customerId = updateData.customerId || existingInvoice.customerId;
       await this.validateCreditLimit(customerId, updateData.totals.grandTotal);
     }
 
@@ -569,21 +602,21 @@ class SalesInvoiceService {
     // For sales invoice:
     // Debit: Customer Account (Accounts Receivable) - increases what customer owes
     // Credit: Sales Revenue Account - increases revenue
-    
+
     const description = `Sales Invoice ${invoice.invoiceNumber} - ${invoice.notes || 'Sales transaction'}`;
-    
+
     const debitAccount = {
       accountId: invoice.customerId,
       accountType: 'Customer'
     };
-    
+
     // For now, we'll use a system account for sales revenue
     // In a full implementation, this would be a proper GL account
     const creditAccount = {
       accountId: invoice.customerId, // Using customer as placeholder for sales account
       accountType: 'Customer'
     };
-    
+
     const ledgerEntries = await ledgerService.createDoubleEntry(
       debitAccount,
       creditAccount,
@@ -593,7 +626,40 @@ class SalesInvoiceService {
       invoice._id,
       userId
     );
-    
+
+    // Phase 2: Handle Trade Offer (TO) entries (Requirement 20.4)
+    // If TO is applied, we need to record it against the adjustment account
+    const toAmount = (invoice.to1Amount || 0) + (invoice.to2Amount || 0);
+
+    if (toAmount > 0) {
+      if (!invoice.adjustmentAccountId) {
+        throw new Error('Adjustment account is required when Trade Offers are applied');
+      }
+
+      const adjustmentDebitAccount = {
+        accountId: invoice.adjustmentAccountId,
+        accountType: 'Account'
+      };
+
+      // Credit Sales Revenue (placeholder) to record the discount/expense
+      const adjustmentCreditAccount = {
+        accountId: invoice.customerId, // Placeholder for Sales Account
+        accountType: 'Customer'
+      };
+
+      const toEntries = await ledgerService.createDoubleEntry(
+        adjustmentDebitAccount,
+        adjustmentCreditAccount,
+        toAmount,
+        `Trade Offer Adjustment - ${invoice.invoiceNumber}`,
+        'invoice_adjustment',
+        invoice._id,
+        userId
+      );
+
+      return [...ledgerEntries, ...toEntries];
+    }
+
     return ledgerEntries;
   }
 
@@ -607,7 +673,7 @@ class SalesInvoiceService {
 
     for (const item of items) {
       const itemDetails = await itemService.getItemById(item.itemId);
-      
+
       if (!itemDetails.checkStockAvailability(item.quantity)) {
         validationErrors.push({
           itemId: item.itemId,
@@ -672,7 +738,7 @@ class SalesInvoiceService {
 
     for (const item of items) {
       const itemDoc = await Item.findById(item.itemId);
-      
+
       if (!itemDoc) {
         throw new Error(`Item not found: ${item.itemId}`);
       }
@@ -847,7 +913,7 @@ class SalesInvoiceService {
 
     // Get PO model
     const PurchaseOrder = require('../models/PurchaseOrder');
-    
+
     const po = await PurchaseOrder.findById(poId);
     if (!po) {
       throw new Error(`Purchase Order not found: ${poId}`);
@@ -881,7 +947,7 @@ class SalesInvoiceService {
     }
 
     const Salesman = require('../models/Salesman');
-    
+
     const salesman = await Salesman.findById(salesmanId);
     if (!salesman) {
       throw new Error(`Salesman not found: ${salesmanId}`);
@@ -916,14 +982,14 @@ class SalesInvoiceService {
     }
 
     // Prepare invoice items from PO
-    const invoiceItems = poItems && poItems.length > 0 
-      ? poItems 
+    const invoiceItems = poItems && poItems.length > 0
+      ? poItems
       : poItems.map(poItem => ({
-          itemId: poItem.itemId,
-          quantity: poItem.quantity,
-          unitPrice: poItem.unitPrice,
-          discount: poItem.discount || 0
-        }));
+        itemId: poItem.itemId,
+        quantity: poItem.quantity,
+        unitPrice: poItem.unitPrice,
+        discount: poItem.discount || 0
+      }));
 
     // Create invoice with PO reference
     const invoice = await this.createSalesInvoice({

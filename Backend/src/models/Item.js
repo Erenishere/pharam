@@ -92,6 +92,39 @@ const itemSchema = new mongoose.Schema({
       min: [0, 'Maximum stock cannot be negative'],
     },
   },
+  // Phase 2 - Barcode Integration (Requirement 13.1 - Task 46.1)
+  barcode: {
+    type: String,
+    trim: true,
+    sparse: true, // Allows null/undefined but enforces uniqueness when present
+    unique: true,
+    maxlength: [50, 'Barcode cannot exceed 50 characters'],
+  },
+  // Phase 2 - Box/Unit System (Requirement 12.4 - Task 45.1)
+  packSize: {
+    type: Number,
+    default: 1,
+    min: [1, 'Pack size must be at least 1'],
+    validate: {
+      validator: Number.isInteger,
+      message: 'Pack size must be a whole number',
+    },
+  },
+  // Phase 2 - Warranty Management (Requirement 32 - Task 76.5)
+  defaultWarrantyMonths: {
+    type: Number,
+    default: 0,
+    min: [0, 'Default warranty months cannot be negative'],
+    validate: {
+      validator: Number.isInteger,
+      message: 'Default warranty months must be a whole number',
+    },
+  },
+  defaultWarrantyDetails: {
+    type: String,
+    trim: true,
+    maxlength: [500, 'Default warranty details cannot exceed 500 characters'],
+  },
   isActive: {
     type: Boolean,
     default: true,
@@ -107,6 +140,9 @@ itemSchema.index({ category: 1 });
 itemSchema.index({ isActive: 1 });
 itemSchema.index({ 'inventory.currentStock': 1 });
 itemSchema.index({ 'pricing.salePrice': 1 });
+// Phase 2 indexes
+itemSchema.index({ barcode: 1 }, { unique: true, sparse: true }); // Sparse allows null but enforces uniqueness
+itemSchema.index({ packSize: 1 });
 
 // Virtual for profit margin
 itemSchema.virtual('profitMargin').get(function () {

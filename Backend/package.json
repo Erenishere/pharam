@@ -41,7 +41,8 @@
     "pdfkit": "^0.15.0",
     "response-time": "^2.3.4",
     "swagger-jsdoc": "^6.2.8",
-    "swagger-ui-express": "^5.0.0"
+    "swagger-ui-express": "^5.0.0",
+    "twilio": "^5.10.6"
   },
   "devDependencies": {
     "eslint": "^8.55.0",

@@ -262,7 +262,7 @@ class CustomerService {
    */
   async validateCreditLimit(customerId, transactionAmount) {
     const customer = await this.getCustomerById(customerId);
-    
+
     if (!customer.checkCreditAvailability(transactionAmount)) {
       throw new Error(`Transaction amount exceeds customer credit limit of ${customer.financialInfo.creditLimit}`);
     }
@@ -350,6 +350,58 @@ class CustomerService {
     }
 
     return customerRepository.bulkCreate(validatedCustomers);
+  }
+
+  /**
+   * Get accounts by town
+   * Phase 2 - Requirement 15.2
+   * @param {string} town - Town name
+   * @returns {Promise<Array>} - List of customers in the town
+   */
+  async getAccountsByTown(town) {
+    if (!town) {
+      throw new Error('Town is required');
+    }
+
+    // Use case-insensitive regex for town search
+    const filters = {
+      'contactInfo.town': new RegExp(`^${town}$`, 'i'),
+      isActive: true
+    };
+
+    const customers = await customerRepository.findAll(filters, { sort: { name: 1 } });
+
+    // Note: Balance information would typically be calculated from the Ledger or Invoice service.
+    // For now, we return the customer details. In a full implementation, we would inject
+    // the balance service here to populate current balances.
+
+    return customers;
+  }
+
+  /**
+   * Get accounts by route
+   * Phase 2 - Requirement 17.2
+   * @param {string} routeId - Route ID
+   * @returns {Promise<Array>} - List of customers on the route
+   */
+  async getAccountsByRoute(routeId) {
+    if (!routeId) {
+      throw new Error('Route ID is required');
+    }
+
+    // Validate route exists
+    const Route = require('../models/Route');
+    const route = await Route.findById(routeId);
+    if (!route) {
+      throw new Error('Route not found');
+    }
+
+    const filters = {
+      routeId: routeId,
+      isActive: true
+    };
+
+    return customerRepository.findAll(filters, { sort: { name: 1 } });
   }
 
   /**

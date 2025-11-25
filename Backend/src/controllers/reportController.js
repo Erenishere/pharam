@@ -491,6 +491,124 @@ class ReportController {
   }
 
   /**
+   * Phase 2: Get dimension report (Task 68.2 - Requirement 24.2)
+   * @route GET /api/reports/dimension/:dimension
+   */
+  async getDimensionReport(req, res, next) {
+    try {
+      const { dimension } = req.params;
+      const { startDate, endDate, format } = req.query;
+
+      if (!dimension) {
+        return res.status(400).json({
+          success: false,
+          message: 'Dimension is required',
+        });
+      }
+
+      if (!startDate || !endDate) {
+        return res.status(400).json({
+          success: false,
+          message: 'Start date and end date are required',
+        });
+      }
+
+      const report = await reportService.getDimensionReport(dimension, {
+        startDate,
+        endDate,
+      });
+
+      // If format is specified, export the report
+      if (format && ['csv', 'excel', 'pdf'].includes(format.toLowerCase())) {
+        return await this._exportReport(res, report, format);
+      }
+
+      res.status(200).json({
+        success: true,
+        data: report,
+      });
+    } catch (error) {
+      next(error);
+    }
+  }
+
+  /**
+   * Phase 2: Get dimension expense analysis (Task 68.3 - Requirement 24.3)
+   * @route GET /api/reports/dimension-expenses
+   */
+  async getDimensionExpenses(req, res, next) {
+    try {
+      const { startDate, endDate, format } = req.query;
+
+      if (!startDate || !endDate) {
+        return res.status(400).json({
+          success: false,
+          message: 'Start date and end date are required',
+        });
+      }
+
+      const report = await reportService.getDimensionExpenses({
+        startDate,
+        endDate,
+      });
+
+      // If format is specified, export the report
+      if (format && ['csv', 'excel', 'pdf'].includes(format.toLowerCase())) {
+        return await this._exportReport(res, report, format);
+      }
+
+      res.status(200).json({
+        success: true,
+        data: report,
+      });
+    } catch (error) {
+      next(error);
+    }
+  }
+
+  /**
+   * Phase 2: Get dimension budget comparison (Task 68.4 - Requirement 24.4)
+   * @route GET /api/reports/dimension-budget/:dimension
+   */
+  async getDimensionBudgetComparison(req, res, next) {
+    try {
+      const { dimension } = req.params;
+      const { startDate, endDate, format } = req.query;
+
+      if (!dimension) {
+        return res.status(400).json({
+          success: false,
+          message: 'Dimension is required',
+        });
+      }
+
+      if (!startDate || !endDate) {
+        return res.status(400).json({
+          success: false,
+          message: 'Start date and end date are required',
+        });
+      }
+
+      const report = await reportService.compareDimensionBudget(dimension, {
+        startDate,
+        endDate,
+      });
+
+      // If format is specified, export the report
+      if (format && ['csv', 'excel', 'pdf'].includes(format.toLowerCase())) {
+        return await this._exportReport(res, report, format);
+      }
+
+      res.status(200).json({
+        success: true,
+        data: report,
+      });
+    } catch (error) {
+      next(error);
+    }
+  }
+
+  /**
    * Export report helper
    * @private
    */

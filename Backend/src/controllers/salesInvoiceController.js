@@ -771,10 +771,10 @@ const cancelSalesInvoice = async (req, res) => {
 const getInvoiceStockMovements = async (req, res) => {
   try {
     const { id } = req.params;
-    
+
     // Verify invoice exists
     await salesInvoiceService.getSalesInvoiceById(id);
-    
+
     const stockMovements = await salesInvoiceService.getInvoiceStockMovements(id);
 
     return res.status(200).json({
@@ -884,6 +884,387 @@ const updatePayment = async (req, res) => {
   }
 };
 
+/**
+ * Advanced search for sales invoices
+ * @route POST /api/invoices/sales/search
+ */
+const advancedSearch = async (req, res) => {
+  try {
+    const searchService = require('../services/searchService');
+    const Invoice = require('../models/Invoice');
+
+    const {
+      filters = [],
+      sort = [],
+      page = 1,
+      limit = 50,
+      searchText = '',
+      searchFields = ['invoiceNo', 'notes'],
+      populate = ['customerId', 'items.itemId', 'createdBy']
+    } = req.body;
+
+    // Add type filter to ensure only sales invoices are returned
+    const salesFilters = [
+      ...filters,
+      { field: 'type', operator: 'in', value: ['sale', 'return_sale'] }
+    ];
+
+    const results = await searchService.searchRecords(Invoice, {
+      filters: salesFilters,
+      sort,
+      page,
+      limit,
+      searchText,
+      searchFields,
+      populate
+    });
+
+    return res.status(200).json({
+      success: true,
+      data: results.results,
+      pagination: results.pagination,
+      message: 'Sales invoices search completed successfully',
+      timestamp: new Date().toISOString(),
+    });
+  } catch (error) {
+    console.error('Advanced search error:', error);
+    return res.status(500).json({
+      success: false,
+      error: {
+        code: 'INTERNAL_ERROR',
+        message: error.message || 'Failed to perform search',
+      },
+      timestamp: new Date().toISOString(),
+    });
+  }
+};
+
+/**
+ * Convert estimate to invoice (Task 75.3)
+ * @route POST /api/invoices/sales/:id/convert-estimate
+ */
+const convertEstimateToInvoice = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const estimateService = require('../services/estimateService');
+
+    const invoice = await estimateService.convertEstimateToInvoice(id);
+
+    return res.status(200).json({
+      success: true,
+      data: invoice,
+      message: 'Estimate converted to invoice successfully',
+      timestamp: new Date().toISOString(),
+    });
+  } catch (error) {
+    console.error('Convert estimate to invoice error:', error);
+
+    if (error.message === 'Estimate not found') {
+      return res.status(404).json({
+        success: false,
+        error: {
+          code: 'ESTIMATE_NOT_FOUND',
+          message: error.message,
+        },
+        timestamp: new Date().toISOString(),
+      });
+    }
+
+    if (
+      error.message.includes('Only draft estimates')
+      || error.message.includes('Cannot convert expired')
+    ) {
+      return res.status(400).json({
+        success: false,
+        error: {
+          code: 'VALIDATION_ERROR',
+          message: error.message,
+        },
+        timestamp: new Date().toISOString(),
+      });
+    }
+
+    return res.status(500).json({
+      success: false,
+      error: {
+        code: 'INTERNAL_ERROR',
+        message: error.message || 'Failed to convert estimate to invoice',
+      },
+      timestamp: new Date().toISOString(),
+    });
+  }
+};
+
+/**
+ * Get pending estimates (Task 75.4)
+ * @route GET /api/invoices/sales/estimates/pending
+ */
+const getPendingEstimates = async (req, res) => {
+  try {
+    const {
+      page = 1,
+      limit = 10,
+      sort,
+      sortBy = 'invoiceDate',
+      sortOrder = 'desc',
+      customerId,
+      includeExpired,
+      ...otherFilters
+    } = req.query;
+
+    const estimateService = require('../services/estimateService');
+
+    // Build filters object
+    const filters = {
+      ...(customerId && { customerId }),
+      ...(includeExpired === 'true' && { includeExpired: true }),
+      ...otherFilters
+    };
+
+    // Build sort options
+    const sortOptions = {};
+    if (sort) {
+      const [field, order] = sort.split(':');
+      sortOptions[field] = order === 'desc' ? -1 : 1;
+    } else if (sortBy) {
+      sortOptions[sortBy] = sortOrder === 'desc' ? -1 : 1;
+    }
+
+    const result = await estimateService.getPendingEstimates(filters, {
+      page: parseInt(page, 10),
+      limit: Math.min(parseInt(limit, 10), 100),
+      sort: sortOptions
+    });
+
+    return res.status(200).json({
+      success: true,
+      data: result.estimates,
+      pagination: result.pagination,
+      message: 'Pending estimates retrieved successfully',
+      timestamp: new Date().toISOString(),
+    });
+  } catch (error) {
+    console.error('Get pending estimates error:', error);
+    return res.status(500).json({
+      success: false,
+      error: {
+        code: 'INTERNAL_ERROR',
+        message: error.message || 'Failed to retrieve pending estimates',
+      },
+      timestamp: new Date().toISOString(),
+    });
+  }
+};
+
+/**
+ * Get expired estimates (Task 75.5)
+ * @route GET /api/invoices/sales/estimates/expired
+ */
+const getExpiredEstimates = async (req, res) => {
+  try {
+    const {
+      page = 1,
+      limit = 10,
+      sort,
+      sortBy = 'expiryDate',
+      sortOrder = 'desc',
+      customerId,
+      ...otherFilters
+    } = req.query;
+
+    const estimateService = require('../services/estimateService');
+
+    // Build filters object
+    const filters = {
+      ...(customerId && { customerId }),
+      ...otherFilters
+    };
+
+    // Build sort options
+    const sortOptions = {};
+    if (sort) {
+      const [field, order] = sort.split(':');
+      sortOptions[field] = order === 'desc' ? -1 : 1;
+    } else if (sortBy) {
+      sortOptions[sortBy] = sortOrder === 'desc' ? -1 : 1;
+    }
+
+    const result = await estimateService.getExpiredEstimates(filters, {
+      page: parseInt(page, 10),
+      limit: Math.min(parseInt(limit, 10), 100),
+      sort: sortOptions
+    });
+
+    return res.status(200).json({
+      success: true,
+      data: result.estimates,
+      pagination: result.pagination,
+      message: 'Expired estimates retrieved successfully',
+      timestamp: new Date().toISOString(),
+    });
+  } catch (error) {
+    console.error('Get expired estimates error:', error);
+    return res.status(500).json({
+      success: false,
+      error: {
+        code: 'INTERNAL_ERROR',
+        message: error.message || 'Failed to retrieve expired estimates',
+      },
+      timestamp: new Date().toISOString(),
+    });
+  }
+};
+
+/**
+ * Get warranty information for an invoice (Task 76.4)
+ * @route GET /api/invoices/sales/:id/warranty
+ */
+const getWarrantyInfo = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const warrantyService = require('../services/warrantyService');
+    const Invoice = require('../models/Invoice');
+
+    // Get invoice with populated fields
+    const invoice = await Invoice.findById(id)
+      .populate('items.itemId', 'code name')
+      .lean();
+
+    if (!invoice) {
+      return res.status(404).json({
+        success: false,
+        error: {
+          code: 'INVOICE_NOT_FOUND',
+          message: 'Invoice not found',
+        },
+        timestamp: new Date().toISOString(),
+      });
+    }
+
+    if (invoice.type !== 'sales' && invoice.type !== 'return_sales') {
+      return res.status(400).json({
+        success: false,
+        error: {
+          code: 'INVALID_INVOICE_TYPE',
+          message: 'Invoice is not a sales invoice',
+        },
+        timestamp: new Date().toISOString(),
+      });
+    }
+
+    const warrantyInfo = await warrantyService.getWarrantyInfoForInvoice(invoice);
+
+    return res.status(200).json({
+      success: true,
+      data: warrantyInfo,
+      message: 'Warranty information retrieved successfully',
+      timestamp: new Date().toISOString(),
+    });
+  } catch (error) {
+    console.error('Get warranty info error:', error);
+    return res.status(500).json({
+      success: false,
+      error: {
+        code: 'INTERNAL_ERROR',
+        message: error.message || 'Failed to retrieve warranty information',
+      },
+      timestamp: new Date().toISOString(),
+    });
+  }
+};
+
+/**
+ * Update warranty information for an invoice (Task 76.2)
+ * @route PUT /api/invoices/sales/:id/warranty
+ */
+const updateWarrantyInfo = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const warrantyUpdate = req.body;
+    const warrantyService = require('../services/warrantyService');
+    const Invoice = require('../models/Invoice');
+
+    // Get invoice
+    const invoice = await Invoice.findById(id);
+
+    if (!invoice) {
+      return res.status(404).json({
+        success: false,
+        error: {
+          code: 'INVOICE_NOT_FOUND',
+          message: 'Invoice not found',
+        },
+        timestamp: new Date().toISOString(),
+      });
+    }
+
+    if (invoice.type !== 'sales' && invoice.type !== 'return_sales') {
+      return res.status(400).json({
+        success: false,
+        error: {
+          code: 'INVALID_INVOICE_TYPE',
+          message: 'Invoice is not a sales invoice',
+        },
+        timestamp: new Date().toISOString(),
+      });
+    }
+
+    // Only allow updates to draft invoices
+    if (invoice.status !== 'draft') {
+      return res.status(400).json({
+        success: false,
+        error: {
+          code: 'VALIDATION_ERROR',
+          message: 'Can only update warranty information for draft invoices',
+        },
+        timestamp: new Date().toISOString(),
+      });
+    }
+
+    // Update warranty information
+    await warrantyService.updateWarrantyInfo(invoice, warrantyUpdate);
+
+    // Save invoice
+    await invoice.save();
+
+    // Populate and return updated invoice
+    const updatedInvoice = await Invoice.findById(id)
+      .populate('customerId', 'code name')
+      .populate('items.itemId', 'code name')
+      .lean();
+
+    return res.status(200).json({
+      success: true,
+      data: updatedInvoice,
+      message: 'Warranty information updated successfully',
+      timestamp: new Date().toISOString(),
+    });
+  } catch (error) {
+    console.error('Update warranty info error:', error);
+
+    if (error.message.includes('Warranty validation failed')) {
+      return res.status(400).json({
+        success: false,
+        error: {
+          code: 'VALIDATION_ERROR',
+          message: error.message,
+        },
+        timestamp: new Date().toISOString(),
+      });
+    }
+
+    return res.status(500).json({
+      success: false,
+      error: {
+        code: 'INTERNAL_ERROR',
+        message: error.message || 'Failed to update warranty information',
+      },
+      timestamp: new Date().toISOString(),
+    });
+  }
+};
+
+
 module.exports = {
   getAllSalesInvoices,
   getSalesInvoiceById,
@@ -901,4 +1282,12 @@ module.exports = {
   markInvoiceAsPartiallyPaid,
   cancelSalesInvoice,
   getInvoiceStockMovements,
+  advancedSearch,
+  // Task 75: Estimate operations
+  convertEstimateToInvoice,
+  getPendingEstimates,
+  getExpiredEstimates,
+  // Task 76: Warranty operations
+  getWarrantyInfo,
+  updateWarrantyInfo,
 };
