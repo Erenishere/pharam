@@ -1,0 +1,168 @@
+<div class="customer-list-container">
+    <!-- Header -->
+    <div class="header">
+        <h1>Customer Management</h1>
+        <button mat-raised-button color="primary" (click)="openCreateCustomerDialog()">
+            <mat-icon>add</mat-icon>
+            New Customer
+        </button>
+    </div>
+
+    <!-- Card Container -->
+    <div class="card">
+        <!-- Filters -->
+        <div class="card-header">
+            <!-- Search -->
+            <div class="d-flex align-items-center">
+                <mat-form-field class="search-field mb-0" appearance="outline" subscriptSizing="dynamic">
+                    <mat-label>Search customers</mat-label>
+                    <input matInput [formControl]="searchControl" placeholder="Search by name, code or email">
+                    <mat-icon matPrefix>search</mat-icon>
+                </mat-form-field>
+            </div>
+
+            <div class="filter-actions d-flex align-items-center gap-2">
+                <!-- Type Filter -->
+                <mat-form-field appearance="outline" class="type-filter mb-0" subscriptSizing="dynamic">
+                    <mat-label>Filter by Type</mat-label>
+                    <mat-select [(value)]="selectedType" (selectionChange)="onTypeFilterChange($event.value)">
+                        <mat-option value="">All Types</mat-option>
+                        <mat-option *ngFor="let type of types" [value]="type">
+                            {{ type | titlecase }}
+                        </mat-option>
+                    </mat-select>
+                </mat-form-field>
+
+                <!-- Show Deleted Toggle -->
+                <div class="deleted-toggle">
+                    <mat-slide-toggle [(ngModel)]="showDeleted" (change)="toggleShowDeleted()" color="primary">
+                        Show Inactive Only
+                    </mat-slide-toggle>
+                </div>
+            </div>
+        </div>
+
+        <!-- Customer Count Display -->
+        <div class="customer-count" *ngIf="!loading">
+            <mat-icon>business</mat-icon>
+            <span>Showing {{ dataSource.data.length }} of {{ totalCustomers }} customers</span>
+        </div>
+
+        <!-- Loading Spinner -->
+        <div *ngIf="loading" class="loading-container">
+            <mat-spinner diameter="50"></mat-spinner>
+        </div>
+
+        <!-- Table -->
+        <div class="table-responsive" *ngIf="!loading">
+            <table mat-table [dataSource]="dataSource" matSort class="table customers-table">
+
+                <!-- Code Column -->
+                <ng-container matColumnDef="code">
+                    <th mat-header-cell *matHeaderCellDef mat-sort-header>Code</th>
+                    <td mat-cell *matCellDef="let customer">
+                        <div class="customer-info">
+                            <span class="customer-code">{{ customer.code }}</span>
+                            <span *ngIf="!customer.isActive" class="deleted-badge">Deleted</span>
+                        </div>
+                    </td>
+                </ng-container>
+
+                <!-- Name Column -->
+                <ng-container matColumnDef="name">
+                    <th mat-header-cell *matHeaderCellDef mat-sort-header>Name</th>
+                    <td mat-cell *matCellDef="let customer">{{ customer.name }}</td>
+                </ng-container>
+
+                <!-- Email Column -->
+                <ng-container matColumnDef="email">
+                    <th mat-header-cell *matHeaderCellDef>Email</th>
+                    <td mat-cell *matCellDef="let customer">{{ customer.email || '-' }}</td>
+                </ng-container>
+
+                <!-- Phone Column -->
+                <ng-container matColumnDef="phone">
+                    <th mat-header-cell *matHeaderCellDef>Phone</th>
+                    <td mat-cell *matCellDef="let customer">{{ customer.phone || '-' }}</td>
+                </ng-container>
+
+                <!-- Type Column -->
+                <ng-container matColumnDef="type">
+                    <th mat-header-cell *matHeaderCellDef>Type</th>
+                    <td mat-cell *matCellDef="let customer">
+                        <mat-chip class="type-chip">{{ customer.type | titlecase }}</mat-chip>
+                    </td>
+                </ng-container>
+
+                <!-- Status Column -->
+                <ng-container matColumnDef="status">
+                    <th mat-header-cell *matHeaderCellDef>Status</th>
+                    <td mat-cell *matCellDef="let customer">
+                        <mat-slide-toggle [checked]="customer.isActive" (change)="toggleCustomerStatus(customer, $event)"
+                            [disabled]="isActionPending(customer._id, 'toggle-status')" color="primary">
+                            {{ customer.isActive ? 'Active' : 'Inactive' }}
+                        </mat-slide-toggle>
+                    </td>
+                </ng-container>
+
+                <!-- Created At Column -->
+                <ng-container matColumnDef="createdAt">
+                    <th mat-header-cell *matHeaderCellDef mat-sort-header>Created</th>
+                    <td mat-cell *matCellDef="let customer">{{ formatDate(customer.createdAt) }}</td>
+                </ng-container>
+
+                <!-- Actions Column -->
+                <ng-container matColumnDef="actions">
+                    <th mat-header-cell *matHeaderCellDef>Actions</th>
+                    <td mat-cell *matCellDef="let customer">
+                        <div class="actions">
+                            <button mat-icon-button matTooltip="View Details" (click)="viewCustomerDetail(customer)">
+                                <mat-icon>visibility</mat-icon>
+                            </button>
+
+                            <button mat-icon-button matTooltip="Edit Customer" (click)="editCustomer(customer)"
+                                [disabled]="!customer.isActive">
+                                <mat-icon>edit</mat-icon>
+                            </button>
+
+                            <button *ngIf="customer.isActive" mat-icon-button matTooltip="Delete Customer" color="warn"
+                                (click)="deleteCustomer(customer)" [disabled]="isActionPending(customer._id, 'delete')">
+                                <mat-icon>delete</mat-icon>
+                            </button>
+
+                            <button *ngIf="!customer.isActive" mat-icon-button matTooltip="Restore Customer" color="primary"
+                                (click)="restoreCustomer(customer)" [disabled]="isActionPending(customer._id, 'restore')">
+                                <mat-icon>restore</mat-icon>
+                            </button>
+                        </div>
+                    </td>
+                </ng-container>
+
+                <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
+                <tr mat-row *matRowDef="let row; columns: displayedColumns;" class="customer-row"></tr>
+
+                <!-- No Data Row -->
+                <tr class="mat-row" *matNoDataRow>
+                    <td class="mat-cell" [attr.colspan]="displayedColumns.length">
+                        <div class="no-data">
+                            <mat-icon>business_center</mat-icon>
+                            <p>No customers found</p>
+                        </div>
+                    </td>
+                </tr>
+            </table>
+
+            <!-- Paginator -->
+            <mat-paginator 
+                [length]="totalCustomers" 
+                [pageSize]="pageSize" 
+                [pageIndex]="pageIndex"
+                [pageSizeOptions]="[5, 10, 25, 50, 100]" 
+                (page)="onPageChange($event)" 
+                showFirstLastButtons
+                [hidePageSize]="false"
+                [showFirstLastButtons]="true">
+            </mat-paginator>
+        </div>
+    </div>
+</div>
