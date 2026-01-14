@@ -24,19 +24,19 @@ class SupplierRepository {
    */
   async findAll(filters = {}, options = {}) {
     const query = Supplier.find(filters);
-    
+
     if (options.sort) {
       query.sort(options.sort);
     }
-    
+
     if (options.limit) {
       query.limit(options.limit);
     }
-    
+
     if (options.skip) {
       query.skip(options.skip);
     }
-    
+
     return query.exec();
   }
 
@@ -55,33 +55,22 @@ class SupplierRepository {
   }
 
   /**
-   * Search suppliers with advanced filtering options
+   * Build MongoDB query from filter criteria
    * @param {Object} filters - Filter criteria
-   * @param {string} filters.keyword - Search keyword
-   * @param {string} filters.type - Supplier type (wholesaler, manufacturer, etc.)
-   * @param {string} filters.city - City filter
-   * @param {string} filters.state - State filter
-   * @param {string} filters.country - Country filter
-   * @param {boolean} filters.isActive - Active status filter
-   * @param {Date} filters.createdFrom - Created date from
-   * @param {Date} filters.createdTo - Created date to
-   * @param {Object} options - Query options
-   * @param {number} options.limit - Maximum number of results
-   * @param {number} options.skip - Number of results to skip
-   * @param {Object} options.sort - Sort criteria
-   * @returns {Promise<Array>} - List of matching suppliers
+   * @returns {Object} - MongoDB query object
+   * @private
    */
-  async search(filters = {}, options = {}) {
-    const { 
-      keyword, 
-      type, 
-      city, 
-      state, 
-      country, 
+  _buildQuery(filters = {}) {
+    const {
+      keyword,
+      type,
+      city,
+      state,
+      country,
       isActive,
       createdFrom,
       createdTo,
-      ...otherFilters 
+      ...otherFilters
     } = filters;
 
     const query = {};
@@ -102,8 +91,16 @@ class SupplierRepository {
       ];
     }
 
-    // Exact match filters
-    if (type) query.type = type;
+    // Exact match filters - with inclusive logic for 'both'
+    if (type) {
+      if (type === 'customer') {
+        query.type = { $in: ['customer', 'both'] };
+      } else if (type === 'supplier') {
+        query.type = { $in: ['supplier', 'both'] };
+      } else {
+        query.type = type;
+      }
+    }
     if (isActive !== undefined) query.isActive = isActive;
     if (city) query['contactInfo.city'] = new RegExp(`^${city}$`, 'i');
     if (state) query['contactInfo.state'] = new RegExp(`^${state}$`, 'i');
@@ -122,6 +119,29 @@ class SupplierRepository {
         query[key] = value;
       }
     });
+
+    return query;
+  }
+
+  /**
+   * Search suppliers with advanced filtering options
+   * @param {Object} filters - Filter criteria
+   * @param {string} filters.keyword - Search keyword
+   * @param {string} filters.type - Supplier type (wholesaler, manufacturer, etc.)
+   * @param {string} filters.city - City filter
+   * @param {string} filters.state - State filter
+   * @param {string} filters.country - Country filter
+   * @param {boolean} filters.isActive - Active status filter
+   * @param {Date} filters.createdFrom - Created date from
+   * @param {Date} filters.createdTo - Created date to
+   * @param {Object} options - Query options
+   * @param {number} options.limit - Maximum number of results
+   * @param {number} options.skip - Number of results to skip
+   * @param {Object} options.sort - Sort criteria
+   * @returns {Promise<Array>} - List of matching suppliers
+   */
+  async search(filters = {}, options = {}) {
+    const query = this._buildQuery(filters);
 
     const queryBuilder = Supplier.find(query);
 
@@ -150,7 +170,8 @@ class SupplierRepository {
    * @returns {Promise<number>} - Count of matching suppliers
    */
   async count(filters = {}) {
-    return Supplier.countDocuments(filters);
+    const query = this._buildQuery(filters);
+    return Supplier.countDocuments(query);
   }
 
   /**
@@ -218,7 +239,7 @@ class SupplierRepository {
    */
   async paginate(page = 1, limit = 10, filters = {}, sort = { createdAt: -1 }) {
     const skip = (page - 1) * limit;
-    
+
     const [suppliers, total] = await Promise.all([
       Supplier.find(filters).sort(sort).skip(skip).limit(limit),
       Supplier.countDocuments(filters),

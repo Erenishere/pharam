@@ -48,7 +48,11 @@ const users = [
 module.exports = {
   async seed() {
     await User.deleteMany({});
-    await User.insertMany(users);
+
+    for (const user of users) {
+      await User.create(user);
+    }
+
     console.log(`  - Created ${users.length} users`);
   },
 

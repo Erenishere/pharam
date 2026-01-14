@@ -24,19 +24,19 @@ class CustomerRepository {
    */
   async findAll(filters = {}, options = {}) {
     const query = Customer.find(filters);
-    
+
     if (options.sort) {
       query.sort(options.sort);
     }
-    
+
     if (options.limit) {
       query.limit(options.limit);
     }
-    
+
     if (options.skip) {
       query.skip(options.skip);
     }
-    
+
     return query.exec();
   }
 
@@ -52,6 +52,73 @@ class CustomerRepository {
    */
   async findByType(type) {
     return Customer.findByType(type);
+  }
+
+  /**
+   * Build MongoDB query from filter criteria
+   * @param {Object} filters - Filter criteria
+   * @returns {Object} - MongoDB query object
+   * @private
+   */
+  _buildQuery(filters = {}) {
+    const {
+      keyword,
+      type,
+      city,
+      state,
+      country,
+      isActive,
+      createdFrom,
+      createdTo,
+      ...otherFilters
+    } = filters;
+
+    const query = {};
+
+    // Text search across multiple fields
+    if (keyword) {
+      const searchRegex = new RegExp(keyword, 'i');
+      query.$or = [
+        { code: searchRegex },
+        { name: searchRegex },
+        { 'contactInfo.email': searchRegex },
+        { 'contactInfo.phone': searchRegex },
+        { 'contactInfo.city': searchRegex },
+        { 'contactInfo.addressLine1': searchRegex },
+        { 'contactInfo.contactPerson': searchRegex },
+      ];
+    }
+
+    // Exact match filters - with inclusive logic for 'both'
+    if (type) {
+      if (type === 'customer') {
+        query.type = { $in: ['customer', 'both'] };
+      } else if (type === 'supplier') {
+        query.type = { $in: ['supplier', 'both'] };
+      } else {
+        query.type = type;
+      }
+    }
+    if (isActive !== undefined) query.isActive = isActive;
+    if (city) query['contactInfo.city'] = new RegExp(`^${city}$`, 'i');
+    if (state) query['contactInfo.state'] = new RegExp(`^${state}$`, 'i');
+    if (country) query['contactInfo.country'] = new RegExp(`^${country}$`, 'i');
+
+    // Date range filter
+    if (createdFrom || createdTo) {
+      query.createdAt = {};
+      if (createdFrom) query.createdAt.$gte = new Date(createdFrom);
+      if (createdTo) query.createdAt.$lte = new Date(createdTo);
+    }
+
+    // Additional filters
+    Object.entries(otherFilters).forEach(([key, value]) => {
+      if (value !== undefined && value !== null && value !== '') {
+        query[key] = value;
+      }
+    });
+
+    return query;
   }
 
   /**
@@ -72,54 +139,7 @@ class CustomerRepository {
    * @returns {Promise<Array>} - List of matching customers
    */
   async search(filters = {}, options = {}) {
-    const { 
-      keyword, 
-      type, 
-      city, 
-      state, 
-      country, 
-      isActive,
-      createdFrom,
-      createdTo,
-      ...otherFilters 
-    } = filters;
-
-    const query = {};
-
-    // Text search across multiple fields
-    if (keyword) {
-      const searchRegex = new RegExp(keyword, 'i');
-      query.$or = [
-        { code: searchRegex },
-        { name: searchRegex },
-        { 'contactInfo.email': searchRegex },
-        { 'contactInfo.phone': searchRegex },
-        { 'contactInfo.city': searchRegex },
-        { 'contactInfo.addressLine1': searchRegex },
-        { 'contactInfo.contactPerson': searchRegex },
-      ];
-    }
-
-    // Exact match filters
-    if (type) query.type = type;
-    if (isActive !== undefined) query.isActive = isActive;
-    if (city) query['contactInfo.city'] = new RegExp(`^${city}$`, 'i');
-    if (state) query['contactInfo.state'] = new RegExp(`^${state}$`, 'i');
-    if (country) query['contactInfo.country'] = new RegExp(`^${country}$`, 'i');
-
-    // Date range filter
-    if (createdFrom || createdTo) {
-      query.createdAt = {};
-      if (createdFrom) query.createdAt.$gte = new Date(createdFrom);
-      if (createdTo) query.createdAt.$lte = new Date(createdTo);
-    }
-
-    // Additional filters
-    Object.entries(otherFilters).forEach(([key, value]) => {
-      if (value !== undefined && value !== null && value !== '') {
-        query[key] = value;
-      }
-    });
+    const query = this._buildQuery(filters);
 
     const queryBuilder = Customer.find(query);
 
@@ -148,7 +168,8 @@ class CustomerRepository {
    * @returns {Promise<number>} - Count of matching customers
    */
   async count(filters = {}) {
-    return Customer.countDocuments(filters);
+    const query = this._buildQuery(filters);
+    return Customer.countDocuments(query);
   }
 
   /**
@@ -216,7 +237,7 @@ class CustomerRepository {
    */
   async paginate(page = 1, limit = 10, filters = {}, sort = { createdAt: -1 }) {
     const skip = (page - 1) * limit;
-    
+
     const [customers, total] = await Promise.all([
       Customer.find(filters).sort(sort).skip(skip).limit(limit),
       Customer.countDocuments(filters),

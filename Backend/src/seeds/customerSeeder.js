@@ -58,6 +58,25 @@ const customers = [
     },
     isActive: true,
   },
+  {
+    code: 'CUST000004',
+    name: 'Adeel',
+    type: 'supplier',
+    contactInfo: {
+      phone: '+92-300-9999999',
+      email: 'adeel@supplier.com',
+      address: 'Shop 22, Market Street',
+      city: 'Karachi',
+      country: 'Pakistan',
+    },
+    financialInfo: {
+      creditLimit: 250000,
+      paymentTerms: 30,
+      taxNumber: 'TAX-ADEEL-004',
+      currency: 'PKR',
+    },
+    isActive: true,
+  },
 ];
 
 module.exports = {

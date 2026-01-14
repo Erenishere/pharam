@@ -1,7 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const { sendSMS, getSMSTemplates, getSMSHistory } = require('../controllers/smsController');
-const { protect } = require('../middleware/auth');
+const { authenticate } = require('../middleware/auth');
 
 /**
  * @route   POST /api/sms/send
@@ -9,14 +9,14 @@ const { protect } = require('../middleware/auth');
  * @access  Private
  * @body    phoneNumber, message (or templateId + variables), recipientType, recipientId, relatedInvoice
  */
-router.post('/send', protect, sendSMS);
+router.post('/send', authenticate, sendSMS);
 
 /**
  * @route   GET /api/sms/templates
  * @desc    Get SMS templates
  * @access  Private
  */
-router.get('/templates', protect, getSMSTemplates);
+router.get('/templates', authenticate, getSMSTemplates);
 
 /**
  * @route   GET /api/sms/history/:accountId
@@ -25,6 +25,6 @@ router.get('/templates', protect, getSMSTemplates);
  * @param   accountId - Customer or Supplier ID
  * @query   startDate, endDate (optional)
  */
-router.get('/history/:accountId', protect, getSMSHistory);
+router.get('/history/:accountId', authenticate, getSMSHistory);
 
 module.exports = router;
