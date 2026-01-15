@@ -1,0 +1,183 @@
+/* You can add global styles to this file, and also import other style files */
+@import 'styles/vuexy-vars';
+@import 'styles/vuexy-helpers';
+
+:root {
+    --primary-color: #{$primary};
+    --bg-color: #{$bg-page};
+    --surface-color: #{$bg-card};
+    --text-color: #{$text-body};
+    --heading-color: #{$text-card-title};
+    --border-color: #{$border-table};
+}
+
+html,
+body {
+    height: 100%;
+}
+
+body {
+    margin: 0;
+    font-family: $font-family;
+    background-color: $bg-page;
+    color: $text-body;
+}
+
+/* Typography Overrides */
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+    color: $text-card-title;
+    font-weight: 500;
+}
+
+
+.card-header {
+    padding: 24px;
+    border-bottom: 1px solid var(--border-color);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+
+    h1,
+    h2,
+    h3 {
+        margin: 0;
+        font-size: 1.125rem;
+        font-weight: 500;
+    }
+}
+
+.card-body {
+    padding: 24px;
+}
+
+/* Material Overrides for Vuexy Look */
+.mat-mdc-raised-button.mat-primary {
+    background-color: var(--primary-color) !important;
+    box-shadow: 0 2px 4px 0 rgba(var(--primary-color-rgb), 0.4) !important;
+
+    &:hover {
+        box-shadow: 0 4px 8px 0 rgba(var(--primary-color-rgb), 0.6) !important;
+        transform: translateY(-1px);
+    }
+}
+
+.mat-mdc-slide-toggle.mat-primary {
+    --mdc-switch-selected-track-color: var(--primary-color);
+    --mdc-switch-selected-handle-color: var(--primary-color);
+    --mdc-switch-selected-focus-track-color: var(--primary-color);
+    --mdc-switch-selected-hover-track-color: var(--primary-color);
+    --mdc-switch-selected-pressed-track-color: var(--primary-color);
+}
+
+/* Enhanced Toast Notification Styles - SweetAlert2 */
+.custom-swal-toast {
+    border-radius: 8px !important;
+    box-shadow: 0 6px 16px rgba(0, 0, 0, 0.2) !important;
+    animation: slideInRight 0.3s ease-out;
+
+    .swal2-title {
+        font-size: 15px !important;
+        font-weight: 600 !important;
+        color: #444050 !important;
+    }
+
+    .swal2-html-container {
+        font-size: 14px !important;
+        color: #444050 !important;
+    }
+
+    .swal2-icon {
+        margin: 0 10px 0 0 !important;
+    }
+}
+
+.custom-swal-timer-bar {
+    background-color: rgba(134, 124, 240, 0.8) !important;
+}
+
+/* SweetAlert2 Popup Styles */
+.custom-swal-popup {
+    border-radius: 12px !important;
+    padding: 24px !important;
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.15) !important;
+
+    .swal2-icon {
+        border-color: #867cf0 !important;
+        color: #867cf0 !important;
+    }
+}
+
+.custom-swal-title {
+    font-size: 22px !important;
+    font-weight: 600 !important;
+    color: #444050 !important;
+    margin-bottom: 16px !important;
+}
+
+.custom-swal-text {
+    font-size: 15px !important;
+    color: #444050 !important;
+    margin-bottom: 24px !important;
+}
+
+.custom-swal-confirm {
+    background-color: #867cf0 !important;
+    border: none !important;
+    border-radius: 6px !important;
+    padding: 10px 24px !important;
+    font-weight: 500 !important;
+    font-size: 14px !important;
+    transition: all 0.2s ease !important;
+
+    &:hover {
+        background-color: #7469d4 !important;
+        box-shadow: 0 4px 12px rgba(134, 124, 240, 0.4) !important;
+        transform: translateY(-1px) !important;
+    }
+
+    &:focus {
+        box-shadow: 0 0 0 3px rgba(134, 124, 240, 0.3) !important;
+    }
+}
+
+.custom-swal-cancel {
+    background-color: #6c757d !important;
+    border: none !important;
+    border-radius: 6px !important;
+    padding: 10px 24px !important;
+    font-weight: 500 !important;
+    font-size: 14px !important;
+    transition: all 0.2s ease !important;
+
+    &:hover {
+        background-color: #5a6268 !important;
+        transform: translateY(-1px) !important;
+    }
+}
+
+@keyframes slideInRight {
+    from {
+        transform: translateX(100%);
+        opacity: 0;
+    }
+
+    to {
+        transform: translateX(0);
+        opacity: 1;
+    }
+}
+
+@keyframes fadeOut {
+    from {
+        opacity: 1;
+    }
+
+    to {
+        opacity: 0;
+    }
+}

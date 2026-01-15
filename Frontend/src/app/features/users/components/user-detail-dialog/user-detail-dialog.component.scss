@@ -1,0 +1,240 @@
+// Light theme colors
+$primary-purple: #867cf0;
+$text-dark: #444050;
+$text-muted: #6c757d;
+$border-color: #e9ecef;
+$bg-light: #f8f7fa;
+$white: #ffffff;
+
+.user-detail-dialog {
+    width: 600px;
+    max-width: 90vw;
+    background-color: $white;
+}
+
+.dialog-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 20px 24px;
+    border-bottom: 1px solid $primary-purple;
+    background-color: $white;
+
+    h2 {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        margin: 0;
+        font-size: 20px;
+        font-weight: 500;
+        color: $text-dark;
+
+        mat-icon {
+            color: $primary-purple;
+            font-size: 24px;
+            width: 24px;
+            height: 24px;
+        }
+    }
+
+    button {
+        color: $text-dark;
+        transition: all 0.2s ease;
+
+        &:hover {
+            color: $primary-purple;
+            background-color: rgba($primary-purple, 0.1);
+        }
+    }
+}
+
+mat-dialog-content {
+    padding: 0;
+    overflow-y: auto;
+    max-height: 70vh;
+    background-color: $white;
+}
+
+.user-detail-content {
+    padding: 24px;
+    background-color: $white;
+}
+
+// User Avatar Section
+.user-avatar-section {
+    text-align: center;
+    padding: 24px 0;
+
+    .avatar-circle {
+        width: 100px;
+        height: 100px;
+        border-radius: 50%;
+        background: linear-gradient(135deg, $primary-purple, rgba($primary-purple, 0.7));
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin: 0 auto 16px;
+        box-shadow: 0 4px 12px rgba($primary-purple, 0.3);
+
+        mat-icon {
+            font-size: 56px;
+            width: 56px;
+            height: 56px;
+            color: $white;
+        }
+    }
+
+    .user-name {
+        font-size: 24px;
+        font-weight: 600;
+        color: $text-dark;
+        margin: 0 0 8px 0;
+    }
+
+    .user-email {
+        font-size: 16px;
+        color: $text-muted;
+        margin: 0;
+    }
+}
+
+mat-divider {
+    margin: 24px 0;
+    border-top-color: $border-color;
+}
+
+// Information Grid
+.info-grid {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 20px;
+}
+
+.info-item {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    padding: 16px;
+    background-color: $white;
+    border-radius: 8px;
+    border: 1px solid $border-color;
+    border-left: 3px solid $primary-purple;
+    transition: all 0.2s ease;
+
+    &:hover {
+        background-color: rgba($primary-purple, 0.02);
+        border-color: $primary-purple;
+        box-shadow: 0 2px 8px rgba($primary-purple, 0.1);
+    }
+
+    .info-label {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        font-size: 13px;
+        font-weight: 600;
+        color: $text-dark;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+
+        mat-icon {
+            font-size: 18px;
+            width: 18px;
+            height: 18px;
+            color: $primary-purple;
+        }
+    }
+
+    .info-value {
+        font-size: 15px;
+        font-weight: 500;
+        color: $text-dark;
+        padding-left: 26px;
+        word-break: break-word;
+
+        &.user-id {
+            font-family: 'Courier New', monospace;
+            font-size: 13px;
+            color: $text-muted;
+        }
+    }
+}
+
+// Chips Styling
+mat-chip {
+    font-weight: 500;
+    font-size: 13px;
+    padding: 4px 12px;
+    border-radius: 16px;
+
+    &.role-chip {
+        background-color: $primary-purple !important;
+        color: $white !important;
+    }
+
+    &.active-chip {
+        background-color: #4caf50 !important;
+        color: $white !important;
+    }
+
+    &.inactive-chip {
+        background-color: #ff9800 !important;
+        color: $white !important;
+    }
+
+    &.deleted-chip {
+        background-color: #f44336 !important;
+        color: $white !important;
+    }
+}
+
+// Dialog Actions
+mat-dialog-actions {
+    padding: 16px 24px;
+    border-top: 1px solid $primary-purple;
+    background-color: $white;
+
+    button {
+        min-width: 100px;
+        background-color: $primary-purple !important;
+        color: $white !important;
+        font-weight: 500;
+        transition: all 0.25s ease;
+
+        &:hover {
+            opacity: 0.9;
+        }
+
+        mat-icon {
+            margin-right: 8px;
+        }
+    }
+}
+
+// Responsive
+@media (max-width: 600px) {
+    .user-detail-dialog {
+        width: 100%;
+    }
+
+    .user-avatar-section {
+        .avatar-circle {
+            width: 80px;
+            height: 80px;
+
+            mat-icon {
+                font-size: 44px;
+                width: 44px;
+                height: 44px;
+            }
+        }
+
+        .user-name {
+            font-size: 20px;
+        }
+
+        .user-email {
+            font-size: 14px;
+        }
+    }
+}

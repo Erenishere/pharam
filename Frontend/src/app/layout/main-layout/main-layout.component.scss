@@ -1,0 +1,32 @@
+@import 'styles/vuexy-vars';
+
+.main-layout {
+    height: 100vh;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    background-color: $bg-page;
+}
+
+.sidenav-container {
+    flex: 1;
+    margin-top: 64px;
+    height: calc(100vh - 64px);
+    overflow: hidden;
+    background-color: $bg-page;
+}
+
+.sidenav {
+    width: 260px;
+    border-right: none;
+    overflow-y: auto;
+    background-color: $bg-sidenav;
+    box-shadow: 0 0 15px 0 rgba(34, 41, 47, 0.05);
+}
+
+.main-content {
+    padding: 2rem;
+    overflow-y: auto;
+    background-color: $bg-page;
+    height: 100%;
+}

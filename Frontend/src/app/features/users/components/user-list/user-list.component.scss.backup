@@ -1,0 +1,481 @@
+    /* ==========  Vuexy-vars  ========== */
+    @import 'styles/vuexy-vars';
+
+    $page-bg : #f8f7fa;
+    $card-bg : #ffffff;
+    $field-bg : #ffffff;
+    $border : #e9ecef;
+    $purple : #867cf0;
+    /* YOUR exact purple */
+
+    .user-list-container {
+        padding: 24px;
+        max-width: 1400px;
+        margin: 0 auto;
+        background-color: $page-bg;
+        min-height: 100vh;
+    }
+
+    /* ---------- header ---------- */
+    .header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 24px;
+
+        h1 {
+            margin: 0;
+            font-size: 24px;
+            font-weight: 600;
+            color: $text-card-title;
+            border-left: 4px solid $purple;
+            padding-left: 12px;
+        }
+
+        button[mat-raised-button] {
+            background: linear-gradient(118deg, $purple, rgba($purple, .8));
+            box-shadow: 0 0 10px 1px rgba($purple, .4);
+            color: #fff;
+            font-weight: 500;
+            transition: all .25s ease;
+
+            &:hover {
+                box-shadow: 0 0 14px 2px rgba($purple, .6);
+                transform: translateY(-1px);
+            }
+
+            mat-icon {
+                margin-right: 6px;
+            }
+        }
+    }
+
+    /* ---------- card ---------- */
+    .card {
+        background: $card-bg;
+        border: 1px solid $border;
+        border-radius: 6px;
+        box-shadow: 0 4px 18px 0 rgba(34, 41, 47, .12);
+    }
+
+    /* ---------- filters bar ---------- */
+    .card-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        flex-wrap: wrap;
+        gap: 16px;
+        padding: 20px 24px 0;
+    }
+
+    /* ---------- search – ALWAYS purple state ---------- */
+    .search-field {
+        width: 300px;
+
+        /* Placeholder (not floating) */
+        ::ng-deep .mat-mdc-input-element::placeholder {
+            color: #6c757d !important; // dark gray
+            z-index: 100 !important;
+            opacity: 1 !important;
+        }
+
+        /* Caret color */
+        ::ng-deep .mat-mdc-input-element {
+            color: #6c757d !important; // normal text
+            caret-color: #867cf0 !important; // cursor color
+            text-rendering: optimizeLegibility !important;
+            -webkit-font-smoothing: antialiased !important;
+            -moz-osx-font-smoothing: grayscale !important;
+            background: transparent !important;
+        }
+
+        /* Default field appearance */
+        ::ng-deep .mdc-text-field {
+            background: #ffffff !important;
+            border: 1px solid #867cf0 !important; // clean 1px border
+            border-radius: 6px !important;
+            transition: border 0.2s ease !important;
+        }
+
+        /* Remove underline completely */
+        ::ng-deep .mdc-line-ripple {
+            display: none !important;
+        }
+
+        /* FOCUSED state (active click) */
+        ::ng-deep .mdc-text-field--focused {
+            // border: 2px solid #867cf0 !important;
+            box-shadow: 0 0 0 2px rgba(134, 124, 240, 0.25) !important;
+        }
+
+        /* Floating label (Search users text on focus) */
+        ::ng-deep .mat-mdc-form-field.mat-focused .mdc-floating-label,
+        ::ng-deep .mdc-floating-label--float-above {
+            color: #867cf0 !important; // exact purple you want
+            font-weight: 500 !important;
+            background: #ffffff !important;
+            // padding: 10px 2px !important;  // prevents border cutting through text
+            z-index: 10 !important;
+        }
+
+        ::ng-deep .mdc-notched-outline__notch {
+            border-left: none !important;
+        }
+
+
+        /* FOCUS STATE — pure #867cf0 */
+        ::ng-deep .mdc-text-field--focused .mdc-notched-outline__leading,
+        ::ng-deep .mdc-text-field--focused .mdc-notched-outline__notch,
+        ::ng-deep .mdc-text-field--focused .mdc-notched-outline__trailing {
+            border-width: 2px !important;
+            border-color: #867cf0 !important;
+        }
+
+        /* Search icon color */
+        ::ng-deep .mat-mdc-form-field-icon-prefix {
+            color: #867cf0 !important;
+        }
+
+        /* Remove blur from floating label */
+        ::ng-deep .mdc-floating-label {
+            text-rendering: optimizeLegibility !important;
+            -webkit-font-smoothing: antialiased !important;
+        }
+
+        /* Fix input infix area */
+        ::ng-deep .mat-mdc-form-field-infix {
+            background: #ffffff !important;
+        }
+
+        /* Floating label sharp */
+        ::ng-deep .mdc-floating-label {
+            opacity: 0 !important; // hide label initially
+            transition: all 0.2s ease !important;
+        }
+
+        /* On focus, floating label becomes visible */
+        ::ng-deep .mat-mdc-form-field.mat-focused .mdc-floating-label,
+        ::ng-deep .mdc-floating-label--float-above {
+            opacity: 1 !important;
+            color: #867cf0 !important;
+            background: #ffffff !important;
+            padding: 0 2px !important;
+            font-weight: 500 !important;
+            text-rendering: optimizeLegibility !important;
+            -webkit-font-smoothing: antialiased !important;
+            -moz-osx-font-smoothing: grayscale !important;
+            z-index: 10 !important;
+        }
+    }
+
+
+    ::ng-deep .mat-mdc-option .mdc-list-item__primary-text {
+        color: #6c757d !important; // dark gray
+    }
+
+    // hover state
+    ::ng-deep .mat-mdc-option:hover .mdc-list-item__primary-text {
+        color: $purple !important; // purple on hover
+    }
+
+    /* ---------- role filter – ALWAYS purple state ---------- */
+    .role-filter {
+
+        /* FIX LABEL GETTING CUT BY BORDER */
+        ::ng-deep .mdc-notched-outline__leading,
+        ::ng-deep .mdc-notched-outline__notch,
+        ::ng-deep .mdc-notched-outline__trailing {
+            border-color: #867cf0 !important;
+        }
+
+        /* Background + shape */
+        ::ng-deep .mdc-text-field {
+            background: #ffffff !important;
+            border-radius: 6px !important;
+            cursor: pointer !important;
+            caret-color: $purple !important;
+        }
+
+        /* Remove text caret (no input look) */
+        ::ng-deep .mat-mdc-select-trigger {
+            caret-color: transparent !important;
+        }
+
+        /* make whole value area non-text-like */
+        ::ng-deep .mat-mdc-select-value,
+        ::ng-deep .mat-mdc-select-value-text {
+            color: #4a4a4a !important; // dark gray
+            cursor: pointer !important;
+        }
+
+        /* Label color stays purple */
+        ::ng-deep .mdc-floating-label {
+            color: #867cf0 !important;
+            cursor: pointer !important;
+        }
+    }
+
+    /* ROLE PANEL (OPEN DROPDOWN BODY) */
+    ::ng-deep .mat-mdc-select-panel {
+        background: #ffffff !important;
+        color: #4a4a4a !important;
+        scrollbar-color: #867cf0 #f3f1ff !important;
+        /* purple thumb */
+    }
+
+    /* Scrollbar styles */
+    ::ng-deep .mat-mdc-select-panel::-webkit-scrollbar {
+        width: 6px;
+    }
+
+    ::ng-deep .mat-mdc-select-panel::-webkit-scrollbar-thumb {
+        background: #867cf0 !important;
+        border-radius: 4px;
+    }
+
+    border: 0;
+    border-spacing: 0;
+    table-layout: auto;
+    white-space: normal;
+    background-color: #ffffff !important;
+    /* white background */
+    }
+
+    /* remove any lingering dark lines between rows */
+    ::ng-deep .mat-mdc-row,
+    ::ng-deep .mat-mdc-header-row {
+        border-bottom: none !important;
+    }
+
+    /* optional: thin light divider instead */
+    ::ng-deep .mat-mdc-header-row {
+        box-shadow: 0 1px 0 0 #e9ecef;
+        /* 1 px soft bottom edge */
+    }
+
+    /* ---------- table – WHITE header (no dark border) ---------- */
+    .table-responsive {
+        padding: 0 24px 24px;
+    }
+
+    /* =========================================================
+    ❶  BIGGER row shadow  →  drop-shadow + hover boost
+    ========================================================= */
+    .users-table .mat-mdc-row {
+        box-shadow: 0 6px 16px rgba(0, 0, 0, .10);
+        /* stronger shadow */
+        transition: all .25s ease;
+
+        &:hover {
+            box-shadow: 0 10px 24px rgba($purple, .30);
+            /* even bigger on hover */
+        }
+    }
+
+    /* =========================================================
+    ❷  COLOURED action icons  →  vivid + hover ripple
+    ========================================================= */
+    .actions {
+        display: flex;
+        gap: 4px;
+
+        button.mat-icon-button {
+            transition: background-color .2s, color .2s;
+
+            &[matTooltip="View Details"] {
+                color: #867cf0;
+
+                &:hover {
+                    background-color: rgba(#867cf0, .12);
+                    color: #867cf0;
+                }
+            }
+
+            &[matTooltip="Edit User"] {
+                color: #2196f3;
+
+                &:hover {
+                    background-color: rgba(#2196f3, .12);
+                    color: #2196f3;
+                }
+            }
+
+            &[matTooltip="Reset Password"] {
+                color: #00bcd4;
+
+                &:hover {
+                    background-color: rgba(#00bcd4, .12);
+                    color: #00bcd4;
+                }
+            }
+
+            &[matTooltip="Delete User"] {
+                color: #e91e63;
+
+                &:hover {
+                    background-color: rgba(#e91e63, .12);
+                    color: #e91e63;
+                }
+            }
+
+            &[matTooltip="Restore User"] {
+                color: #4caf50;
+
+                &:hover {
+                    background-color: rgba(#4caf50, .12);
+                    color: #4caf50;
+                }
+            }
+        }
+    }
+
+    /* =========================================================
+    ❸  ROLE dropdown  →  ALWAYS purple  (#867cf0)
+    ========================================================= */
+    .role-select {
+        width: 140px;
+
+        ::ng-deep .mat-mdc-form-field-wrapper {
+            background-color: $field-bg;
+            border: 1px solid $purple;
+            /* purple border */
+            border-radius: 6px;
+            box-shadow: 0 0 0 3px rgba($purple, .15);
+        }
+
+        ::ng-deep .mat-mdc-form-field-subscript-wrapper {
+            display: none;
+        }
+
+        ::ng-deep .mat-mdc-select-value {
+            color: $text-body;
+        }
+
+        ::ng-deep .mat-mdc-select-arrow {
+            color: $purple;
+        }
+
+        /* on hover/focus keep purple */
+        ::ng-deep .mat-mdc-form-field-wrapper:hover,
+        ::ng-deep .mat-mdc-form-field-wrapper.mat-focused {
+            border-color: $purple;
+            box-shadow: 0 0 0 3px rgba($purple, .25);
+        }
+    }
+
+    .users-table {
+        width: 100%;
+        border-collapse: separate;
+        border-spacing: 0 8px;
+
+        /* header – white & no thick border */
+        .mat-mdc-header-row {
+            background-color: #ffffff;
+            height: 48px;
+        }
+
+        .mat-mdc-header-cell {
+            color: $text-body;
+            font-size: 12px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: .5px;
+            border-bottom: 1px solid $border;
+            /* thin light border only */
+        }
+
+        /* rows – white card */
+        .mat-mdc-row {
+            background: #ffffff;
+            border: 1px solid $border;
+            border-radius: 6px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, .04);
+            transition: all .25s ease;
+            margin-bottom: 8px;
+
+            /* purple hover */
+            &:hover {
+                background-color: $purple;
+                border-color: $purple;
+                box-shadow: 0 6px 16px rgba($purple, .25);
+                transform: translateY(-2px);
+
+                /* white text on purple */
+                .mat-mdc-cell,
+                .username,
+                ::ng-deep .mat-icon {
+                    color: #ffffff !important;
+                }
+            }
+        }
+
+        .mat-mdc-cell {
+            color: $text-body;
+            font-size: 14px;
+            padding: 12px 16px;
+            border: none;
+        }
+    }
+
+    /* ---------- cell internals ---------- */
+    .user-info {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+
+        .username {
+            font-weight: 500;
+            color: $purple;
+        }
+    }
+
+    .deleted-badge {
+        background-color: rgba($danger, .12);
+        color: $danger;
+        padding: 2px 8px;
+        border-radius: 4px;
+        font-size: 11px;
+        font-weight: 500;
+    }
+
+    /* ---------- no-data ---------- */
+    .no-data {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        padding: 48px;
+        color: $text-muted;
+
+        mat-icon {
+            font-size: 48px;
+            width: 48px;
+            height: 48px;
+            opacity: .5;
+            margin-bottom: 16px;
+        }
+
+        p {
+            margin: 0;
+            font-size: 16px;
+        }
+    }
+
+    /* ---------- paginator – white ---------- */
+    ::ng-deep .mat-mdc-paginator {
+        background: #ffffff;
+        border-top: 1px solid $border;
+
+        .mat-mdc-paginator-page-size-label,
+        .mat-mdc-paginator-range-label {
+            color: $text-muted;
+        }
+
+        .mat-mdc-select-value {
+            color: $text-body;
+        }
+
+        .mat-mdc-icon-button {
+            color: $text-body;
+        }
+    }

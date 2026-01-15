@@ -1,0 +1,98 @@
+<div class="user-detail-dialog">
+    <div class="dialog-header">
+        <h2 mat-dialog-title>
+            <mat-icon>account_circle</mat-icon>
+            User Details
+        </h2>
+        <button mat-icon-button (click)="close()">
+            <mat-icon>close</mat-icon>
+        </button>
+    </div>
+
+    <mat-dialog-content>
+        <div class="user-detail-content">
+            <!-- User Avatar Section -->
+            <div class="user-avatar-section">
+                <div class="avatar-circle">
+                    <mat-icon>person</mat-icon>
+                </div>
+                <h3 class="user-name">{{ user.username }}</h3>
+                <p class="user-email">{{ user.email }}</p>
+            </div>
+
+            <mat-divider></mat-divider>
+
+            <!-- User Information Grid -->
+            <div class="info-grid">
+                <div class="info-item">
+                    <div class="info-label">
+                        <mat-icon>badge</mat-icon>
+                        <span>Role</span>
+                    </div>
+                    <div class="info-value">
+                        <mat-chip class="role-chip">{{ user.role | titlecase }}</mat-chip>
+                    </div>
+                </div>
+
+                <div class="info-item">
+                    <div class="info-label">
+                        <mat-icon>toggle_on</mat-icon>
+                        <span>Status</span>
+                    </div>
+                    <div class="info-value">
+                        <mat-chip [class.active-chip]="user.isActive" [class.inactive-chip]="!user.isActive">
+                            {{ user.isActive ? 'Active' : 'Inactive' }}
+                        </mat-chip>
+                    </div>
+                </div>
+
+                <div class="info-item">
+                    <div class="info-label">
+                        <mat-icon>event</mat-icon>
+                        <span>Created At</span>
+                    </div>
+                    <div class="info-value">
+                        {{ formatDate(user.createdAt) }}
+                    </div>
+                </div>
+
+                <div class="info-item">
+                    <div class="info-label">
+                        <mat-icon>update</mat-icon>
+                        <span>Last Updated</span>
+                    </div>
+                    <div class="info-value">
+                        {{ formatDate(user.updatedAt) }}
+                    </div>
+                </div>
+
+                <div class="info-item" *ngIf="user.isDeleted">
+                    <div class="info-label">
+                        <mat-icon>delete</mat-icon>
+                        <span>Deleted</span>
+                    </div>
+                    <div class="info-value">
+                        <mat-chip class="deleted-chip">Yes</mat-chip>
+                    </div>
+                </div>
+
+                <div class="info-item">
+                    <div class="info-label">
+                        <mat-icon>fingerprint</mat-icon>
+                        <span>User ID</span>
+                    </div>
+                    <div class="info-value user-id">
+                        {{ user._id }}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </mat-dialog-content>
+
+    <mat-dialog-actions align="end">
+        <button mat-raised-button color="primary" (click)="close()">
+            <mat-icon>close</mat-icon>
+            Close
+        </button>
+    </mat-dialog-actions>
+</div>

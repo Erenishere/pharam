@@ -1,0 +1,108 @@
+@import 'styles/vuexy-vars';
+
+/* ----------  header  ---------- */
+.sidebar-header {
+    padding: 20px 24px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 8px;
+    background-color: $bg-sidenav;
+
+    .logo-text {
+        font-size: 1.25rem;
+        font-weight: 700;
+        color: $text-card-title;
+        line-height: 1.2;
+
+        span {
+            color: $primary;
+        }
+    }
+}
+
+.sidebar-nav {
+    padding: 0;
+}
+
+/* ----------  nav-item  ---------- */
+::ng-deep .mat-mdc-list-item {
+    height: 48px;
+    margin-bottom: 0;
+    font-family: $font-family;
+    font-size: 14px;
+    font-weight: 500;
+
+    /* remove disabled fade */
+    &.mdc-list-item--disabled {
+        opacity: 1;
+    }
+
+    /* inactive: text + icon */
+    &:not(.active) {
+
+        .mdc-list-item__content,
+        .mdc-list-item__primary-text,
+        mat-icon {
+            color: #444050;
+        }
+    }
+
+    /* hover: keep same colour */
+    &:not(.active):hover {
+
+        .mdc-list-item__content,
+        .mdc-list-item__primary-text,
+        mat-icon {
+            color: #444050;
+        }
+    }
+
+    /* slide animation */
+    /* ----------  hover: light grey box  ---------- */
+    &:hover {
+        background-color: #f0f0f1;
+        /* whole row background */
+        transform: translateX(5px);
+        /* keep slide if you like */
+        transition: background-color .25s ease, transform .25s ease;
+        border-radius: 4px;
+        /* soften corners */
+    }
+
+    /* active state */
+    &.active {
+        background: linear-gradient(118deg, $primary, rgba($primary, .7));
+        box-shadow: 0 0 10px 1px rgba($primary, .7);
+        border-radius: 4px;
+        margin: 0 15px 4px 15px;
+        width: calc(100% - 30px);
+
+        .mdc-list-item__content,
+        .mdc-list-item__primary-text,
+        mat-icon {
+            color: white;
+        }
+
+        .badge {
+            background-color: white;
+            color: $primary;
+        }
+    }
+}
+
+/* ----------  badge & divider  ---------- */
+.badge {
+    background-color: $primary;
+    color: white;
+    padding: 2px 8px;
+    border-radius: 12px;
+    font-size: 12px;
+    font-weight: 600;
+    margin-left: auto;
+}
+
+mat-divider {
+    margin: 16px 0;
+    border-top-color: $border-table;
+}
