@@ -281,7 +281,7 @@ class CustomerService {
    * Validate customer type
    */
   validateType(type) {
-    const validTypes = ['customer', 'supplier', 'both'];
+    const validTypes = ['retail', 'wholesale', 'distributor', 'regular', 'customer', 'supplier', 'both'];
     if (!validTypes.includes(type)) {
       throw new Error(`Invalid type. Must be one of: ${validTypes.join(', ')}`);
     }

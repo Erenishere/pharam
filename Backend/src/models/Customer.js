@@ -19,135 +19,136 @@ const customerSchema = new mongoose.Schema({
     type: String,
     required: [true, 'Customer type is required'],
     enum: {
-      values: ['customer', 'supplier', 'both'],
-      message: 'Type must be one of: customer, supplier, both',
+      enum: {
+        values: ['retail', 'wholesale', 'distributor', 'regular', 'customer', 'supplier', 'both'],
+        message: 'Type must be one of: retail, wholesale, distributor, regular, customer, supplier, both',
+      },
+      default: 'regular',
     },
-    default: 'customer',
-  },
-  contactInfo: {
-    phone: {
-      type: String,
-      trim: true,
-      maxlength: [20, 'Phone number cannot exceed 20 characters'],
+    contactInfo: {
+      phone: {
+        type: String,
+        trim: true,
+        maxlength: [20, 'Phone number cannot exceed 20 characters'],
+      },
+      email: {
+        type: String,
+        trim: true,
+        lowercase: true,
+        match: [/^\w+([.-]?\w+)*@\w+([.-]?\w+)*(\.\w{2,3})+$/, 'Please enter a valid email'],
+      },
+      address: {
+        type: String,
+        trim: true,
+        maxlength: [500, 'Address cannot exceed 500 characters'],
+      },
+      city: {
+        type: String,
+        trim: true,
+        maxlength: [100, 'City cannot exceed 100 characters'],
+      },
+      town: {
+        type: String,
+        trim: true,
+        maxlength: [100, 'Town cannot exceed 100 characters'],
+      },
+      country: {
+        type: String,
+        trim: true,
+        maxlength: [100, 'Country cannot exceed 100 characters'],
+        default: 'Pakistan',
+      },
     },
-    email: {
-      type: String,
-      trim: true,
-      lowercase: true,
-      match: [/^\w+([.-]?\w+)*@\w+([.-]?\w+)*(\.\w{2,3})+$/, 'Please enter a valid email'],
+    financialInfo: {
+      creditLimit: {
+        type: Number,
+        default: 0,
+        min: [0, 'Credit limit cannot be negative'],
+      },
+      paymentTerms: {
+        type: Number,
+        default: 30,
+        min: [0, 'Payment terms cannot be negative'],
+        max: [365, 'Payment terms cannot exceed 365 days'],
+      },
+      taxNumber: {
+        type: String,
+        trim: true,
+        maxlength: [50, 'Tax number cannot exceed 50 characters'],
+      },
+      // Phase 2 - Requirement 16.1: Tax Registration Fields
+      licenseNo: {
+        type: String,
+        trim: true,
+        maxlength: [50, 'License number cannot exceed 50 characters'],
+      },
+      srbNo: {
+        type: String,
+        trim: true,
+        maxlength: [50, 'SRB number cannot exceed 50 characters'],
+      },
+      ntn: {
+        type: String,
+        trim: true,
+        maxlength: [50, 'NTN cannot exceed 50 characters'],
+      },
+      strn: {
+        type: String,
+        trim: true,
+        maxlength: [50, 'STRN cannot exceed 50 characters'],
+      },
+      nicNumber: {
+        type: String,
+        trim: true,
+        maxlength: [20, 'CNIC number cannot exceed 20 characters'],
+      },
+      whtPercent: {
+        type: Number,
+        default: 0,
+        min: [0, 'WHT percent cannot be negative'],
+        max: [100, 'WHT percent cannot exceed 100'],
+      },
+      // Phase 2 - Requirement 16.2: Credit and Route Fields
+      creditDays: {
+        type: Number,
+        default: 0,
+        min: [0, 'Credit days cannot be negative'],
+        max: [365, 'Credit days cannot exceed 365'],
+      },
+      currency: {
+        type: String,
+        trim: true,
+        uppercase: true,
+        default: 'PKR',
+        maxlength: [3, 'Currency code must be 3 characters'],
+      },
+      // Phase 2 - Account-based tax determination (Requirement 6.3, 6.4)
+      advanceTaxRate: {
+        type: Number,
+        enum: [0, 0.5, 2.5],
+        default: 0,
+      },
+      isNonFiler: {
+        type: Boolean,
+        default: false,
+      },
     },
-    address: {
-      type: String,
-      trim: true,
-      maxlength: [500, 'Address cannot exceed 500 characters'],
+    routeId: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'Route',
+      default: null,
     },
-    city: {
-      type: String,
-      trim: true,
-      maxlength: [100, 'City cannot exceed 100 characters'],
-    },
-    town: {
-      type: String,
-      trim: true,
-      maxlength: [100, 'Town cannot exceed 100 characters'],
-    },
-    country: {
-      type: String,
-      trim: true,
-      maxlength: [100, 'Country cannot exceed 100 characters'],
-      default: 'Pakistan',
-    },
-  },
-  financialInfo: {
-    creditLimit: {
+    // Phase 2 - Due invoice tracking (Requirement 30)
+    dueInvoiceQty: {
       type: Number,
       default: 0,
-      min: [0, 'Credit limit cannot be negative'],
+      min: [0, 'Due invoice quantity cannot be negative'],
     },
-    paymentTerms: {
-      type: Number,
-      default: 30,
-      min: [0, 'Payment terms cannot be negative'],
-      max: [365, 'Payment terms cannot exceed 365 days'],
-    },
-    taxNumber: {
-      type: String,
-      trim: true,
-      maxlength: [50, 'Tax number cannot exceed 50 characters'],
-    },
-    // Phase 2 - Requirement 16.1: Tax Registration Fields
-    licenseNo: {
-      type: String,
-      trim: true,
-      maxlength: [50, 'License number cannot exceed 50 characters'],
-    },
-    srbNo: {
-      type: String,
-      trim: true,
-      maxlength: [50, 'SRB number cannot exceed 50 characters'],
-    },
-    ntn: {
-      type: String,
-      trim: true,
-      maxlength: [50, 'NTN cannot exceed 50 characters'],
-    },
-    strn: {
-      type: String,
-      trim: true,
-      maxlength: [50, 'STRN cannot exceed 50 characters'],
-    },
-    nicNumber: {
-      type: String,
-      trim: true,
-      maxlength: [20, 'CNIC number cannot exceed 20 characters'],
-    },
-    whtPercent: {
-      type: Number,
-      default: 0,
-      min: [0, 'WHT percent cannot be negative'],
-      max: [100, 'WHT percent cannot exceed 100'],
-    },
-    // Phase 2 - Requirement 16.2: Credit and Route Fields
-    creditDays: {
-      type: Number,
-      default: 0,
-      min: [0, 'Credit days cannot be negative'],
-      max: [365, 'Credit days cannot exceed 365'],
-    },
-    currency: {
-      type: String,
-      trim: true,
-      uppercase: true,
-      default: 'PKR',
-      maxlength: [3, 'Currency code must be 3 characters'],
-    },
-    // Phase 2 - Account-based tax determination (Requirement 6.3, 6.4)
-    advanceTaxRate: {
-      type: Number,
-      enum: [0, 0.5, 2.5],
-      default: 0,
-    },
-    isNonFiler: {
+    isActive: {
       type: Boolean,
-      default: false,
+      default: true,
     },
-  },
-  routeId: {
-    type: mongoose.Schema.Types.ObjectId,
-    ref: 'Route',
-    default: null,
-  },
-  // Phase 2 - Due invoice tracking (Requirement 30)
-  dueInvoiceQty: {
-    type: Number,
-    default: 0,
-    min: [0, 'Due invoice quantity cannot be negative'],
-  },
-  isActive: {
-    type: Boolean,
-    default: true,
-  },
-}, {
+  }, {
   timestamps: true,
 });
 
@@ -209,7 +210,6 @@ customerSchema.methods.calculateNonFilerGST = function (amount) {
 // Static method to find customers with credit limit
 customerSchema.statics.findWithCreditLimit = function (minLimit = 0) {
   return this.find({
-    type: { $in: ['customer', 'both'] },
     'financialInfo.creditLimit': { $gte: minLimit },
     isActive: true,
   });

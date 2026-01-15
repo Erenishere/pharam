@@ -47,7 +47,7 @@ export class CustomerService {
             if (filters.limit) params = params.set('limit', filters.limit.toString());
             if (filters.type) params = params.set('type', filters.type);
             if (filters.isActive !== undefined) params = params.set('isActive', filters.isActive.toString());
-            if (filters.search) params = params.set('search', filters.search);
+            if (filters.search) params = params.set('keyword', filters.search); // Backend expects 'keyword' not 'search'
             if (filters.includeDeleted) params = params.set('includeDeleted', filters.includeDeleted.toString());
         }
 
@@ -59,7 +59,7 @@ export class CustomerService {
                 console.error('[CustomerService] API call failed:', error);
                 console.log('[CustomerService] Falling back to mock data for testing...');
 
-                // Mock data array - only using valid backend types
+                // Mock data array - using frontend types
                 let mockData = [
                     {
                         _id: '1',

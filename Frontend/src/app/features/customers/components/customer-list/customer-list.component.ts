@@ -113,7 +113,7 @@ export class CustomerListComponent implements OnInit, OnDestroy, AfterViewInit {
         };
 
         // ✅ Apply type filter ONLY when specific type is selected
-        if (this.selectedType && this.selectedType !== 'ALL') {
+        if (this.selectedType) {
             filters.type = this.selectedType;
         }
 
@@ -142,13 +142,13 @@ export class CustomerListComponent implements OnInit, OnDestroy, AfterViewInit {
 
                         this.dataSource.data = customersToShow;
 
-                        // Handle pagination data with fallbacks
-                        if (response.pagination && typeof response.pagination.total === 'number') {
-                            // Use the actual total from backend for pagination
-                            this.totalCustomers = response.pagination.total;
+                        // Handle pagination data with correct backend field names
+                        if (response.pagination) {
+                            // Backend returns 'totalItems', not 'total'
+                            this.totalCustomers = response.pagination.totalItems || response.pagination.total || 0;
                         } else {
                             this.totalCustomers = customersToShow.length;
-                            console.warn('[CustomerListComponent] No pagination.total found, using data length as fallback');
+                            console.warn('[CustomerListComponent] No pagination found, using data length as fallback');
                         }
 
                         // Update paginator properties manually for server-side pagination

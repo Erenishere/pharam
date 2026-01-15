@@ -12,43 +12,43 @@ import { MatChipsModule } from '@angular/material/chips';
 import { FormsModule } from '@angular/forms';
 
 interface Item {
-    _id: string;
-    code: string;
-    name: string;
-    category: string;
-    unit: string;
-    pricing: {
-        costPrice: number;
-        salePrice: number;
-        currency: string;
-    };
-    inventory: {
-        currentStock: number;
-        minimumStock: number;
-        maximumStock: number;
-    };
-    isActive: boolean;
-    createdAt: string;
-    updatedAt: string;
+  _id: string;
+  code: string;
+  name: string;
+  category: string;
+  unit: string;
+  pricing: {
+    costPrice: number;
+    salePrice: number;
+    currency: string;
+  };
+  inventory: {
+    currentStock: number;
+    minimumStock: number;
+    maximumStock: number;
+  };
+  isActive: boolean;
+  createdAt: string;
+  updatedAt: string;
 }
 
 @Component({
-    selector: 'app-item-list',
-    standalone: true,
-    imports: [
-        CommonModule,
-        MatCardModule,
-        MatButtonModule,
-        MatIconModule,
-        MatTableModule,
-        MatPaginatorModule,
-        MatFormFieldModule,
-        MatInputModule,
-        MatSelectModule,
-        MatChipsModule,
-        FormsModule
-    ],
-    template: `
+  selector: 'app-item-list',
+  standalone: true,
+  imports: [
+    CommonModule,
+    MatCardModule,
+    MatButtonModule,
+    MatIconModule,
+    MatTableModule,
+    MatPaginatorModule,
+    MatFormFieldModule,
+    MatInputModule,
+    MatSelectModule,
+    MatChipsModule,
+    FormsModule
+  ],
+  template: `
     <div class="item-list-container">
       <div class="page-header">
         <h1>
@@ -219,159 +219,208 @@ interface Item {
       </mat-card>
     </div>
   `,
-    styleUrl: './item-list.component.scss'
+  styleUrl: './item-list.component.scss'
 })
 export class ItemListComponent implements OnInit {
-    items: Item[] = [];
-    categories: string[] = [];
-    totalItems = 0;
-    pageSize = 10;
-    currentPage = 0;
-    loading = false;
+  allItems: Item[] = [];
+  items: Item[] = [];
+  categories: string[] = [];
+  totalItems = 0;
+  pageSize = 10;
+  currentPage = 0;
+  loading = false;
 
-    // Filters
-    searchKeyword = '';
-    selectedCategory = '';
-    selectedStockStatus = '';
+  // Filters
+  searchKeyword = '';
+  selectedCategory = '';
+  selectedStockStatus = '';
 
-    displayedColumns: string[] = ['code', 'name', 'pricing', 'stock', 'status', 'actions'];
+  displayedColumns: string[] = ['code', 'name', 'pricing', 'stock', 'status', 'actions'];
 
-    ngOnInit() {
-        this.loadItems();
-        this.loadCategories();
+  ngOnInit() {
+    this.loadItems();
+    this.loadCategories();
+  }
+
+  loadItems() {
+    this.loading = true;
+
+    // Simulate API call - replace with actual service call
+    setTimeout(() => {
+      // Store original items in allItems
+      this.allItems = this.getMockItems();
+      // Apply initial filters
+      this.applyFilters();
+      this.loading = false;
+    }, 1000);
+  }
+
+  loadCategories() {
+    // Simulate API call - replace with actual service call
+    this.categories = ['Medicine', 'Tablet', 'Syrup', 'Injection', 'Capsule', 'Ointment'];
+  }
+
+  applyFilters() {
+    let filtered = [...this.allItems];
+
+    // 1. Filter by Search Keyword
+    if (this.searchKeyword.trim()) {
+      const keyword = this.searchKeyword.toLowerCase().trim();
+      filtered = filtered.filter(item =>
+        item.name.toLowerCase().includes(keyword) ||
+        item.code.toLowerCase().includes(keyword) ||
+        item.category.toLowerCase().includes(keyword)
+      );
     }
 
-    loadItems() {
-        this.loading = true;
-
-        // Simulate API call - replace with actual service call
-        setTimeout(() => {
-            this.items = this.getMockItems();
-            this.totalItems = this.items.length;
-            this.loading = false;
-        }, 1000);
+    // 2. Filter by Category
+    if (this.selectedCategory) {
+      filtered = filtered.filter(item => item.category === this.selectedCategory);
     }
 
-    loadCategories() {
-        // Simulate API call - replace with actual service call
-        this.categories = ['Medicine', 'Tablet', 'Syrup', 'Injection', 'Capsule', 'Ointment'];
+    // 3. Filter by Stock Status
+    if (this.selectedStockStatus) {
+      filtered = filtered.filter(item => {
+        const current = item.inventory.currentStock;
+        const min = item.inventory.minimumStock;
+        const max = item.inventory.maximumStock;
+
+        switch (this.selectedStockStatus) {
+          case 'low':
+            return current > 0 && current <= min;
+          case 'out':
+            return current === 0;
+          case 'overstock':
+            return current >= max;
+          case 'normal':
+            return current > min && current < max;
+          default:
+            return true;
+        }
+      });
     }
 
-    onSearch() {
-        // Implement search logic
-        console.log('Searching for:', this.searchKeyword);
-        this.loadItems();
-    }
+    // Update displayed items and total count
+    this.totalItems = filtered.length;
+    // For client-side pagination:
+    const startIndex = this.currentPage * this.pageSize;
+    this.items = filtered.slice(startIndex, startIndex + this.pageSize);
+  }
 
-    onCategoryChange() {
-        console.log('Category changed:', this.selectedCategory);
-        this.loadItems();
-    }
+  onSearch() {
+    this.currentPage = 0; // Reset to first page on filter change
+    this.applyFilters();
+  }
 
-    onStockStatusChange() {
-        console.log('Stock status changed:', this.selectedStockStatus);
-        this.loadItems();
-    }
+  onCategoryChange() {
+    this.currentPage = 0;
+    this.applyFilters();
+  }
 
-    onPageChange(event: any) {
-        this.currentPage = event.pageIndex;
-        this.pageSize = event.pageSize;
-        this.loadItems();
-    }
+  onStockStatusChange() {
+    this.currentPage = 0;
+    this.applyFilters();
+  }
 
-    addItem() {
-        console.log('Add new item');
-        // Implement add item logic
-    }
+  onPageChange(event: any) {
+    this.currentPage = event.pageIndex;
+    this.pageSize = event.pageSize;
+    this.applyFilters(); // Re-slice the array
+  }
 
-    viewItem(item: Item) {
-        console.log('View item:', item);
-        // Implement view item logic
-    }
+  addItem() {
+    console.log('Add new item');
+    // Implement add item logic
+  }
 
-    editItem(item: Item) {
-        console.log('Edit item:', item);
-        // Implement edit item logic
-    }
+  viewItem(item: Item) {
+    console.log('View item:', item);
+    // Implement view item logic
+  }
 
-    updateStock(item: Item) {
-        console.log('Update stock for item:', item);
-        // Implement stock update logic
-    }
+  editItem(item: Item) {
+    console.log('Edit item:', item);
+    // Implement edit item logic
+  }
 
-    refreshItems() {
-        this.loadItems();
-    }
+  updateStock(item: Item) {
+    console.log('Update stock for item:', item);
+    // Implement stock update logic
+  }
 
-    getStockStatusClass(item: Item): string {
-        if (item.inventory.currentStock === 0) return 'stock-out';
-        if (item.inventory.currentStock <= item.inventory.minimumStock) return 'stock-low';
-        if (item.inventory.currentStock >= item.inventory.maximumStock) return 'stock-over';
-        return 'stock-normal';
-    }
+  refreshItems() {
+    this.loadItems();
+  }
 
-    private getMockItems(): Item[] {
-        return [
-            {
-                _id: '1',
-                code: 'ITEM001',
-                name: 'Paracetamol 500mg',
-                category: 'Tablet',
-                unit: 'piece',
-                pricing: {
-                    costPrice: 2.50,
-                    salePrice: 5.00,
-                    currency: 'PKR'
-                },
-                inventory: {
-                    currentStock: 150,
-                    minimumStock: 50,
-                    maximumStock: 500
-                },
-                isActive: true,
-                createdAt: '2024-01-01T00:00:00Z',
-                updatedAt: '2024-01-01T00:00:00Z'
-            },
-            {
-                _id: '2',
-                code: 'ITEM002',
-                name: 'Amoxicillin 250mg',
-                category: 'Capsule',
-                unit: 'piece',
-                pricing: {
-                    costPrice: 8.00,
-                    salePrice: 15.00,
-                    currency: 'PKR'
-                },
-                inventory: {
-                    currentStock: 25,
-                    minimumStock: 30,
-                    maximumStock: 200
-                },
-                isActive: true,
-                createdAt: '2024-01-01T00:00:00Z',
-                updatedAt: '2024-01-01T00:00:00Z'
-            },
-            {
-                _id: '3',
-                code: 'ITEM003',
-                name: 'Cough Syrup 100ml',
-                category: 'Syrup',
-                unit: 'ml',
-                pricing: {
-                    costPrice: 45.00,
-                    salePrice: 85.00,
-                    currency: 'PKR'
-                },
-                inventory: {
-                    currentStock: 0,
-                    minimumStock: 20,
-                    maximumStock: 100
-                },
-                isActive: true,
-                createdAt: '2024-01-01T00:00:00Z',
-                updatedAt: '2024-01-01T00:00:00Z'
-            }
-        ];
-    }
+  getStockStatusClass(item: Item): string {
+    if (item.inventory.currentStock === 0) return 'stock-out';
+    if (item.inventory.currentStock <= item.inventory.minimumStock) return 'stock-low';
+    if (item.inventory.currentStock >= item.inventory.maximumStock) return 'stock-over';
+    return 'stock-normal';
+  }
+
+  private getMockItems(): Item[] {
+    return [
+      {
+        _id: '1',
+        code: 'ITEM001',
+        name: 'Paracetamol 500mg',
+        category: 'Tablet',
+        unit: 'piece',
+        pricing: {
+          costPrice: 2.50,
+          salePrice: 5.00,
+          currency: 'PKR'
+        },
+        inventory: {
+          currentStock: 150,
+          minimumStock: 50,
+          maximumStock: 500
+        },
+        isActive: true,
+        createdAt: '2024-01-01T00:00:00Z',
+        updatedAt: '2024-01-01T00:00:00Z'
+      },
+      {
+        _id: '2',
+        code: 'ITEM002',
+        name: 'Amoxicillin 250mg',
+        category: 'Capsule',
+        unit: 'piece',
+        pricing: {
+          costPrice: 8.00,
+          salePrice: 15.00,
+          currency: 'PKR'
+        },
+        inventory: {
+          currentStock: 25,
+          minimumStock: 30,
+          maximumStock: 200
+        },
+        isActive: true,
+        createdAt: '2024-01-01T00:00:00Z',
+        updatedAt: '2024-01-01T00:00:00Z'
+      },
+      {
+        _id: '3',
+        code: 'ITEM003',
+        name: 'Cough Syrup 100ml',
+        category: 'Syrup',
+        unit: 'ml',
+        pricing: {
+          costPrice: 45.00,
+          salePrice: 85.00,
+          currency: 'PKR'
+        },
+        inventory: {
+          currentStock: 0,
+          minimumStock: 20,
+          maximumStock: 100
+        },
+        isActive: true,
+        createdAt: '2024-01-01T00:00:00Z',
+        updatedAt: '2024-01-01T00:00:00Z'
+      }
+    ];
+  }
 }
