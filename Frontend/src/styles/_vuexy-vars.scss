@@ -1,0 +1,68 @@
+// Colors (Light Mode)
+$primary: #7367F0;
+$secondary: #82868B;
+$success: #28C76F;
+$info: #00CFE8;
+$warning: #FF9F43;
+$danger: #EA5455;
+$dark: #4B4B4B;
+$grey-light: #B8B8B8;
+$grey-dark: #6E6B7B;
+
+// Backgrounds
+$bg-page: #F8F7FA;
+$bg-card: #FFFFFF;
+$bg-header: #FFFFFF;
+$bg-sidenav: #FFFFFF;
+
+// Borders
+$border-card: 1px solid #EBE9F1;
+$border-table: 1px solid #DFE3E7;
+$border-input: 1px solid #D8D6DE;
+$border-input-focus: 1px solid #7367F0;
+
+// Typography
+$font-family: 'Montserrat', -apple-system, BlinkMacSystemFont, sans-serif;
+$font-size-base: 14px;
+$line-height-base: 1.45;
+
+$h1-size: 32px;
+$h1-weight: 700;
+$h1-lh: 1.2;
+$h2-size: 28px;
+$h2-weight: 600;
+$h2-lh: 1.25;
+$h3-size: 24px;
+$h3-weight: 600;
+$h3-lh: 1.3;
+$h4-size: 20px;
+$h4-weight: 500;
+$h4-lh: 1.35;
+$h5-size: 18px;
+$h5-weight: 500;
+$h5-lh: 1.4;
+$h6-size: 16px;
+$h6-weight: 500;
+$h6-lh: 1.45;
+
+$text-card-title: #5E5873;
+$text-body: #6E6B7B;
+$text-muted: #B8B8B8;
+
+// Shadows
+$shadow-card: 0 4px 24px 0 rgba(34, 41, 47, .1);
+$shadow-btn-raised: 0 4px 12px 0 rgba(34, 41, 47, .24);
+$shadow-dropdown: 0 5px 25px 0 rgba(34, 41, 47, .18);
+$shadow-modal: 0 10px 30px 0 rgba(34, 41, 47, .2);
+
+// Border Radius
+$radius-card: 8px;
+$radius-btn: 6px;
+$radius-input: 6px;
+$radius-avatar: 50%;
+$radius-badge: 4px;
+$radius-chip: 20px;
+
+// Spacing
+$spacer: 8px; // 1 unit = 8px
+$card-padding: 24px;

@@ -1,0 +1,258 @@
+@import 'vuexy-vars';
+
+// Global Reset / Base
+body {
+    font-family: $font-family;
+    font-size: $font-size-base;
+    line-height: $line-height-base;
+    color: $text-body;
+    background-color: $bg-page;
+    margin: 0;
+}
+
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+    margin-top: 0;
+    margin-bottom: 0.5rem;
+    font-weight: 500;
+    line-height: 1.2;
+    color: $text-card-title;
+}
+
+h1 {
+    font-size: $h1-size;
+    font-weight: $h1-weight;
+    line-height: $h1-lh;
+}
+
+h2 {
+    font-size: $h2-size;
+    font-weight: $h2-weight;
+    line-height: $h2-lh;
+}
+
+h3 {
+    font-size: $h3-size;
+    font-weight: $h3-weight;
+    line-height: $h3-lh;
+}
+
+h4 {
+    font-size: $h4-size;
+    font-weight: $h4-weight;
+    line-height: $h4-lh;
+}
+
+h5 {
+    font-size: $h5-size;
+    font-weight: $h5-weight;
+    line-height: $h5-lh;
+}
+
+h6 {
+    font-size: $h6-size;
+    font-weight: $h6-weight;
+    line-height: $h6-lh;
+}
+
+// Utility Classes
+.text-primary {
+    color: $primary !important;
+}
+
+.bg-light-secondary {
+    background-color: rgba(130, 134, 139, .12) !important;
+}
+
+.rounded {
+    border-radius: $radius-btn !important;
+}
+
+.shadow {
+    box-shadow: $shadow-card !important;
+}
+
+.fw-500 {
+    font-weight: 500 !important;
+}
+
+.font-small-3 {
+    font-size: 13px !important;
+}
+
+// Card
+.card {
+    background-color: $bg-card;
+    border-radius: $radius-card;
+    box-shadow: $shadow-card;
+    border: $border-card;
+    margin-bottom: 2rem;
+
+    .card-header {
+        padding: 24px 24px 20px 24px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        background-color: transparent;
+        border-bottom: none;
+
+        .card-title {
+            font-size: 18px;
+            font-weight: 500;
+            color: $text-card-title;
+            margin: 0;
+        }
+    }
+
+    .card-body {
+        padding: $card-padding;
+    }
+}
+
+// Buttons
+.btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    height: 40px;
+    min-width: 80px;
+    padding: 8px 12px;
+    font-size: 14px;
+    font-weight: 500;
+    text-transform: uppercase;
+    letter-spacing: 0.4px;
+    border: none;
+    border-radius: $radius-btn;
+    cursor: pointer;
+    transition: all 0.2s ease;
+
+    &:disabled {
+        opacity: 0.65;
+        cursor: not-allowed;
+    }
+
+    &.btn-primary {
+        background-color: $primary;
+        color: white;
+        box-shadow: $shadow-btn-raised;
+
+        &:hover:not(:disabled) {
+            background-color: #5E50EE; // Primary hover
+            box-shadow: 0 8px 25px -8px $primary;
+        }
+    }
+
+    &.btn-outline-secondary {
+        background-color: transparent;
+        border: 1px solid $secondary;
+        color: $secondary;
+
+        &:hover:not(:disabled) {
+            background-color: rgba(130, 134, 139, .04);
+        }
+    }
+
+    &.btn-flat-primary {
+        background-color: transparent;
+        color: $primary;
+        box-shadow: none;
+
+        &:hover:not(:disabled) {
+            background-color: rgba(115, 103, 240, .08);
+        }
+    }
+}
+
+// Forms & Inputs
+.form-group {
+    margin-bottom: 1.5rem;
+
+    label {
+        display: block;
+        font-size: 13px;
+        font-weight: 500;
+        color: $text-card-title;
+        margin-bottom: 0.5rem;
+    }
+
+    .form-control {
+        display: block;
+        width: 100%;
+        height: 42px;
+        padding: 9px 15px;
+        font-size: 14px;
+        font-weight: 400;
+        line-height: 1.5;
+        color: $text-body;
+        background-color: #fff;
+        background-clip: padding-box;
+        border: $border-input;
+        border-radius: $radius-input;
+        transition: border-color 0.15s ease-in-out, box-shadow 0.15s ease-in-out;
+        box-sizing: border-box;
+
+        &::placeholder {
+            color: $text-muted;
+        }
+
+        &:focus {
+            color: $text-body;
+            background-color: #fff;
+            border: $border-input-focus;
+            outline: 0;
+            box-shadow: 0 0 0 3px rgba(115, 103, 240, .15);
+        }
+    }
+}
+
+// Tables
+.table-responsive {
+    display: block;
+    width: 100%;
+    overflow-x: auto;
+}
+
+.table {
+    width: 100%;
+    margin-bottom: 1rem;
+    color: $text-body;
+    border-collapse: collapse;
+
+    thead {
+        th {
+            vertical-align: bottom;
+            border-bottom: 1px solid #DFE3E7;
+            background-color: #F3F2F7;
+            color: $text-body;
+            font-size: 12px;
+            font-weight: 600;
+            text-transform: uppercase;
+            padding: 12px 24px;
+            text-align: left;
+        }
+    }
+
+    tbody {
+        tr {
+            border-bottom: 1px solid #DFE3E7;
+
+            &:nth-of-type(even) {
+                background-color: #F8F7FA;
+            }
+
+            &:hover {
+                background-color: rgba(115, 103, 240, .04);
+            }
+
+            td {
+                padding: 12px 24px;
+                vertical-align: middle;
+                border-top: none;
+            }
+        }
+    }
+}

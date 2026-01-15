@@ -1,0 +1,48 @@
+<div class="auth-wrapper">
+  <div class="auth-inner">
+    <div class="card">
+      <div class="card-body">
+        <a href="javascript:void(0);" class="brand-logo">
+          <h2 class="brand-text">PharmaSys</h2>
+        </a>
+
+        <h4 class="card-title">Welcome! 👋</h4>
+        <p class="card-text">Please sign-in to your account</p>
+
+        <form class="auth-login-form" [formGroup]="loginForm" (ngSubmit)="onSubmit()">
+          <div class="form-group">
+            <label for="identifier" class="form-label">Username or Email</label>
+            <input type="text" class="form-control" id="identifier" formControlName="identifier"
+              placeholder="john@example.com" autofocus tabindex="1" />
+            <div *ngIf="loginForm.get('identifier')?.invalid && loginForm.get('identifier')?.touched"
+              class="text-danger">
+              Username or email is required (min 3 characters)
+            </div>
+          </div>
+
+          <div class="form-group">
+            <div class="d-flex justify-content-between">
+              <label class="form-label" for="password">Password</label>
+              <a href="javascript:void(0);">
+                <small>Forgot Password?</small>
+              </a>
+            </div>
+            <input type="password" class="form-control" id="password" formControlName="password"
+              placeholder="············" tabindex="2" />
+            <div *ngIf="loginForm.get('password')?.invalid && loginForm.get('password')?.touched" class="text-danger">
+              Password is required (min 6 characters)
+            </div>
+          </div>
+
+          <div class="alert alert-danger" *ngIf="errorMessage">
+            {{ errorMessage }}
+          </div>
+
+          <button class="btn-primary" tabindex="3" [disabled]="loginForm.invalid || isLoading">
+            {{ isLoading ? 'Logging in...' : 'Sign in' }}
+          </button>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>

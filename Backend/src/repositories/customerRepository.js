@@ -89,15 +89,9 @@ class CustomerRepository {
       ];
     }
 
-    // Exact match filters - with inclusive logic for 'both'
+    // Exact match filters
     if (type) {
-      if (type === 'customer') {
-        query.type = { $in: ['customer', 'both'] };
-      } else if (type === 'supplier') {
-        query.type = { $in: ['supplier', 'both'] };
-      } else {
-        query.type = type;
-      }
+      query.type = type;
     }
     if (isActive !== undefined) query.isActive = isActive;
     if (city) query['contactInfo.city'] = new RegExp(`^${city}$`, 'i');

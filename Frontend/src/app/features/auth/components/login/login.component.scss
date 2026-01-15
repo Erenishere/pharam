@@ -1,0 +1,164 @@
+@import 'styles/vuexy-vars';
+
+.auth-wrapper {
+  display: flex;
+  min-height: 100vh;
+  width: 100%;
+  align-items: center;
+  justify-content: center;
+  background-color: $bg-page;
+  padding: 1rem;
+}
+
+.auth-inner {
+  width: 100%;
+  max-width: 380px;
+}
+
+.brand-logo {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin-bottom: 1.5rem;
+  text-decoration: none;
+
+  .brand-text {
+    font-weight: 600;
+    font-size: 1.5rem;
+    color: $primary;
+    margin: 0;
+  }
+}
+
+.card {
+  background-color: $bg-card;
+  border-radius: $radius-card;
+  box-shadow: $shadow-card;
+  border: none;
+}
+
+.card-body {
+  padding: 1.75rem;
+}
+
+.card-title {
+  text-align: center;
+  font-weight: 600;
+  font-size: 1.25rem;
+  color: $text-card-title;
+  margin-bottom: 0.5rem;
+}
+
+.card-text {
+  text-align: center;
+  color: $text-body;
+  margin-bottom: 1.5rem;
+  font-size: 0.9rem;
+}
+
+.auth-login-form {
+  margin-top: 1rem;
+}
+
+.form-group {
+  margin-bottom: 1.25rem;
+}
+
+.form-label {
+  font-size: 0.875rem;
+  color: $text-card-title;
+  margin-bottom: 0.5rem;
+  display: block;
+  font-weight: 500;
+}
+
+.form-control {
+  display: block;
+  width: 100%;
+  padding: 0.6rem 1rem;
+  font-size: 0.95rem;
+  font-weight: 400;
+  line-height: 1.45;
+  color: $text-body;
+  background-color: #fff;
+  border: $border-input;
+  border-radius: $radius-input;
+  transition: border-color 0.15s ease-in-out, box-shadow 0.15s ease-in-out;
+
+  &:focus {
+    color: $text-body;
+    background-color: #fff;
+    border-color: $primary;
+    outline: 0;
+    box-shadow: 0 3px 10px 0 rgba(34, 41, 47, 0.1);
+  }
+
+  &::placeholder {
+    color: #B8B8B8;
+  }
+}
+
+.btn-primary {
+  display: block;
+  width: 100%;
+  font-weight: 500;
+  color: #fff;
+  text-align: center;
+  background-color: $primary;
+  border: none;
+  padding: 0.75rem 1.5rem;
+  font-size: 1rem;
+  border-radius: $radius-btn;
+  transition: all 0.2s ease-in-out;
+  cursor: pointer;
+  margin-top: 0.5rem;
+
+  &:hover:not(:disabled) {
+    box-shadow: 0 8px 25px -8px $primary;
+    transform: translateY(-1px);
+  }
+
+  &:disabled {
+    opacity: 0.65;
+    cursor: not-allowed;
+  }
+}
+
+.alert-danger {
+  background-color: rgba($danger, 0.12);
+  color: $danger;
+  border: 1px solid rgba($danger, 0.3);
+  border-radius: 6px;
+  padding: 0.75rem;
+  margin-bottom: 1rem;
+  font-size: 0.875rem;
+}
+
+.text-danger {
+  color: $danger !important;
+  font-size: 0.8rem;
+  margin-top: 0.35rem;
+  display: block;
+}
+
+.d-flex {
+  display: flex !important;
+}
+
+.justify-content-between {
+  justify-content: space-between !important;
+}
+
+a {
+  color: $primary;
+  text-decoration: none;
+  transition: all 0.2s;
+
+  &:hover {
+    color: darken($primary, 10%);
+  }
+
+  small {
+    font-size: 0.85rem;
+  }
+}
