@@ -1,0 +1,234 @@
+<div class="item-detail-dialog">
+    <div class="dialog-header">
+        <h2 mat-dialog-title>
+            <mat-icon>inventory_2</mat-icon>
+            Item Details
+        </h2>
+        <button mat-icon-button (click)="close()">
+            <mat-icon>close</mat-icon>
+        </button>
+    </div>
+
+    <mat-dialog-content>
+        <div class="item-detail-content">
+            <!-- Item Avatar Section -->
+            <div class="item-avatar-section">
+                <div class="avatar-circle">
+                    <mat-icon>inventory</mat-icon>
+                </div>
+                <h3 class="item-name">{{ item.name }}</h3>
+                <p class="item-code">{{ item.code }}</p>
+                <p class="item-category" *ngIf="item.category">{{ item.category }}</p>
+            </div>
+
+            <mat-divider></mat-divider>
+
+            <!-- Item Information Grid -->
+            <div class="info-grid">
+                <!-- Basic Information -->
+                <div class="info-item" *ngIf="item.description">
+                    <div class="info-label">
+                        <mat-icon>description</mat-icon>
+                        <span>Description</span>
+                    </div>
+                    <div class="info-value">
+                        {{ item.description }}
+                    </div>
+                </div>
+
+                <div class="info-item">
+                    <div class="info-label">
+                        <mat-icon>straighten</mat-icon>
+                        <span>Unit</span>
+                    </div>
+                    <div class="info-value">
+                        <mat-chip class="unit-chip">{{ item.unit | titlecase }}</mat-chip>
+                    </div>
+                </div>
+
+                <!-- Pricing Information -->
+                <div class="info-item">
+                    <div class="info-label">
+                        <mat-icon>attach_money</mat-icon>
+                        <span>Cost Price</span>
+                    </div>
+                    <div class="info-value pricing-value">
+                        {{ formatCurrency(item.pricing.costPrice, item.pricing.currency) }}
+                    </div>
+                </div>
+
+                <div class="info-item">
+                    <div class="info-label">
+                        <mat-icon>sell</mat-icon>
+                        <span>Sale Price</span>
+                    </div>
+                    <div class="info-value pricing-value">
+                        {{ formatCurrency(item.pricing.salePrice, item.pricing.currency) }}
+                    </div>
+                </div>
+
+                <div class="info-item">
+                    <div class="info-label">
+                        <mat-icon>trending_up</mat-icon>
+                        <span>Profit Margin</span>
+                    </div>
+                    <div class="info-value">
+                        <mat-chip class="profit-chip">{{ getProfitMargin().toFixed(2) }}%</mat-chip>
+                    </div>
+                </div>
+
+                <!-- Tax Information -->
+                <div class="info-item" *ngIf="item.tax">
+                    <div class="info-label">
+                        <mat-icon>percent</mat-icon>
+                        <span>GST Rate</span>
+                    </div>
+                    <div class="info-value">
+                        {{ item.tax.gstRate }}%
+                    </div>
+                </div>
+
+                <div class="info-item" *ngIf="item.tax">
+                    <div class="info-label">
+                        <mat-icon>percent</mat-icon>
+                        <span>WHT Rate</span>
+                    </div>
+                    <div class="info-value">
+                        {{ item.tax.whtRate }}%
+                    </div>
+                </div>
+
+                <!-- Inventory Information -->
+                <div class="info-item">
+                    <div class="info-label">
+                        <mat-icon>inventory</mat-icon>
+                        <span>Current Stock</span>
+                    </div>
+                    <div class="info-value">
+                        <mat-chip [class]="'stock-' + getStockStatus()">
+                            {{ item.inventory.currentStock }} {{ item.unit }}
+                        </mat-chip>
+                    </div>
+                </div>
+
+                <div class="info-item">
+                    <div class="info-label">
+                        <mat-icon>warning</mat-icon>
+                        <span>Minimum Stock</span>
+                    </div>
+                    <div class="info-value">
+                        {{ item.inventory.minimumStock }} {{ item.unit }}
+                    </div>
+                </div>
+
+                <div class="info-item">
+                    <div class="info-label">
+                        <mat-icon>check_circle</mat-icon>
+                        <span>Maximum Stock</span>
+                    </div>
+                    <div class="info-value">
+                        {{ item.inventory.maximumStock }} {{ item.unit }}
+                    </div>
+                </div>
+
+                <div class="info-item">
+                    <div class="info-label">
+                        <mat-icon>analytics</mat-icon>
+                        <span>Stock Status</span>
+                    </div>
+                    <div class="info-value">
+                        <mat-chip [class]="'status-' + getStockStatus()">
+                            {{ getStockStatusLabel() }}
+                        </mat-chip>
+                    </div>
+                </div>
+
+                <!-- Additional Information -->
+                <div class="info-item" *ngIf="item.barcode">
+                    <div class="info-label">
+                        <mat-icon>qr_code</mat-icon>
+                        <span>Barcode</span>
+                    </div>
+                    <div class="info-value barcode-value">
+                        {{ item.barcode }}
+                    </div>
+                </div>
+
+                <div class="info-item" *ngIf="item.packSize">
+                    <div class="info-label">
+                        <mat-icon>package</mat-icon>
+                        <span>Pack Size</span>
+                    </div>
+                    <div class="info-value">
+                        {{ item.packSize }}
+                    </div>
+                </div>
+
+                <div class="info-item" *ngIf="item.defaultWarrantyMonths">
+                    <div class="info-label">
+                        <mat-icon>verified</mat-icon>
+                        <span>Warranty</span>
+                    </div>
+                    <div class="info-value">
+                        {{ item.defaultWarrantyMonths }} months
+                        <div *ngIf="item.defaultWarrantyDetails" class="warranty-details">
+                            {{ item.defaultWarrantyDetails }}
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Status -->
+                <div class="info-item">
+                    <div class="info-label">
+                        <mat-icon>toggle_on</mat-icon>
+                        <span>Status</span>
+                    </div>
+                    <div class="info-value">
+                        <mat-chip [class.active-chip]="item.isActive" [class.inactive-chip]="!item.isActive">
+                            {{ item.isActive ? 'Active' : 'Inactive' }}
+                        </mat-chip>
+                    </div>
+                </div>
+
+                <!-- Timestamps -->
+                <div class="info-item">
+                    <div class="info-label">
+                        <mat-icon>event</mat-icon>
+                        <span>Created At</span>
+                    </div>
+                    <div class="info-value">
+                        {{ formatDate(item.createdAt) }}
+                    </div>
+                </div>
+
+                <div class="info-item">
+                    <div class="info-label">
+                        <mat-icon>update</mat-icon>
+                        <span>Last Updated</span>
+                    </div>
+                    <div class="info-value">
+                        {{ formatDate(item.updatedAt) }}
+                    </div>
+                </div>
+
+                <!-- Item ID -->
+                <div class="info-item">
+                    <div class="info-label">
+                        <mat-icon>fingerprint</mat-icon>
+                        <span>Item ID</span>
+                    </div>
+                    <div class="info-value item-id">
+                        {{ item._id }}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </mat-dialog-content>
+
+    <mat-dialog-actions align="end">
+        <button mat-raised-button color="primary" (click)="close()">
+            <mat-icon>close</mat-icon>
+            Close
+        </button>
+    </mat-dialog-actions>
+</div>

@@ -1,24 +1,24 @@
 const mongoose = require('mongoose');
 
-const customerSchema = new mongoose.Schema({
-  code: {
-    type: String,
-    required: [true, 'Customer code is required'],
-    unique: true,
-    trim: true,
-    uppercase: true,
-    maxlength: [20, 'Customer code cannot exceed 20 characters'],
-  },
-  name: {
-    type: String,
-    required: [true, 'Customer name is required'],
-    trim: true,
-    maxlength: [200, 'Customer name cannot exceed 200 characters'],
-  },
-  type: {
-    type: String,
-    required: [true, 'Customer type is required'],
-    enum: {
+const customerSchema = new mongoose.Schema(
+  {
+    code: {
+      type: String,
+      required: [true, 'Customer code is required'],
+      unique: true,
+      trim: true,
+      uppercase: true,
+      maxlength: [20, 'Customer code cannot exceed 20 characters'],
+    },
+    name: {
+      type: String,
+      required: [true, 'Customer name is required'],
+      trim: true,
+      maxlength: [200, 'Customer name cannot exceed 200 characters'],
+    },
+    type: {
+      type: String,
+      required: [true, 'Customer type is required'],
       enum: {
         values: ['retail', 'wholesale', 'distributor', 'regular', 'customer', 'supplier', 'both'],
         message: 'Type must be one of: retail, wholesale, distributor, regular, customer, supplier, both',
@@ -76,7 +76,6 @@ const customerSchema = new mongoose.Schema({
         trim: true,
         maxlength: [50, 'Tax number cannot exceed 50 characters'],
       },
-      // Phase 2 - Requirement 16.1: Tax Registration Fields
       licenseNo: {
         type: String,
         trim: true,
@@ -108,7 +107,6 @@ const customerSchema = new mongoose.Schema({
         min: [0, 'WHT percent cannot be negative'],
         max: [100, 'WHT percent cannot exceed 100'],
       },
-      // Phase 2 - Requirement 16.2: Credit and Route Fields
       creditDays: {
         type: Number,
         default: 0,
@@ -122,7 +120,6 @@ const customerSchema = new mongoose.Schema({
         default: 'PKR',
         maxlength: [3, 'Currency code must be 3 characters'],
       },
-      // Phase 2 - Account-based tax determination (Requirement 6.3, 6.4)
       advanceTaxRate: {
         type: Number,
         enum: [0, 0.5, 2.5],
@@ -138,7 +135,6 @@ const customerSchema = new mongoose.Schema({
       ref: 'Route',
       default: null,
     },
-    // Phase 2 - Due invoice tracking (Requirement 30)
     dueInvoiceQty: {
       type: Number,
       default: 0,
@@ -148,9 +144,11 @@ const customerSchema = new mongoose.Schema({
       type: Boolean,
       default: true,
     },
-  }, {
-  timestamps: true,
-});
+  },
+  {
+    timestamps: true,
+  }
+);
 
 // Indexes
 customerSchema.index({ code: 1 }, { unique: true });
@@ -160,7 +158,7 @@ customerSchema.index({ isActive: 1 });
 customerSchema.index({ 'contactInfo.city': 1 });
 customerSchema.index({ 'contactInfo.town': 1 });
 customerSchema.index({ 'financialInfo.creditLimit': 1 });
-customerSchema.index({ dueInvoiceQty: 1 }); // Phase 2 - Due invoice tracking
+customerSchema.index({ dueInvoiceQty: 1 });
 
 // Virtual for full contact info
 customerSchema.virtual('fullAddress').get(function () {
@@ -171,35 +169,28 @@ customerSchema.virtual('fullAddress').get(function () {
   return parts.join(', ');
 });
 
-// Instance method to check credit availability
+// Instance methods
 customerSchema.methods.checkCreditAvailability = function (amount) {
   return this.financialInfo.creditLimit >= amount;
 };
 
-// Instance method to get available credit
 customerSchema.methods.getAvailableCredit = function () {
-  // This would need to be calculated with actual receivables
-  // For now, returning the credit limit
   return this.financialInfo.creditLimit;
 };
 
-// Phase 2 - Instance method to get advance tax rate (Requirement 6.3)
 customerSchema.methods.getAdvanceTaxRate = function () {
   return this.financialInfo.advanceTaxRate || 0;
 };
 
-// Phase 2 - Instance method to check if customer is non-filer (Requirement 6.4)
 customerSchema.methods.isNonFilerAccount = function () {
   return this.financialInfo.isNonFiler === true;
 };
 
-// Phase 2 - Instance method to calculate advance tax amount (Requirement 6.3)
 customerSchema.methods.calculateAdvanceTax = function (amount) {
   const rate = this.getAdvanceTaxRate();
   return (amount * rate) / 100;
 };
 
-// Phase 2 - Instance method to calculate non-filer GST amount (Requirement 6.4)
 customerSchema.methods.calculateNonFilerGST = function (amount) {
   if (this.isNonFilerAccount()) {
     return (amount * 0.1) / 100; // 0.1% additional GST for non-filers
@@ -207,7 +198,7 @@ customerSchema.methods.calculateNonFilerGST = function (amount) {
   return 0;
 };
 
-// Static method to find customers with credit limit
+// Static methods
 customerSchema.statics.findWithCreditLimit = function (minLimit = 0) {
   return this.find({
     'financialInfo.creditLimit': { $gte: minLimit },
@@ -215,12 +206,11 @@ customerSchema.statics.findWithCreditLimit = function (minLimit = 0) {
   });
 };
 
-// Static method to find by type
 customerSchema.statics.findByType = function (type) {
   return this.find({ type, isActive: true });
 };
 
-// Pre-save middleware to generate code if not provided
+// Pre-save middleware
 customerSchema.pre('save', async function (next) {
   if (!this.code && this.isNew) {
     const count = await this.constructor.countDocuments();
