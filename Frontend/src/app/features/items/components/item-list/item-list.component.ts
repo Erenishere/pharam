@@ -12,199 +12,194 @@ import { MatChipsModule } from '@angular/material/chips';
 import { FormsModule } from '@angular/forms';
 
 interface Item {
-    _id: string;
-    code: string;
-    name: string;
-    category: string;
-    unit: string;
-    pricing: {
-        costPrice: number;
-        salePrice: number;
-        currency: string;
-    };
-    inventory: {
-        currentStock: number;
-        minimumStock: number;
-        maximumStock: number;
-    };
-    isActive: boolean;
-    createdAt: string;
-    updatedAt: string;
+  _id: string;
+  code: string;
+  name: string;
+  category: string;
+  unit: string;
+  pricing: {
+    costPrice: number;
+    salePrice: number;
+    currency: string;
+  };
+  inventory: {
+    currentStock: number;
+    minimumStock: number;
+    maximumStock: number;
+  };
+  isActive: boolean;
+  createdAt: string;
+  updatedAt: string;
 }
 
 @Component({
-    selector: 'app-item-list',
-    standalone: true,
-    imports: [
-        CommonModule,
-        MatCardModule,
-        MatButtonModule,
-        MatIconModule,
-        MatTableModule,
-        MatPaginatorModule,
-        MatFormFieldModule,
-        MatInputModule,
-        MatSelectModule,
-        MatChipsModule,
-        FormsModule
-    ],
-    template: `
+  selector: 'app-item-list',
+  standalone: true,
+  imports: [
+    CommonModule,
+    MatCardModule,
+    MatButtonModule,
+    MatIconModule,
+    MatTableModule,
+    MatPaginatorModule,
+    MatFormFieldModule,
+    MatInputModule,
+    MatSelectModule,
+    MatChipsModule,
+    FormsModule
+  ],
+  template: `
     <div class="item-list-container">
-      <div class="page-header">
-        <h1>
-          <mat-icon>inventory_2</mat-icon>
-          Items Management
-        </h1>
-        <p class="page-description">Manage your inventory items, stock levels, and pricing</p>
+      <div class="header">
+        <h1>Items Management</h1>
+        <button mat-raised-button color="primary" (click)="addItem()">
+          <mat-icon>add</mat-icon>
+          Add Item
+        </button>
       </div>
 
-      <mat-card class="items-card">
-        <mat-card-header>
-          <mat-card-title>Items List</mat-card-title>
-          <mat-card-subtitle>{{ totalItems }} items found</mat-card-subtitle>
-        </mat-card-header>
-
-        <mat-card-content>
-          <!-- Filters Section -->
-          <div class="filters-section">
-            <div class="search-filters">
-              <mat-form-field appearance="outline" class="search-field">
-                <mat-label>Search items</mat-label>
-                <input matInput [(ngModel)]="searchKeyword" (input)="onSearch()" placeholder="Search by name, code, or description">
-                <mat-icon matSuffix>search</mat-icon>
-              </mat-form-field>
-
-              <mat-form-field appearance="outline" class="category-filter">
-                <mat-label>Category</mat-label>
-                <mat-select [(ngModel)]="selectedCategory" (selectionChange)="onCategoryChange()">
-                  <mat-option value="">All Categories</mat-option>
-                  <mat-option *ngFor="let category of categories" [value]="category">
-                    {{ category }}
-                  </mat-option>
-                </mat-select>
-              </mat-form-field>
-
-              <mat-form-field appearance="outline" class="stock-filter">
-                <mat-label>Stock Status</mat-label>
-                <mat-select [(ngModel)]="selectedStockStatus" (selectionChange)="onStockStatusChange()">
-                  <mat-option value="">All Stock</mat-option>
-                  <mat-option value="low">Low Stock</mat-option>
-                  <mat-option value="out">Out of Stock</mat-option>
-                  <mat-option value="normal">Normal Stock</mat-option>
-                  <mat-option value="overstock">Overstock</mat-option>
-                </mat-select>
-              </mat-form-field>
-            </div>
-
-            <div class="action-buttons">
-              <button mat-raised-button color="primary" (click)="addItem()">
-                <mat-icon>add</mat-icon>
-                Add Item
-              </button>
-              <button mat-stroked-button (click)="refreshItems()">
-                <mat-icon>refresh</mat-icon>
-                Refresh
-              </button>
-            </div>
+      <div class="card">
+        <!-- Filters Section -->
+        <div class="card-header">
+          <div class="search-filters">
+            <mat-form-field appearance="outline" class="search-field">
+              <mat-label>Search items</mat-label>
+              <input matInput [(ngModel)]="searchKeyword" (input)="onSearch()" placeholder="Search by name, code, or description">
+              <mat-icon matPrefix>search</mat-icon>
+            </mat-form-field>
           </div>
 
-          <!-- Items Table -->
-          <div class="table-container" *ngIf="!loading; else loadingTemplate">
-            <table mat-table [dataSource]="items" class="items-table">
-              <!-- Code Column -->
-              <ng-container matColumnDef="code">
-                <th mat-header-cell *matHeaderCellDef>Code</th>
-                <td mat-cell *matCellDef="let item">
-                  <span class="item-code">{{ item.code }}</span>
-                </td>
-              </ng-container>
+          <div class="filter-actions">
+            <mat-form-field appearance="outline" class="category-filter">
+              <mat-label>Category</mat-label>
+              <mat-select [(ngModel)]="selectedCategory" (selectionChange)="onCategoryChange()">
+                <mat-option value="">All Categories</mat-option>
+                <mat-option *ngFor="let category of categories" [value]="category">
+                  {{ category }}
+                </mat-option>
+              </mat-select>
+            </mat-form-field>
 
-              <!-- Name Column -->
-              <ng-container matColumnDef="name">
-                <th mat-header-cell *matHeaderCellDef>Name</th>
-                <td mat-cell *matCellDef="let item">
-                  <div class="item-name">
-                    <strong>{{ item.name }}</strong>
-                    <small class="item-category">{{ item.category }}</small>
-                  </div>
-                </td>
-              </ng-container>
+            <mat-form-field appearance="outline" class="stock-filter">
+              <mat-label>Stock Status</mat-label>
+              <mat-select [(ngModel)]="selectedStockStatus" (selectionChange)="onStockStatusChange()">
+                <mat-option value="">All Stock</mat-option>
+                <mat-option value="low">Low Stock</mat-option>
+                <mat-option value="out">Out of Stock</mat-option>
+                <mat-option value="normal">Normal Stock</mat-option>
+                <mat-option value="overstock">Overstock</mat-option>
+              </mat-select>
+            </mat-form-field>
 
-              <!-- Pricing Column -->
-              <ng-container matColumnDef="pricing">
-                <th mat-header-cell *matHeaderCellDef>Pricing</th>
-                <td mat-cell *matCellDef="let item">
-                  <div class="pricing-info">
-                    <div class="sale-price">{{ item.pricing.currency }} {{ item.pricing.salePrice | number:'1.2-2' }}</div>
-                    <div class="cost-price">Cost: {{ item.pricing.currency }} {{ item.pricing.costPrice | number:'1.2-2' }}</div>
-                  </div>
-                </td>
-              </ng-container>
+            <button mat-stroked-button (click)="refreshItems()">
+              <mat-icon>refresh</mat-icon>
+              Refresh
+            </button>
+          </div>
+        </div>
 
-              <!-- Stock Column -->
-              <ng-container matColumnDef="stock">
-                <th mat-header-cell *matHeaderCellDef>Stock</th>
-                <td mat-cell *matCellDef="let item">
-                  <div class="stock-info">
-                    <mat-chip [class]="getStockStatusClass(item)">
-                      {{ item.inventory.currentStock }} {{ item.unit }}
-                    </mat-chip>
-                    <small>Min: {{ item.inventory.minimumStock }}</small>
-                  </div>
-                </td>
-              </ng-container>
+        <!-- Item Count Display -->
+        <div class="item-count" *ngIf="!loading">
+          <mat-icon>inventory_2</mat-icon>
+          <span>Showing {{ items.length }} of {{ totalItems }} items</span>
+        </div>
 
-              <!-- Status Column -->
-              <ng-container matColumnDef="status">
-                <th mat-header-cell *matHeaderCellDef>Status</th>
-                <td mat-cell *matCellDef="let item">
-                  <mat-chip [class]="item.isActive ? 'status-active' : 'status-inactive'">
-                    {{ item.isActive ? 'Active' : 'Inactive' }}
+        <!-- Loading Spinner -->
+        <div *ngIf="loading" class="loading-container">
+          <mat-icon class="loading-icon">hourglass_empty</mat-icon>
+          <p>Loading items...</p>
+        </div>
+
+        <!-- Items Table -->
+        <div class="table-responsive" *ngIf="!loading">
+          <table mat-table [dataSource]="items" class="items-table">
+            <!-- Code Column -->
+            <ng-container matColumnDef="code">
+              <th mat-header-cell *matHeaderCellDef>Code</th>
+              <td mat-cell *matCellDef="let item">
+                <span class="item-code">{{ item.code }}</span>
+              </td>
+            </ng-container>
+
+            <!-- Name Column -->
+            <ng-container matColumnDef="name">
+              <th mat-header-cell *matHeaderCellDef>Name</th>
+              <td mat-cell *matCellDef="let item">
+                <div class="item-name">
+                  <strong>{{ item.name }}</strong>
+                  <small class="item-category">{{ item.category }}</small>
+                </div>
+              </td>
+            </ng-container>
+
+            <!-- Pricing Column -->
+            <ng-container matColumnDef="pricing">
+              <th mat-header-cell *matHeaderCellDef>Pricing</th>
+              <td mat-cell *matCellDef="let item">
+                <div class="pricing-info">
+                  <div class="sale-price">{{ item.pricing.currency }} {{ item.pricing.salePrice | number:'1.2-2' }}</div>
+                  <div class="cost-price">Cost: {{ item.pricing.currency }} {{ item.pricing.costPrice | number:'1.2-2' }}</div>
+                </div>
+              </td>
+            </ng-container>
+
+            <!-- Stock Column -->
+            <ng-container matColumnDef="stock">
+              <th mat-header-cell *matHeaderCellDef>Stock</th>
+              <td mat-cell *matCellDef="let item">
+                <div class="stock-info">
+                  <mat-chip [class]="getStockStatusClass(item)">
+                    {{ item.inventory.currentStock }} {{ item.unit }}
                   </mat-chip>
-                </td>
-              </ng-container>
+                  <small>Min: {{ item.inventory.minimumStock }}</small>
+                </div>
+              </td>
+            </ng-container>
 
-              <!-- Actions Column -->
-              <ng-container matColumnDef="actions">
-                <th mat-header-cell *matHeaderCellDef>Actions</th>
-                <td mat-cell *matCellDef="let item">
-                  <div class="action-buttons">
-                    <button mat-icon-button (click)="viewItem(item)" matTooltip="View Details">
-                      <mat-icon>visibility</mat-icon>
-                    </button>
-                    <button mat-icon-button (click)="editItem(item)" matTooltip="Edit Item">
-                      <mat-icon>edit</mat-icon>
-                    </button>
-                    <button mat-icon-button (click)="updateStock(item)" matTooltip="Update Stock">
-                      <mat-icon>inventory</mat-icon>
-                    </button>
-                  </div>
-                </td>
-              </ng-container>
+            <!-- Status Column -->
+            <ng-container matColumnDef="status">
+              <th mat-header-cell *matHeaderCellDef>Status</th>
+              <td mat-cell *matCellDef="let item">
+                <mat-chip [class]="item.isActive ? 'status-active' : 'status-inactive'">
+                  {{ item.isActive ? 'Active' : 'Inactive' }}
+                </mat-chip>
+              </td>
+            </ng-container>
 
-              <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
-              <tr mat-row *matRowDef="let row; columns: displayedColumns;"></tr>
-            </table>
+            <!-- Actions Column -->
+            <ng-container matColumnDef="actions">
+              <th mat-header-cell *matHeaderCellDef>Actions</th>
+              <td mat-cell *matCellDef="let item">
+                <div class="action-buttons">
+                  <button mat-icon-button (click)="viewItem(item)" matTooltip="View Details">
+                    <mat-icon>visibility</mat-icon>
+                  </button>
+                  <button mat-icon-button (click)="editItem(item)" matTooltip="Edit Item">
+                    <mat-icon>edit</mat-icon>
+                  </button>
+                  <button mat-icon-button (click)="updateStock(item)" matTooltip="Update Stock">
+                    <mat-icon>inventory</mat-icon>
+                  </button>
+                  <button mat-icon-button (click)="deleteItem(item)" matTooltip="Delete Item">
+                    <mat-icon>delete</mat-icon>
+                  </button>
+                </div>
+              </td>
+            </ng-container>
 
-            <!-- No Data Message -->
-            <div *ngIf="items.length === 0" class="no-data">
-              <mat-icon>inventory_2</mat-icon>
-              <h3>No items found</h3>
-              <p>{{ searchKeyword ? 'Try adjusting your search criteria' : 'Start by adding your first item' }}</p>
-              <button mat-raised-button color="primary" (click)="addItem()">
-                <mat-icon>add</mat-icon>
-                Add First Item
-              </button>
-            </div>
-          </div>
+            <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
+            <tr mat-row *matRowDef="let row; columns: displayedColumns;"></tr>
 
-          <!-- Loading Template -->
-          <ng-template #loadingTemplate>
-            <div class="loading-container">
-              <mat-icon class="loading-icon">hourglass_empty</mat-icon>
-              <p>Loading items...</p>
-            </div>
-          </ng-template>
+            <!-- No Data Row -->
+            <tr class="mat-row" *matNoDataRow>
+              <td class="mat-cell" [attr.colspan]="displayedColumns.length">
+                <div class="no-data">
+                  <mat-icon>inventory_2</mat-icon>
+                  <p>No items found</p>
+                </div>
+              </td>
+            </tr>
+          </table>
 
           <!-- Pagination -->
           <mat-paginator
@@ -215,163 +210,168 @@ interface Item {
             (page)="onPageChange($event)"
             showFirstLastButtons>
           </mat-paginator>
-        </mat-card-content>
-      </mat-card>
+        </div>
+      </div>
     </div>
   `,
-    styleUrl: './item-list.component.scss'
+  styleUrl: './item-list.component.scss'
 })
 export class ItemListComponent implements OnInit {
-    items: Item[] = [];
-    categories: string[] = [];
-    totalItems = 0;
-    pageSize = 10;
-    currentPage = 0;
-    loading = false;
+  items: Item[] = [];
+  categories: string[] = [];
+  totalItems = 0;
+  pageSize = 10;
+  currentPage = 0;
+  loading = false;
 
-    // Filters
-    searchKeyword = '';
-    selectedCategory = '';
-    selectedStockStatus = '';
+  // Filters
+  searchKeyword = '';
+  selectedCategory = '';
+  selectedStockStatus = '';
 
-    displayedColumns: string[] = ['code', 'name', 'pricing', 'stock', 'status', 'actions'];
+  displayedColumns: string[] = ['code', 'name', 'pricing', 'stock', 'status', 'actions'];
 
-    ngOnInit() {
-        this.loadItems();
-        this.loadCategories();
-    }
+  ngOnInit() {
+    this.loadItems();
+    this.loadCategories();
+  }
 
-    loadItems() {
-        this.loading = true;
+  loadItems() {
+    this.loading = true;
 
-        // Simulate API call - replace with actual service call
-        setTimeout(() => {
-            this.items = this.getMockItems();
-            this.totalItems = this.items.length;
-            this.loading = false;
-        }, 1000);
-    }
+    // Simulate API call - replace with actual service call
+    setTimeout(() => {
+      this.items = this.getMockItems();
+      this.totalItems = this.items.length;
+      this.loading = false;
+    }, 1000);
+  }
 
-    loadCategories() {
-        // Simulate API call - replace with actual service call
-        this.categories = ['Medicine', 'Tablet', 'Syrup', 'Injection', 'Capsule', 'Ointment'];
-    }
+  loadCategories() {
+    // Simulate API call - replace with actual service call
+    this.categories = ['Medicine', 'Tablet', 'Syrup', 'Injection', 'Capsule', 'Ointment'];
+  }
 
-    onSearch() {
-        // Implement search logic
-        console.log('Searching for:', this.searchKeyword);
-        this.loadItems();
-    }
+  onSearch() {
+    // Implement search logic
+    console.log('Searching for:', this.searchKeyword);
+    this.loadItems();
+  }
 
-    onCategoryChange() {
-        console.log('Category changed:', this.selectedCategory);
-        this.loadItems();
-    }
+  onCategoryChange() {
+    console.log('Category changed:', this.selectedCategory);
+    this.loadItems();
+  }
 
-    onStockStatusChange() {
-        console.log('Stock status changed:', this.selectedStockStatus);
-        this.loadItems();
-    }
+  onStockStatusChange() {
+    console.log('Stock status changed:', this.selectedStockStatus);
+    this.loadItems();
+  }
 
-    onPageChange(event: any) {
-        this.currentPage = event.pageIndex;
-        this.pageSize = event.pageSize;
-        this.loadItems();
-    }
+  onPageChange(event: any) {
+    this.currentPage = event.pageIndex;
+    this.pageSize = event.pageSize;
+    this.loadItems();
+  }
 
-    addItem() {
-        console.log('Add new item');
-        // Implement add item logic
-    }
+  addItem() {
+    console.log('Add new item');
+    // Implement add item logic
+  }
 
-    viewItem(item: Item) {
-        console.log('View item:', item);
-        // Implement view item logic
-    }
+  viewItem(item: Item) {
+    console.log('View item:', item);
+    // Implement view item logic
+  }
 
-    editItem(item: Item) {
-        console.log('Edit item:', item);
-        // Implement edit item logic
-    }
+  editItem(item: Item) {
+    console.log('Edit item:', item);
+    // Implement edit item logic
+  }
 
-    updateStock(item: Item) {
-        console.log('Update stock for item:', item);
-        // Implement stock update logic
-    }
+  updateStock(item: Item) {
+    console.log('Update stock for item:', item);
+    // Implement stock update logic
+  }
 
-    refreshItems() {
-        this.loadItems();
-    }
+  deleteItem(item: Item) {
+    console.log('Delete item:', item);
+    // Implement delete item logic
+  }
 
-    getStockStatusClass(item: Item): string {
-        if (item.inventory.currentStock === 0) return 'stock-out';
-        if (item.inventory.currentStock <= item.inventory.minimumStock) return 'stock-low';
-        if (item.inventory.currentStock >= item.inventory.maximumStock) return 'stock-over';
-        return 'stock-normal';
-    }
+  refreshItems() {
+    this.loadItems();
+  }
 
-    private getMockItems(): Item[] {
-        return [
-            {
-                _id: '1',
-                code: 'ITEM001',
-                name: 'Paracetamol 500mg',
-                category: 'Tablet',
-                unit: 'piece',
-                pricing: {
-                    costPrice: 2.50,
-                    salePrice: 5.00,
-                    currency: 'PKR'
-                },
-                inventory: {
-                    currentStock: 150,
-                    minimumStock: 50,
-                    maximumStock: 500
-                },
-                isActive: true,
-                createdAt: '2024-01-01T00:00:00Z',
-                updatedAt: '2024-01-01T00:00:00Z'
-            },
-            {
-                _id: '2',
-                code: 'ITEM002',
-                name: 'Amoxicillin 250mg',
-                category: 'Capsule',
-                unit: 'piece',
-                pricing: {
-                    costPrice: 8.00,
-                    salePrice: 15.00,
-                    currency: 'PKR'
-                },
-                inventory: {
-                    currentStock: 25,
-                    minimumStock: 30,
-                    maximumStock: 200
-                },
-                isActive: true,
-                createdAt: '2024-01-01T00:00:00Z',
-                updatedAt: '2024-01-01T00:00:00Z'
-            },
-            {
-                _id: '3',
-                code: 'ITEM003',
-                name: 'Cough Syrup 100ml',
-                category: 'Syrup',
-                unit: 'ml',
-                pricing: {
-                    costPrice: 45.00,
-                    salePrice: 85.00,
-                    currency: 'PKR'
-                },
-                inventory: {
-                    currentStock: 0,
-                    minimumStock: 20,
-                    maximumStock: 100
-                },
-                isActive: true,
-                createdAt: '2024-01-01T00:00:00Z',
-                updatedAt: '2024-01-01T00:00:00Z'
-            }
-        ];
-    }
+  getStockStatusClass(item: Item): string {
+    if (item.inventory.currentStock === 0) return 'stock-out';
+    if (item.inventory.currentStock <= item.inventory.minimumStock) return 'stock-low';
+    if (item.inventory.currentStock >= item.inventory.maximumStock) return 'stock-over';
+    return 'stock-normal';
+  }
+
+  private getMockItems(): Item[] {
+    return [
+      {
+        _id: '1',
+        code: 'ITEM001',
+        name: 'Paracetamol 500mg',
+        category: 'Tablet',
+        unit: 'piece',
+        pricing: {
+          costPrice: 2.50,
+          salePrice: 5.00,
+          currency: 'PKR'
+        },
+        inventory: {
+          currentStock: 150,
+          minimumStock: 50,
+          maximumStock: 500
+        },
+        isActive: true,
+        createdAt: '2024-01-01T00:00:00Z',
+        updatedAt: '2024-01-01T00:00:00Z'
+      },
+      {
+        _id: '2',
+        code: 'ITEM002',
+        name: 'Amoxicillin 250mg',
+        category: 'Capsule',
+        unit: 'piece',
+        pricing: {
+          costPrice: 8.00,
+          salePrice: 15.00,
+          currency: 'PKR'
+        },
+        inventory: {
+          currentStock: 25,
+          minimumStock: 30,
+          maximumStock: 200
+        },
+        isActive: true,
+        createdAt: '2024-01-01T00:00:00Z',
+        updatedAt: '2024-01-01T00:00:00Z'
+      },
+      {
+        _id: '3',
+        code: 'ITEM003',
+        name: 'Cough Syrup 100ml',
+        category: 'Syrup',
+        unit: 'ml',
+        pricing: {
+          costPrice: 45.00,
+          salePrice: 85.00,
+          currency: 'PKR'
+        },
+        inventory: {
+          currentStock: 0,
+          minimumStock: 20,
+          maximumStock: 100
+        },
+        isActive: true,
+        createdAt: '2024-01-01T00:00:00Z',
+        updatedAt: '2024-01-01T00:00:00Z'
+      }
+    ];
+  }
 }

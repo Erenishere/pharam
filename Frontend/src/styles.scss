@@ -181,3 +181,38 @@ h6 {
         opacity: 0;
     }
 }
+
+/* Material Chip Text Color Override */
+::ng-deep .mdc-evolution-chip__text-label {
+    color: #424242 !important;
+}
+
+::ng-deep mat-chip .mdc-evolution-chip__text-label {
+    color: #424242 !important;
+}
+
+/* Remove chip container box/border completely */
+::ng-deep mat-chip {
+    background: transparent !important;
+    border: none !important;
+    box-shadow: none !important;
+    padding: 0 !important;
+}
+
+::ng-deep .mdc-evolution-chip__cell {
+    padding: 0 !important;
+}
+
+::ng-deep .mdc-evolution-chip__action {
+    padding: 0 !important;
+    background: transparent !important;
+    border: none !important;
+}
+
+::ng-deep .mat-mdc-chip-action {
+    padding: 0 !important;
+}
+
+::ng-deep .mdc-evolution-chip__text-label {
+    padding: 0 !important;
+}
