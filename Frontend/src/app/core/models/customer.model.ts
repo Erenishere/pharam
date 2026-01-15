@@ -50,7 +50,8 @@ export interface CustomerListResponse {
     success: boolean;
     data: Customer[];
     pagination: {
-        total: number;
+        total?: number; // Fallback for mock data
+        totalItems?: number; // Backend field name
         page: number;
         limit: number;
         pages: number;
