@@ -1,0 +1,345 @@
+@import '../../../../../styles/vuexy-vars';
+
+// Animations
+@keyframes slideDown {
+    from {
+        opacity: 0;
+        transform: translateY(-20px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.supplier-form-dialog {
+    background-color: #ffffff !important;
+    color: #444050;
+}
+
+// Remove any gray background from Material Dialog
+::ng-deep .mat-mdc-dialog-container {
+    background-color: #ffffff !important;
+}
+
+::ng-deep .mat-mdc-dialog-surface {
+    background-color: #ffffff !important;
+}
+
+.dialog-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 20px 24px;
+    border-bottom: 1px solid #867cf0;
+    background-color: #ffffff !important;
+
+    h2 {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        margin: 0;
+        font-size: 20px;
+        font-weight: 500;
+        color: #444050;
+
+        mat-icon {
+            color: #867cf0;
+        }
+    }
+
+    button {
+        color: #444050;
+    }
+}
+
+mat-dialog-content {
+    padding: 24px !important;
+    max-height: 70vh;
+    overflow-y: auto;
+    background-color: #ffffff !important;
+
+    .form-error {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        padding: 12px 16px;
+        background-color: rgba($danger, 0.1);
+        border-left: 4px solid $danger;
+        border-radius: $radius-card;
+        margin-bottom: 20px;
+        color: $danger;
+        font-size: $font-size-base;
+
+        mat-icon {
+            font-size: 24px;
+            width: 24px;
+            height: 24px;
+        }
+
+        span {
+            flex: 1;
+        }
+    }
+}
+
+.supplier-form {
+    display: flex;
+    flex-direction: column;
+    gap: 24px;
+}
+
+.form-section {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+
+    .section-title {
+        font-size: $h5-size;
+        font-weight: $h5-weight;
+        color: #444050;
+        margin: 0 0 8px 0;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+
+        &::before {
+            content: '';
+            width: 4px;
+            height: 20px;
+            background: #867cf0;
+            border-radius: $radius-badge;
+        }
+    }
+}
+
+.form-row {
+    display: flex;
+    gap: 16px;
+    width: 100%;
+
+    &.two-columns {
+        mat-form-field {
+            flex: 1;
+        }
+    }
+
+    mat-form-field {
+        &.full-width {
+            width: 100%;
+        }
+    }
+}
+
+// Override Material Form Field Styles
+::ng-deep .supplier-form {
+    .mat-mdc-form-field-outline {
+        color: #867cf0;
+    }
+
+    .mat-mdc-text-field-wrapper {
+        background-color: #ffffff;
+    }
+
+    .mat-mdc-form-field-flex {
+        background-color: #ffffff;
+    }
+
+    // Border color overrides
+    .mdc-notched-outline__leading,
+    .mdc-notched-outline__notch,
+    .mdc-notched-outline__trailing {
+        border-color: #867cf0 !important;
+        border-width: 1px !important;
+    }
+
+    // Focused border color
+    .mat-mdc-form-field.mat-focused {
+
+        .mdc-notched-outline__leading,
+        .mdc-notched-outline__notch,
+        .mdc-notched-outline__trailing {
+            border-color: #867cf0 !important;
+            border-width: 2px !important;
+        }
+    }
+
+    // Label color
+    .mat-mdc-floating-label {
+        color: #444050 !important;
+    }
+
+    // Input text color
+    .mat-mdc-input-element {
+        color: #444050 !important;
+    }
+
+    // Icon color
+    .mat-icon {
+        color: #867cf0 !important;
+    }
+}
+
+mat-dialog-actions {
+    padding: 16px 24px;
+    border-top: 1px solid #867cf0;
+    background-color: #ffffff !important;
+
+    button {
+        min-width: 100px;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+
+        &.mat-mdc-button-base {
+            color: #444050;
+        }
+
+        &.mat-primary {
+            background-color: #867cf0 !important;
+            color: #ffffff !important;
+        }
+
+        mat-spinner {
+            display: inline-block;
+            margin-right: 8px;
+        }
+
+        mat-icon {
+            margin-right: 8px;
+        }
+    }
+}
+
+mat-divider {
+    margin: 16px 0;
+    background-color: rgba($grey-light, 0.3);
+}
+
+mat-checkbox {
+    margin: 8px 0;
+
+    ::ng-deep {
+        .mdc-checkbox__background {
+            border-color: #867cf0;
+        }
+
+        .mdc-checkbox--selected .mdc-checkbox__background {
+            background-color: #867cf0;
+            border-color: #867cf0;
+        }
+
+        .mdc-label {
+            color: #444050;
+        }
+    }
+}
+
+::ng-deep mat-option {
+    color: #444050 !important;
+
+    mat-icon {
+        margin-right: 8px;
+        vertical-align: middle;
+        color: #867cf0 !important;
+    }
+
+    &.mat-mdc-option-active {
+        background-color: rgba(134, 124, 240, 0.1) !important;
+    }
+}
+
+// Responsive design
+@media (max-width: 768px) {
+    .supplier-form-dialog {
+        min-width: 100%;
+        max-width: 100%;
+
+        h2[mat-dialog-title] {
+            font-size: 20px;
+            padding: 16px;
+        }
+
+        mat-dialog-content {
+            padding: 16px;
+        }
+    }
+
+    .form-row {
+        &.two-columns {
+            flex-direction: column;
+            gap: 0;
+        }
+    }
+}
+
+// Error styling
+mat-error {
+    font-size: 12px;
+    margin-top: 4px;
+    color: $danger;
+}
+
+// Loading state
+button[disabled] {
+    opacity: 0.6;
+    cursor: not-allowed;
+}
+
+// Smooth scrollbar
+mat-dialog-content {
+    &::-webkit-scrollbar {
+        width: 8px;
+    }
+
+    &::-webkit-scrollbar-track {
+        background: $bg-page;
+        border-radius: 4px;
+    }
+
+    &::-webkit-scrollbar-thumb {
+        background: $grey-light;
+        border-radius: 4px;
+
+        &:hover {
+            background: $grey-dark;
+        }
+    }
+}
+
+// Accessibility
+.supplier-form-dialog {
+
+    // Focus styles
+    button:focus-visible,
+    input:focus-visible,
+    select:focus-visible {
+        outline: 2px solid $primary;
+        outline-offset: 2px;
+    }
+
+    // High contrast mode
+    @media (prefers-contrast: high) {
+        h2[mat-dialog-title] {
+            border: 2px solid white;
+        }
+
+        mat-dialog-content,
+        mat-dialog-actions {
+            border: 2px solid currentColor;
+        }
+    }
+
+    // Reduced motion
+    @media (prefers-reduced-motion: reduce) {
+        animation: none;
+
+        *,
+        *::before,
+        *::after {
+            animation-duration: 0.01ms !important;
+            transition-duration: 0.01ms !important;
+        }
+    }
+}
