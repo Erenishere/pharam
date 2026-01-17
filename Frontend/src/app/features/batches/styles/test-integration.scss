@@ -1,0 +1,165 @@
+// Test Integration for Enhanced Batch Styling
+// This file can be used to test that all styles are working correctly
+
+@import './batch-enhanced-theme';
+
+// Test that all variables are defined
+.test-variables {
+    // Primary colors
+    color: $batch-primary;
+    background-color: $batch-primary-hover;
+    border-color: $batch-primary-light;
+
+    // Text colors
+    color: $batch-text-primary;
+    color: $batch-text-secondary;
+    color: $batch-text-muted;
+    color: $batch-text-card-title;
+
+    // Background colors
+    background-color: $batch-bg-page;
+    background-color: $batch-bg-card;
+    background-color: $batch-bg-table-alt;
+    background-color: $batch-bg-header;
+
+    // Status colors
+    color: $batch-status-expired;
+    color: $batch-status-critical;
+    color: $batch-status-warning;
+    color: $batch-status-normal;
+    color: $batch-status-active;
+    color: $batch-status-depleted;
+    color: $batch-status-quarantined;
+}
+
+// Test that all mixins work
+.test-mixins {
+    // Layout mixins
+    @include batch-card;
+    @include batch-table;
+    @include batch-search-field;
+
+    // Button mixins
+    .primary-btn {
+        @include batch-button-primary;
+    }
+
+    .outline-btn {
+        @include batch-button-outline;
+    }
+
+    // Form mixins
+    .form-field {
+        @include batch-form-field;
+    }
+
+    // Status mixins
+    .status-expired {
+        @include batch-status-badge('expired');
+    }
+
+    .status-critical {
+        @include batch-status-badge('critical');
+    }
+
+    .status-warning {
+        @include batch-status-badge('warning');
+    }
+
+    .status-normal {
+        @include batch-status-badge('normal');
+    }
+
+    .expiry-card-expired {
+        @include batch-expiry-card('expired');
+    }
+
+    .expiry-card-critical {
+        @include batch-expiry-card('critical');
+    }
+
+    .expiry-card-warning {
+        @include batch-expiry-card('warning');
+    }
+
+    .expiry-card-normal {
+        @include batch-expiry-card('normal');
+    }
+
+    .summary-card-expired {
+        @include batch-summary-card('expired');
+    }
+
+    .summary-card-critical {
+        @include batch-summary-card('critical');
+    }
+
+    .summary-card-warning {
+        @include batch-summary-card('warning');
+    }
+
+    .summary-card-normal {
+        @include batch-summary-card('normal');
+    }
+
+    .summary-card-total {
+        @include batch-summary-card('total');
+    }
+
+    // Utility mixins
+    .smooth-transition {
+        @include batch-smooth-transition;
+    }
+
+    .hover-lift {
+        @include batch-hover-lift;
+    }
+
+    .focus-visible {
+        @include batch-focus-visible;
+    }
+}
+
+// Test responsive mixins
+.test-responsive {
+    @include batch-mobile {
+        display: block;
+    }
+
+    @include batch-tablet {
+        display: flex;
+    }
+
+    @include batch-desktop {
+        display: grid;
+    }
+}
+
+// Test accessibility mixins
+.test-accessibility {
+    @include batch-high-contrast {
+        border-width: 2px;
+    }
+}
+
+// Validation: Ensure all required colors are defined and valid
+@if not variable-exists('batch-primary') {
+    @error 'batch-primary variable is not defined';
+}
+
+@if not variable-exists('batch-text-primary') {
+    @error 'batch-text-primary variable is not defined';
+}
+
+@if not variable-exists('batch-bg-page') {
+    @error 'batch-bg-page variable is not defined';
+}
+
+// Success message
+.test-success {
+    &::after {
+        content: '✓ All batch management styles loaded successfully';
+        color: $batch-status-normal;
+        font-weight: 600;
+    }
+}

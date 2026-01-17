@@ -249,8 +249,13 @@ export class SupplierService {
     }
 
     /**
-     * Invalidate statistics cache
-     * Called after operations that affect statistics (create, update, delete, restore, toggle)
+     * Invalidate the statistics cache
+     * 
+     * Clears the cached statistics data, forcing a fresh fetch on next request.
+     * Called after operations that affect statistics (create, update, delete, restore, toggle).
+     * 
+     * @private
+     * @returns {void}
      */
     private invalidateStatisticsCache(): void {
         this.statisticsCache$.next(null);
@@ -258,16 +263,26 @@ export class SupplierService {
 
     /**
      * Get statistics observable for reactive updates
+     * 
+     * Returns an observable that emits the current statistics or null if not cached.
+     * Useful for components that need to react to statistics changes.
+     * 
+     * @public
+     * @returns {Observable<SupplierStatistics | null>} Observable of statistics data
      */
     get statistics$(): Observable<SupplierStatistics | null> {
         return this.statisticsCache$.asObservable();
     }
 
     /**
-     * Centralized error handling
+     * Centralized error handling for HTTP requests
      * 
-     * @param error HTTP error response
-     * @returns Observable that throws formatted error
+     * Processes different types of errors and returns user-friendly error messages.
+     * Handles network errors, HTTP status codes, and backend error responses.
+     * 
+     * @private
+     * @param {any} error - The HTTP error response
+     * @returns {Observable<never>} Observable that throws formatted error
      */
     private handleError(error: any): Observable<never> {
         let errorMessage = 'An error occurred';
@@ -288,7 +303,6 @@ export class SupplierService {
             }
         }
 
-        console.error('Supplier Service Error:', errorMessage, error);
         return throwError(() => ({
             message: errorMessage,
             originalError: error

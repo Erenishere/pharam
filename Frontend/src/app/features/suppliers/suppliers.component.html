@@ -16,6 +16,16 @@
         </button>
     </div>
 
+    <!-- Statistics Section (Admin/Accountant only) -->
+    <div class="statistics-section" *ngIf="showStatistics">
+        <app-supplier-stats
+            [statistics]="statistics"
+            [loading]="statisticsLoading"
+            [error]="statisticsError"
+            (retry)="retryLoadStatistics()">
+        </app-supplier-stats>
+    </div>
+
     <!-- Filters Section -->
     <div class="filters-section">
         <div class="d-flex align-items-center">

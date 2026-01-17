@@ -109,17 +109,41 @@ export class SuppliersComponent implements OnInit, OnDestroy, AfterViewInit {
         private dialog: MatDialog
     ) { }
 
+    /**
+     * Component initialization lifecycle hook
+     * 
+     * Sets up permissions, loads initial data, and configures search functionality.
+     * 
+     * @public
+     * @returns {void}
+     */
     ngOnInit(): void {
         this.checkPermissions();
         this.loadSuppliers();
         this.setupSearch();
     }
 
+    /**
+     * Component cleanup lifecycle hook
+     * 
+     * Completes the destroy subject to clean up subscriptions and prevent memory leaks.
+     * 
+     * @public
+     * @returns {void}
+     */
     ngOnDestroy(): void {
         this.destroy$.next();
         this.destroy$.complete();
     }
 
+    /**
+     * After view initialization lifecycle hook
+     * 
+     * Connects the sort functionality to the data source after view is initialized.
+     * 
+     * @public
+     * @returns {void}
+     */
     ngAfterViewInit(): void {
         // Connect sort to data source
         this.dataSource.sort = this.sort;
@@ -225,8 +249,12 @@ export class SuppliersComponent implements OnInit, OnDestroy, AfterViewInit {
     /**
      * Search for a supplier by code
      * 
-     * @param code - The supplier code to search for
+     * Performs a specific search for a supplier using their unique code.
+     * Displays the found supplier or shows a "not found" message.
+     * 
      * @private
+     * @param {string} code - The supplier code to search for
+     * @returns {void}
      * 
      * Requirements: 10.2, 10.3, 10.4
      */
@@ -256,7 +284,6 @@ export class SuppliersComponent implements OnInit, OnDestroy, AfterViewInit {
                     }
                 },
                 error: (error: any) => {
-                    console.error('[SuppliersComponent] Error searching by code:', error);
                     this.loading = false;
 
                     // If 404, show not found message
@@ -291,11 +318,17 @@ export class SuppliersComponent implements OnInit, OnDestroy, AfterViewInit {
     }
 
     /**
-     * Load supplier statistics
+     * Load supplier statistics from the API
+     * 
+     * Fetches statistics data including total suppliers, active/inactive counts,
+     * and breakdown by type. Only called for users with appropriate permissions.
+     * 
+     * @public
+     * @returns {void}
+     * 
      * Requirements: 11.1, 11.2, 11.3, 11.4
      */
     loadStatistics(): void {
-        console.log('[SuppliersComponent] Loading statistics...');
         this.statisticsLoading = true;
         this.statisticsError = null;
 
@@ -303,7 +336,6 @@ export class SuppliersComponent implements OnInit, OnDestroy, AfterViewInit {
             .pipe(takeUntil(this.destroy$))
             .subscribe({
                 next: (response) => {
-                    console.log('[SuppliersComponent] Statistics loaded successfully:', response);
                     if (response.success) {
                         this.statistics = response.data;
                         this.statisticsError = null;
@@ -313,7 +345,6 @@ export class SuppliersComponent implements OnInit, OnDestroy, AfterViewInit {
                     this.statisticsLoading = false;
                 },
                 error: (error: any) => {
-                    console.error('[SuppliersComponent] Error loading statistics:', error);
                     this.statisticsError = this.getUserFriendlyErrorMessage(error, 'loading statistics');
                     this.statisticsLoading = false;
                 }
@@ -330,11 +361,17 @@ export class SuppliersComponent implements OnInit, OnDestroy, AfterViewInit {
     }
 
     /**
-     * Load suppliers from API with current filters
+     * Load suppliers from API with current filters and pagination
+     * 
+     * Fetches suppliers based on current search term, type filter, status filter,
+     * and pagination settings. Updates the data source and pagination state.
+     * 
+     * @public
+     * @returns {void}
+     * 
      * Requirements: 2.1, 2.2, 2.3, 2.6, 2.7, 2.8
      */
     loadSuppliers(): void {
-        console.log('[SuppliersComponent] Loading suppliers...');
         this.loading = true;
         this.error = null;
 
@@ -347,7 +384,6 @@ export class SuppliersComponent implements OnInit, OnDestroy, AfterViewInit {
         // Apply type filter if selected
         if (this.selectedType && this.selectedType.trim() !== '') {
             params.type = this.selectedType as 'customer' | 'supplier' | 'both';
-            console.log('[SuppliersComponent] Adding type filter:', this.selectedType);
         }
 
         // Apply status filter based on toggle
@@ -355,18 +391,12 @@ export class SuppliersComponent implements OnInit, OnDestroy, AfterViewInit {
         // When showInactive is false, show all suppliers (no filter)
         if (this.showInactive) {
             params.isActive = false;
-            console.log('[SuppliersComponent] Showing only inactive suppliers');
-        } else {
-            console.log('[SuppliersComponent] Showing all suppliers');
         }
-
-        console.log('[SuppliersComponent] Final params:', params);
 
         this.supplierService.getSuppliers(params)
             .pipe(takeUntil(this.destroy$))
             .subscribe({
                 next: (response) => {
-                    console.log('[SuppliersComponent] Suppliers loaded successfully:', response);
                     if (response.success) {
                         this.dataSource.data = response.data || [];
 
@@ -378,25 +408,14 @@ export class SuppliersComponent implements OnInit, OnDestroy, AfterViewInit {
                         }
 
                         this.updatePaginatorState();
-
-                        console.log('[SuppliersComponent] Pagination info:', {
-                            total: this.totalSuppliers,
-                            currentPage: this.pageIndex,
-                            pageSize: this.pageSize,
-                            loadedSuppliers: this.dataSource.data.length
-                        });
-
                         this.error = null;
                     } else {
-                        console.error('[SuppliersComponent] Response success=false');
                         this.error = 'Failed to load suppliers';
                         this.toastService.error(this.error);
                     }
                     this.loading = false;
                 },
                 error: (error: any) => {
-                    console.error('[SuppliersComponent] Error loading suppliers:', error);
-
                     this.error = this.getUserFriendlyErrorMessage(error, 'loading suppliers');
                     this.toastService.error(this.error);
                     this.loading = false;
@@ -405,12 +424,18 @@ export class SuppliersComponent implements OnInit, OnDestroy, AfterViewInit {
     }
 
     /**
-     * Handle page change event
+     * Handle pagination change events
+     * 
+     * Updates the current page index and page size, then reloads suppliers.
+     * Resets to first page when page size changes.
+     * 
+     * @public
+     * @param {any} event - The pagination event from MatPaginator
+     * @returns {void}
+     * 
      * Requirements: 2.6
      */
     onPageChange(event: any): void {
-        console.log('[SuppliersComponent] Page change event:', event);
-
         // If page size changed, reset to first page
         if (this.pageSize !== event.pageSize) {
             this.pageIndex = 0;
@@ -423,11 +448,16 @@ export class SuppliersComponent implements OnInit, OnDestroy, AfterViewInit {
     }
 
     /**
-     * Handle type filter change
+     * Handle type filter change events
+     * 
+     * Updates the selected type filter and reloads suppliers from the first page.
+     * 
+     * @public
+     * @returns {void}
+     * 
      * Requirements: 2.5, 9.1, 9.2, 9.3
      */
     onTypeFilterChange(): void {
-        console.log('[SuppliersComponent] Type filter changed to:', this.selectedType);
         this.pageIndex = 0;
         if (this.paginator) {
             this.paginator.pageIndex = 0;
@@ -436,11 +466,17 @@ export class SuppliersComponent implements OnInit, OnDestroy, AfterViewInit {
     }
 
     /**
-     * Toggle show inactive suppliers
+     * Toggle the display of inactive suppliers
+     * 
+     * When enabled, shows only inactive suppliers. When disabled, shows all suppliers.
+     * Resets pagination to the first page.
+     * 
+     * @public
+     * @returns {void}
+     * 
      * Requirements: 2.5
      */
     toggleShowInactive(): void {
-        console.log('[SuppliersComponent] Toggle show inactive:', this.showInactive);
         this.pageIndex = 0;
         if (this.paginator) {
             this.paginator.pageIndex = 0;
@@ -449,14 +485,27 @@ export class SuppliersComponent implements OnInit, OnDestroy, AfterViewInit {
     }
 
     /**
-     * Check if an action is pending for a supplier
+     * Check if an action is pending for a specific supplier
+     * 
+     * Used to show loading states for individual supplier actions.
+     * 
+     * @public
+     * @param {string} supplierId - The supplier ID
+     * @param {string} action - The action type ('delete', 'restore', 'toggle')
+     * @returns {boolean} True if the action is currently pending
      */
     isActionPending(supplierId: string, action: string): boolean {
         return this.pendingActions.get(`${supplierId}-${action}`) || false;
     }
 
     /**
-     * Set action pending state
+     * Set the pending state for a supplier action
+     * 
+     * @private
+     * @param {string} supplierId - The supplier ID
+     * @param {string} action - The action type
+     * @param {boolean} pending - Whether the action is pending
+     * @returns {void}
      */
     private setActionPending(supplierId: string, action: string, pending: boolean): void {
         if (pending) {
@@ -467,7 +516,11 @@ export class SuppliersComponent implements OnInit, OnDestroy, AfterViewInit {
     }
 
     /**
-     * Format date for display
+     * Format date string for display
+     * 
+     * @public
+     * @param {string} date - The ISO date string
+     * @returns {string} Formatted date string
      */
     formatDate(date: string): string {
         return new Date(date).toLocaleDateString();
@@ -475,6 +528,11 @@ export class SuppliersComponent implements OnInit, OnDestroy, AfterViewInit {
 
     /**
      * Update paginator state for server-side pagination
+     * 
+     * Synchronizes the paginator component with current pagination data.
+     * 
+     * @private
+     * @returns {void}
      */
     private updatePaginatorState(): void {
         if (this.paginator) {
@@ -486,6 +544,10 @@ export class SuppliersComponent implements OnInit, OnDestroy, AfterViewInit {
 
     /**
      * Get chip color based on supplier type
+     * 
+     * @public
+     * @param {string} type - The supplier type
+     * @returns {string} Material Design color name
      */
     getTypeChipColor(type: string): string {
         switch (type) {
@@ -501,14 +563,22 @@ export class SuppliersComponent implements OnInit, OnDestroy, AfterViewInit {
     }
 
     /**
-     * Get status chip color
+     * Get status chip color based on active state
+     * 
+     * @public
+     * @param {boolean} isActive - Whether the supplier is active
+     * @returns {string} Material Design color name
      */
     getStatusChipColor(isActive: boolean): string {
         return isActive ? 'primary' : 'warn';
     }
 
     /**
-     * Get status label
+     * Get status label text
+     * 
+     * @public
+     * @param {boolean} isActive - Whether the supplier is active
+     * @returns {string} Status label text
      */
     getStatusLabel(isActive: boolean): string {
         return isActive ? 'Active' : 'Inactive';

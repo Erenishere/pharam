@@ -1,6 +1,6 @@
 import { Component, OnInit, Inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { FormBuilder, FormGroup, Validators, ReactiveFormsModule } from '@angular/forms';
+import { FormBuilder, FormGroup, Validators, ReactiveFormsModule, AbstractControl } from '@angular/forms';
 import { MatDialogRef, MAT_DIALOG_DATA, MatDialogModule } from '@angular/material/dialog';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
@@ -110,7 +110,14 @@ export class SupplierFormComponent implements OnInit {
     }
 
     /**
-     * Populate form with existing supplier data for edit mode
+     * Populate the form with existing supplier data for edit mode
+     * 
+     * Patches the form values with data from the supplier being edited.
+     * Handles nested objects and provides default values for missing fields.
+     * 
+     * @private
+     * @param {Supplier} supplier - The supplier data to populate the form with
+     * @returns {void}
      */
     private populateForm(supplier: Supplier): void {
         this.supplierForm.patchValue({
@@ -144,7 +151,14 @@ export class SupplierFormComponent implements OnInit {
     }
 
     /**
-     * Handle form submission
+     * Handle form submission for create or update operations
+     * 
+     * Validates the form, submits data to the service, and handles success/error responses.
+     * Shows appropriate toast messages and closes the dialog on success.
+     * 
+     * @public
+     * @returns {void}
+     * 
      * Requirements: 3.6, 3.7, 3.8
      */
     onSubmit(): void {
@@ -234,6 +248,11 @@ export class SupplierFormComponent implements OnInit {
 
     /**
      * Handle cancel button click
+     * 
+     * Closes the dialog without saving any changes.
+     * 
+     * @public
+     * @returns {void}
      */
     onCancel(): void {
         this.dialogRef.close({ success: false });
@@ -241,13 +260,26 @@ export class SupplierFormComponent implements OnInit {
 
     /**
      * Get form control for template access
+     * 
+     * Provides access to form controls for validation and value binding in templates.
+     * 
+     * @public
+     * @param {string} path - The path to the form control (e.g., 'name', 'contactInfo.email')
+     * @returns {AbstractControl | null} The form control or null if not found
      */
     getControl(path: string) {
         return this.supplierForm.get(path);
     }
 
     /**
-     * Check if a field has an error
+     * Check if a field has a specific validation error
+     * 
+     * Determines if a form field has a specific error and has been touched or is dirty.
+     * 
+     * @public
+     * @param {string} path - The path to the form control
+     * @param {string} errorType - The type of error to check for
+     * @returns {boolean} True if the field has the specified error
      */
     hasError(path: string, errorType: string): boolean {
         const control = this.supplierForm.get(path);
@@ -255,7 +287,13 @@ export class SupplierFormComponent implements OnInit {
     }
 
     /**
-     * Get error message for a field
+     * Get user-friendly error message for a form field
+     * 
+     * Returns an appropriate error message based on the validation errors present.
+     * 
+     * @public
+     * @param {string} path - The path to the form control
+     * @returns {string} The error message or empty string if no errors
      */
     getErrorMessage(path: string): string {
         const control = this.supplierForm.get(path);

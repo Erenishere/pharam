@@ -51,14 +51,23 @@ export class SupplierDetailComponent {
     }
 
     /**
-     * Close the dialog
+     * Close the dialog without any action
+     * 
+     * @public
+     * @returns {void}
      */
     onClose(): void {
         this.dialogRef.close();
     }
 
     /**
-     * Navigate to edit dialog
+     * Navigate to edit dialog for the current supplier
+     * 
+     * Closes this dialog and signals the parent to open the edit dialog.
+     * 
+     * @public
+     * @returns {void}
+     * 
      * Requirements: 8.4
      */
     onEdit(): void {
@@ -66,7 +75,13 @@ export class SupplierDetailComponent {
     }
 
     /**
-     * Trigger delete action
+     * Trigger delete action for the current supplier
+     * 
+     * Closes this dialog and signals the parent to show delete confirmation.
+     * 
+     * @public
+     * @returns {void}
+     * 
      * Requirements: 8.4
      */
     onDelete(): void {
@@ -75,6 +90,12 @@ export class SupplierDetailComponent {
 
     /**
      * Get chip color based on supplier type
+     * 
+     * Returns appropriate Material Design color for type chips.
+     * 
+     * @public
+     * @param {string} type - The supplier type ('customer', 'supplier', 'both')
+     * @returns {string} The Material Design color name
      */
     getTypeChipColor(type: string): string {
         switch (type) {
@@ -90,14 +111,22 @@ export class SupplierDetailComponent {
     }
 
     /**
-     * Get status chip color
+     * Get status chip color based on active state
+     * 
+     * @public
+     * @param {boolean} isActive - Whether the supplier is active
+     * @returns {string} The Material Design color name
      */
     getStatusChipColor(isActive: boolean): string {
         return isActive ? 'primary' : 'warn';
     }
 
     /**
-     * Get status label
+     * Get status label text
+     * 
+     * @public
+     * @param {boolean} isActive - Whether the supplier is active
+     * @returns {string} The status label text
      */
     getStatusLabel(isActive: boolean): string {
         return isActive ? 'Active' : 'Inactive';
@@ -105,6 +134,12 @@ export class SupplierDetailComponent {
 
     /**
      * Format date for display
+     * 
+     * Converts ISO date string to localized date format.
+     * 
+     * @public
+     * @param {string} date - The ISO date string
+     * @returns {string} Formatted date string or 'N/A' if invalid
      */
     formatDate(date: string): string {
         if (!date) return 'N/A';
@@ -116,14 +151,23 @@ export class SupplierDetailComponent {
     }
 
     /**
-     * Format currency value
+     * Format currency value for display
+     * 
+     * @public
+     * @param {number} value - The numeric value
+     * @param {string} currency - The currency code (default: 'PKR')
+     * @returns {string} Formatted currency string
      */
     formatCurrency(value: number, currency: string = 'PKR'): string {
         return `${currency} ${value.toLocaleString()}`;
     }
 
     /**
-     * Check if value exists and is not empty
+     * Check if a value exists and is not empty
+     * 
+     * @public
+     * @param {any} value - The value to check
+     * @returns {boolean} True if value exists and is not empty
      */
     hasValue(value: any): boolean {
         return value !== null && value !== undefined && value !== '';

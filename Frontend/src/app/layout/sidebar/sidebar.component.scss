@@ -106,3 +106,156 @@ mat-divider {
     margin: 16px 0;
     border-top-color: $border-table;
 }
+
+/* ----------  Batch Management Dropdown - EXACT MATCH  ---------- */
+.batch-dropdown-container {
+    margin: 4px 0;
+
+    .batch-main-item {
+        // EXACT MATCH to ::ng-deep .mat-mdc-list-item styling
+        height: 48px;
+        margin-bottom: 0;
+        font-family: $font-family;
+        font-size: 14px;
+        font-weight: 500;
+        display: flex;
+        align-items: center;
+        padding: 0 16px;
+        cursor: pointer;
+        border-radius: 4px;
+        transition: background-color .25s ease, transform .25s ease;
+        box-sizing: border-box;
+        min-height: 48px;
+        position: relative;
+        text-decoration: none;
+
+        /* EXACT MATCH: inactive state - text + icon */
+        &:not(.active) {
+            color: #444050;
+
+            .batch-icon,
+            .batch-title,
+            .dropdown-arrow {
+                color: #444050;
+            }
+        }
+
+        /* EXACT MATCH: hover state */
+        &:not(.active):hover {
+            color: #444050;
+
+            .batch-icon,
+            .batch-title,
+            .dropdown-arrow {
+                color: #444050;
+            }
+        }
+
+        /* EXACT MATCH: hover background and slide */
+        &:hover {
+            background-color: #f0f0f1;
+            transform: translateX(5px);
+            border-radius: 4px;
+        }
+
+        /* EXACT MATCH: active state */
+        &.active {
+            background: linear-gradient(118deg, $primary, rgba($primary, .7));
+            box-shadow: 0 0 10px 1px rgba($primary, .7);
+            border-radius: 4px;
+            margin: 0 15px 4px 15px;
+            width: calc(100% - 30px);
+
+            .batch-icon,
+            .batch-title,
+            .dropdown-arrow {
+                color: white;
+            }
+        }
+
+        .batch-icon {
+            // EXACT MATCH to matListItemIcon
+            font-size: 24px;
+            width: 24px;
+            height: 24px;
+            margin-right: 32px;
+            flex-shrink: 0;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .batch-title {
+            // EXACT MATCH to matListItemTitle with 16px Roboto font
+            flex: 1;
+            font-weight: 500;
+            font-size: 16px; // Increased to 16px
+            font-family: 'Roboto', sans-serif; // Set to Roboto font
+            line-height: 20px;
+            letter-spacing: 0.25px;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+
+        .dropdown-arrow {
+            font-size: 20px;
+            width: 20px;
+            height: 20px;
+            transition: transform 0.3s ease;
+            flex-shrink: 0;
+            margin-left: auto;
+
+            &.rotated {
+                transform: rotate(90deg);
+            }
+        }
+    }
+
+    .batch-submenu {
+        max-height: 0;
+        overflow: hidden;
+        transition: max-height 0.3s ease;
+        background-color: rgba(115, 103, 240, 0.02);
+        margin: 0 15px;
+        border-radius: 4px;
+
+        &.open {
+            max-height: 200px;
+            padding: 8px 0;
+        }
+
+        .submenu-item {
+            height: 40px;
+            font-size: 13px;
+            margin: 2px 16px;
+            width: calc(100% - 32px);
+            border-radius: 4px;
+
+            &:not(.active) {
+
+                .mdc-list-item__content,
+                .mdc-list-item__primary-text,
+                mat-icon {
+                    color: #666;
+                }
+            }
+
+            &:hover {
+                background-color: #f8f8f9;
+                transform: translateX(3px);
+            }
+
+            &.active {
+                background: linear-gradient(118deg, $primary, rgba($primary, .7));
+                box-shadow: 0 0 8px 1px rgba($primary, .5);
+
+                .mdc-list-item__content,
+                .mdc-list-item__primary-text,
+                mat-icon {
+                    color: white;
+                }
+            }
+        }
+    }
+}

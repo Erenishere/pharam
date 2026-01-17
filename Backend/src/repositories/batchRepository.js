@@ -47,19 +47,19 @@ class BatchRepository {
    */
   async findByItemId(itemId, options = {}) {
     const query = { item: itemId };
-    
+
     if (options.status) {
       query.status = options.status;
     }
-    
+
     if (!options.includeExpired) {
       query.expiryDate = { $gt: new Date() };
     }
-    
+
     if (options.locationId) {
       query.location = options.locationId;
     }
-    
+
     return Batch.find(query)
       .populate('item', 'name code')
       .populate('supplier', 'name code')
@@ -75,17 +75,17 @@ class BatchRepository {
    */
   async findBySupplierId(supplierId, options = {}) {
     const query = { supplier: supplierId };
-    
+
     if (options.status) {
       query.status = options.status;
     }
-    
+
     if (options.expiringSoon) {
       const date = new Date();
       date.setDate(date.getDate() + 30);
       query.expiryDate = { $lte: date, $gte: new Date() };
     }
-    
+
     return Batch.find(query)
       .populate('item', 'name code')
       .populate('location', 'name code')
@@ -100,21 +100,21 @@ class BatchRepository {
    */
   async findByLocationId(locationId, options = {}) {
     const query = { location: locationId };
-    
+
     if (options.status) {
       query.status = options.status;
     }
-    
+
     if (options.itemId) {
       query.item = options.itemId;
     }
-    
+
     if (options.expiringSoon) {
       const date = new Date();
       date.setDate(date.getDate() + 30);
       query.expiryDate = { $lte: date, $gte: new Date() };
     }
-    
+
     return Batch.find(query)
       .populate('item', 'name code')
       .populate('supplier', 'name code')
@@ -130,17 +130,17 @@ class BatchRepository {
   async findExpiringSoon(days = 30, options = {}) {
     const date = new Date();
     date.setDate(date.getDate() + days);
-    
+
     const query = {
       expiryDate: { $lte: date, $gte: new Date() },
       status: 'active',
       remainingQuantity: { $gt: 0 }
     };
-    
+
     if (options.locationId) {
       query.location = options.locationId;
     }
-    
+
     return Batch.find(query)
       .populate('item', 'name code')
       .populate('supplier', 'name')
@@ -159,16 +159,189 @@ class BatchRepository {
       status: { $ne: 'expired' },
       remainingQuantity: { $gt: 0 }
     };
-    
+
     if (options.locationId) {
       query.location = options.locationId;
     }
-    
+
     return Batch.find(query)
       .populate('item', 'name code')
       .populate('supplier', 'name')
       .populate('location', 'name')
       .sort({ expiryDate: 1 });
+  }
+
+  /**
+   * Find all batches with filtering and pagination
+   * @param {Object} [filters] - Filter criteria
+   * @param {Object} [pagination] - Pagination options
+   * @returns {Promise<Object>} Object with batches array and pagination info
+   */
+  async findAll(filters = {}, pagination = {}) {
+    const query = {};
+
+    // Apply filters
+    if (filters.itemSearch) {
+      // Search in item name or code
+      const itemRegex = new RegExp(filters.itemSearch, 'i');
+      query.$or = [
+        { 'item.name': itemRegex },
+        { 'item.code': itemRegex }
+      ];
+    }
+
+    if (filters.locationIds && filters.locationIds.length > 0) {
+      query.location = { $in: filters.locationIds };
+    }
+
+    if (filters.supplierIds && filters.supplierIds.length > 0) {
+      query.supplier = { $in: filters.supplierIds };
+    }
+
+    if (filters.statuses && filters.statuses.length > 0) {
+      query.status = { $in: filters.statuses };
+    }
+
+    if (filters.expiryDateRange) {
+      const expiryQuery = {};
+      if (filters.expiryDateRange.start) {
+        expiryQuery.$gte = new Date(filters.expiryDateRange.start);
+      }
+      if (filters.expiryDateRange.end) {
+        expiryQuery.$lte = new Date(filters.expiryDateRange.end);
+      }
+      if (Object.keys(expiryQuery).length > 0) {
+        query.expiryDate = expiryQuery;
+      }
+    }
+
+    if (filters.quantityRange) {
+      const quantityQuery = {};
+      if (filters.quantityRange.min !== undefined) {
+        quantityQuery.$gte = filters.quantityRange.min;
+      }
+      if (filters.quantityRange.max !== undefined) {
+        quantityQuery.$lte = filters.quantityRange.max;
+      }
+      if (Object.keys(quantityQuery).length > 0) {
+        query.remainingQuantity = quantityQuery;
+      }
+    }
+
+    if (!filters.includeExpired) {
+      query.status = { ...query.status, $ne: 'expired' };
+    }
+
+    if (!filters.includeDepleted) {
+      query.remainingQuantity = { ...query.remainingQuantity, $gt: 0 };
+    }
+
+    // Pagination setup
+    const page = pagination.page || 1;
+    const limit = pagination.limit || 25;
+    const skip = (page - 1) * limit;
+
+    // Sorting
+    const sortBy = pagination.sortBy || 'expiryDate';
+    const sortOrder = pagination.sortOrder === 'desc' ? -1 : 1;
+    const sort = { [sortBy]: sortOrder };
+
+    // Execute query with aggregation for item search
+    let aggregationPipeline = [];
+
+    // Lookup items for search
+    aggregationPipeline.push({
+      $lookup: {
+        from: 'items',
+        localField: 'item',
+        foreignField: '_id',
+        as: 'item'
+      }
+    });
+
+    aggregationPipeline.push({
+      $unwind: '$item'
+    });
+
+    // Lookup locations
+    aggregationPipeline.push({
+      $lookup: {
+        from: 'locations',
+        localField: 'location',
+        foreignField: '_id',
+        as: 'location'
+      }
+    });
+
+    aggregationPipeline.push({
+      $unwind: { path: '$location', preserveNullAndEmptyArrays: true }
+    });
+
+    // Lookup suppliers
+    aggregationPipeline.push({
+      $lookup: {
+        from: 'suppliers',
+        localField: 'supplier',
+        foreignField: '_id',
+        as: 'supplier'
+      }
+    });
+
+    aggregationPipeline.push({
+      $unwind: { path: '$supplier', preserveNullAndEmptyArrays: true }
+    });
+
+    // Apply filters
+    if (Object.keys(query).length > 0) {
+      // Handle item search specially
+      if (filters.itemSearch) {
+        const itemRegex = new RegExp(filters.itemSearch, 'i');
+        const itemSearchQuery = {
+          $or: [
+            { 'item.name': itemRegex },
+            { 'item.code': itemRegex }
+          ]
+        };
+        delete query.$or;
+        aggregationPipeline.push({ $match: itemSearchQuery });
+
+        // Apply other filters
+        const otherFilters = { ...query };
+        if (Object.keys(otherFilters).length > 0) {
+          aggregationPipeline.push({ $match: otherFilters });
+        }
+      } else {
+        aggregationPipeline.push({ $match: query });
+      }
+    }
+
+    // Get total count
+    const countPipeline = [...aggregationPipeline, { $count: 'total' }];
+    const countResult = await Batch.aggregate(countPipeline);
+    const totalItems = countResult.length > 0 ? countResult[0].total : 0;
+
+    // Add sorting, skip, and limit
+    aggregationPipeline.push({ $sort: sort });
+    aggregationPipeline.push({ $skip: skip });
+    aggregationPipeline.push({ $limit: limit });
+
+    // Execute main query
+    const batches = await Batch.aggregate(aggregationPipeline);
+
+    // Calculate pagination info
+    const totalPages = Math.ceil(totalItems / limit);
+
+    return {
+      data: batches,
+      pagination: {
+        currentPage: page,
+        totalPages,
+        totalItems,
+        pageSize: limit,
+        hasNextPage: page < totalPages,
+        hasPrevPage: page > 1
+      }
+    };
   }
 
   /**
@@ -199,7 +372,7 @@ class BatchRepository {
     if (!batch) {
       return null;
     }
-    
+
     await batch.updateRemainingQuantity(quantity);
     return this.findById(id);
   }
@@ -220,27 +393,27 @@ class BatchRepository {
    */
   async getStatistics(filters = {}) {
     const matchStage = {};
-    
+
     if (filters.itemId) {
       matchStage.item = filters.itemId;
     }
-    
+
     if (filters.locationId) {
       matchStage.location = filters.locationId;
     }
-    
+
     if (filters.supplierId) {
       matchStage.supplier = filters.supplierId;
     }
-    
+
     if (filters.status) {
       matchStage.status = filters.status;
     }
-    
+
     const now = new Date();
     const thirtyDaysFromNow = new Date();
     thirtyDaysFromNow.setDate(now.getDate() + 30);
-    
+
     const result = await Batch.aggregate([
       { $match: matchStage },
       {
@@ -254,11 +427,13 @@ class BatchRepository {
           expiringSoon: {
             $sum: {
               $cond: [
-                { $and: [
-                  { $lte: ['$expiryDate', thirtyDaysFromNow] },
-                  { $gt: ['$expiryDate', now] },
-                  { $gt: ['$remainingQuantity', 0] }
-                ]},
+                {
+                  $and: [
+                    { $lte: ['$expiryDate', thirtyDaysFromNow] },
+                    { $gt: ['$expiryDate', now] },
+                    { $gt: ['$remainingQuantity', 0] }
+                  ]
+                },
                 1,
                 0
               ]
@@ -267,10 +442,12 @@ class BatchRepository {
           expired: {
             $sum: {
               $cond: [
-                { $and: [
-                  { $lte: ['$expiryDate', now] },
-                  { $gt: ['$remainingQuantity', 0] }
-                ]},
+                {
+                  $and: [
+                    { $lte: ['$expiryDate', now] },
+                    { $gt: ['$remainingQuantity', 0] }
+                  ]
+                },
                 1,
                 0
               ]
@@ -279,10 +456,12 @@ class BatchRepository {
           active: {
             $sum: {
               $cond: [
-                { $and: [
-                  { $gt: ['$expiryDate', now] },
-                  { $gt: ['$remainingQuantity', 0] }
-                ]},
+                {
+                  $and: [
+                    { $gt: ['$expiryDate', now] },
+                    { $gt: ['$remainingQuantity', 0] }
+                  ]
+                },
                 1,
                 0
               ]
@@ -314,7 +493,7 @@ class BatchRepository {
         }
       }
     ]);
-    
+
     return result[0] || {
       totalBatches: 0,
       totalQuantity: 0,

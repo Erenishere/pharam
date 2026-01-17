@@ -319,7 +319,12 @@
   - _Requirements: All requirements_
 
 
-- [ ] 20. Code cleanup and documentation
+- [x] 20. Code cleanup and documentation
+
+
+
+
+
 
   - Add JSDoc comments to all public methods
   - Remove console.logs and debug code

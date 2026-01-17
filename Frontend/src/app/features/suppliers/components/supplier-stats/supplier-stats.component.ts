@@ -33,19 +33,36 @@ export class SupplierStatsComponent implements OnInit {
     @Input() error: string | null = null;
     @Output() retry = new EventEmitter<void>();
 
+    /**
+     * Component initialization lifecycle hook
+     * 
+     * @public
+     * @returns {void}
+     */
     ngOnInit(): void {
         // Component initialization
     }
 
     /**
      * Emit retry event to parent component
+     * 
+     * Signals the parent component to retry loading statistics after an error.
+     * 
+     * @public
+     * @returns {void}
      */
     onRetry(): void {
         this.retry.emit();
     }
 
     /**
-     * Format currency for display
+     * Format currency value for display
+     * 
+     * Formats numeric values as Pakistani Rupee currency with proper localization.
+     * 
+     * @public
+     * @param {number | undefined} value - The numeric value to format
+     * @returns {string} Formatted currency string or 'N/A' if value is undefined
      */
     formatCurrency(value: number | undefined): string {
         if (value === undefined || value === null) {
@@ -60,7 +77,11 @@ export class SupplierStatsComponent implements OnInit {
     }
 
     /**
-     * Format number with commas
+     * Format number with thousands separators
+     * 
+     * @public
+     * @param {number | undefined} value - The numeric value to format
+     * @returns {string} Formatted number string or 'N/A' if value is undefined
      */
     formatNumber(value: number | undefined): string {
         if (value === undefined || value === null) {
@@ -70,7 +91,12 @@ export class SupplierStatsComponent implements OnInit {
     }
 
     /**
-     * Calculate percentage
+     * Calculate percentage of part relative to total
+     * 
+     * @public
+     * @param {number} part - The part value
+     * @param {number} total - The total value
+     * @returns {number} The percentage (0-100)
      */
     calculatePercentage(part: number, total: number): number {
         if (total === 0) return 0;

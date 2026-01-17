@@ -1,10 +1,12 @@
-import { Component, EventEmitter, Output } from '@angular/core';
+import { Component, EventEmitter, Output, OnInit, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { RouterModule } from '@angular/router';
+import { RouterModule, Router, NavigationEnd } from '@angular/router';
 import { MatSidenavModule } from '@angular/material/sidenav';
 import { MatListModule } from '@angular/material/list';
 import { MatIconModule } from '@angular/material/icon';
 import { MatBadgeModule } from '@angular/material/badge';
+import { Subject } from 'rxjs';
+import { takeUntil, filter } from 'rxjs/operators';
 
 @Component({
   selector: 'app-sidebar',
@@ -51,10 +53,37 @@ import { MatBadgeModule } from '@angular/material/badge';
         <span matListItemTitle>Items</span>
       </a>
 
-      <a mat-list-item routerLink="/batches" routerLinkActive="active">
-        <mat-icon matListItemIcon>qr_code</mat-icon>
-        <span matListItemTitle>Batches</span>
-      </a>
+      <!-- Batch Management with Dropdown -->
+      <div class="batch-dropdown-container" [class.active]="isBatchRouteActive">
+        <div class="batch-main-item" (click)="toggleBatchDropdown()" 
+             [class.expanded]="isBatchDropdownOpen" [class.active]="isBatchRouteActive">
+          <mat-icon class="batch-icon">qr_code</mat-icon>
+          <span class="batch-title">Batch Management</span>
+          <mat-icon class="dropdown-arrow" [class.rotated]="isBatchDropdownOpen">keyboard_arrow_right</mat-icon>
+        </div>
+        
+        <div class="batch-submenu" [class.open]="isBatchDropdownOpen">
+          <a mat-list-item routerLink="/batches/list" routerLinkActive="active" class="submenu-item">
+            <mat-icon matListItemIcon>list</mat-icon>
+            <span matListItemTitle>All Batches</span>
+          </a>
+          
+          <a mat-list-item routerLink="/batches/create" routerLinkActive="active" class="submenu-item">
+            <mat-icon matListItemIcon>add</mat-icon>
+            <span matListItemTitle>Create Batch</span>
+          </a>
+          
+          <a mat-list-item routerLink="/batches/expiring" routerLinkActive="active" class="submenu-item">
+            <mat-icon matListItemIcon>warning</mat-icon>
+            <span matListItemTitle>Expiring Batches</span>
+          </a>
+          
+          <a mat-list-item routerLink="/batches/statistics" routerLinkActive="active" class="submenu-item">
+            <mat-icon matListItemIcon>analytics</mat-icon>
+            <span matListItemTitle>Statistics</span>
+          </a>
+        </div>
+      </div>
 
       <mat-divider></mat-divider>
 
@@ -78,11 +107,44 @@ import { MatBadgeModule } from '@angular/material/badge';
   `,
   styleUrl: './sidebar.component.scss'
 })
-export class SidebarComponent {
+export class SidebarComponent implements OnInit, OnDestroy {
   @Output() closeSidebar = new EventEmitter<void>();
   userCount = 0;
+  isBatchSectionExpanded = false;
+  isBatchRouteActive = false;
+  isBatchDropdownOpen = false;
+  private destroy$ = new Subject<void>();
 
-  constructor() {
+  constructor(private router: Router) {
     // TODO: Load user count from service
+  }
+
+  ngOnInit(): void {
+    // Listen to route changes to update batch section state
+    this.router.events
+      .pipe(
+        filter(event => event instanceof NavigationEnd),
+        takeUntil(this.destroy$)
+      )
+      .subscribe((event: NavigationEnd) => {
+        this.updateBatchSectionState(event.url);
+      });
+
+    // Initial check
+    this.updateBatchSectionState(this.router.url);
+  }
+
+  ngOnDestroy(): void {
+    this.destroy$.next();
+    this.destroy$.complete();
+  }
+
+  toggleBatchDropdown(): void {
+    this.isBatchDropdownOpen = !this.isBatchDropdownOpen;
+  }
+
+  private updateBatchSectionState(url: string): void {
+    this.isBatchRouteActive = url.includes('/batches');
+    this.isBatchDropdownOpen = this.isBatchRouteActive;
   }
 }

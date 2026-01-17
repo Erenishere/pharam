@@ -1,0 +1,139 @@
+<mat-card class="filters-card">
+  <mat-card-header>
+    <mat-card-title>
+      <mat-icon>filter_list</mat-icon>
+      Batch Filters
+    </mat-card-title>
+  </mat-card-header>
+  
+  <mat-card-content>
+    <form [formGroup]="filterForm" class="filters-form">
+      
+      <!-- Quick Search -->
+      <div class="filter-row">
+        <mat-form-field appearance="outline" class="full-width">
+          <mat-label>Search Items</mat-label>
+          <input matInput 
+                 formControlName="itemSearch" 
+                 placeholder="Type item name, code, or batch number to search..."
+                 [matAutocomplete]="itemAuto">
+          <mat-icon matSuffix>search</mat-icon>
+          <mat-autocomplete #itemAuto="matAutocomplete" [displayWith]="displayItemFn">
+            <mat-option *ngFor="let item of filteredItems$ | async" [value]="item">
+              <div class="item-option">
+                <div class="item-name">{{ item.name }}</div>
+                <div class="item-code">{{ item.code }}</div>
+              </div>
+            </mat-option>
+          </mat-autocomplete>
+        </mat-form-field>
+      </div>
+
+      <!-- Advanced Filters -->
+      <mat-expansion-panel class="advanced-filters" [expanded]="showAdvancedFilters">
+        <mat-expansion-panel-header>
+          <mat-panel-title>
+            <mat-icon>tune</mat-icon>
+            Advanced Filters
+          </mat-panel-title>
+        </mat-expansion-panel-header>
+
+        <!-- Location and Supplier Filters -->
+        <div class="filter-row">
+          <mat-form-field appearance="outline" class="half-width">
+            <mat-label>Locations</mat-label>
+            <mat-select formControlName="locations" multiple>
+              <mat-option *ngFor="let location of locationOptions$ | async" [value]="location.value">
+                {{ location.label }} ({{ location.type }})
+              </mat-option>
+            </mat-select>
+          </mat-form-field>
+
+          <mat-form-field appearance="outline" class="half-width">
+            <mat-label>Suppliers</mat-label>
+            <mat-select formControlName="suppliers" multiple>
+              <mat-option *ngFor="let supplier of supplierOptions$ | async" [value]="supplier.value">
+                {{ supplier.label }}
+              </mat-option>
+            </mat-select>
+          </mat-form-field>
+        </div>
+
+        <!-- Status Filter -->
+        <div class="filter-row">
+          <mat-form-field appearance="outline" class="full-width">
+            <mat-label>Status</mat-label>
+            <mat-select formControlName="statuses" multiple>
+              <mat-option *ngFor="let status of statusOptions" [value]="status.value">
+                <mat-chip [class]="'status-' + status.value">{{ status.label }}</mat-chip>
+              </mat-option>
+            </mat-select>
+          </mat-form-field>
+        </div>
+
+        <!-- Date Range Filters -->
+        <div class="filter-section">
+          <h4>Expiry Date Range</h4>
+          <div class="filter-row">
+            <mat-form-field appearance="outline" class="half-width">
+              <mat-label>From Date</mat-label>
+              <input matInput [matDatepicker]="expiryStartPicker" formControlName="expiryStartDate">
+              <mat-datepicker-toggle matSuffix [for]="expiryStartPicker"></mat-datepicker-toggle>
+              <mat-datepicker #expiryStartPicker></mat-datepicker>
+            </mat-form-field>
+
+            <mat-form-field appearance="outline" class="half-width">
+              <mat-label>To Date</mat-label>
+              <input matInput [matDatepicker]="expiryEndPicker" formControlName="expiryEndDate">
+              <mat-datepicker-toggle matSuffix [for]="expiryEndPicker"></mat-datepicker-toggle>
+              <mat-datepicker #expiryEndPicker></mat-datepicker>
+            </mat-form-field>
+          </div>
+        </div>
+
+        <!-- Quantity Range -->
+        <div class="filter-section">
+          <h4>Quantity Range</h4>
+          <div class="filter-row">
+            <mat-form-field appearance="outline" class="half-width">
+              <mat-label>Min Quantity</mat-label>
+              <input matInput type="number" formControlName="quantityMin" min="0">
+            </mat-form-field>
+
+            <mat-form-field appearance="outline" class="half-width">
+              <mat-label>Max Quantity</mat-label>
+              <input matInput type="number" formControlName="quantityMax" min="0">
+            </mat-form-field>
+          </div>
+        </div>
+
+        <!-- Additional Options -->
+        <div class="filter-section">
+          <h4>Additional Options</h4>
+          <div class="checkbox-row">
+            <mat-checkbox formControlName="includeExpired">Include Expired Batches</mat-checkbox>
+            <mat-checkbox formControlName="includeDepleted">Include Depleted Batches</mat-checkbox>
+          </div>
+        </div>
+
+      </mat-expansion-panel>
+
+      <!-- Filter Actions -->
+      <div class="filter-actions">
+        <button mat-raised-button color="primary" type="button" (click)="applyFilters()">
+          <mat-icon>search</mat-icon>
+          Apply Filters
+        </button>
+        <button mat-button type="button" (click)="clearFilters()">
+          <mat-icon>clear</mat-icon>
+          Clear All
+        </button>
+        <button mat-button type="button" (click)="toggleAdvancedFilters()">
+          <mat-icon>{{ showAdvancedFilters ? 'expand_less' : 'expand_more' }}</mat-icon>
+          {{ showAdvancedFilters ? 'Hide' : 'Show' }} Advanced
+        </button>
+      </div>
+
+    </form>
+  </mat-card-content>
+</mat-card>
