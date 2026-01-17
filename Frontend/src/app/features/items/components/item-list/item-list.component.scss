@@ -370,13 +370,24 @@ $purple: #867cf0;
                     color: #424242;
                     border: none;
 
-                    &.stock-normal,
-                    &.stock-low,
-                    &.stock-out,
+                    &.stock-normal {
+                        background-color: rgba(40, 199, 111, 0.12) !important;
+                        color: #28c76f !important;
+                    }
+
+                    &.stock-low {
+                        background-color: rgba(255, 159, 67, 0.12) !important;
+                        color: #ff9f43 !important;
+                    }
+
+                    &.stock-out {
+                        background-color: rgba(234, 84, 85, 0.12) !important;
+                        color: #ea5455 !important;
+                    }
+
                     &.stock-over {
-                        background-color: transparent;
-                        color: #424242;
-                        border: none;
+                        background-color: rgba(0, 207, 232, 0.12) !important;
+                        color: #00cfe8 !important;
                     }
                 }
 
@@ -389,14 +400,14 @@ $purple: #867cf0;
 
             mat-chip {
 
-                &.status-active,
+                &.status-active {
+                    background-color: rgba(40, 199, 111, 0.12) !important;
+                    color: #28c76f !important;
+                }
+
                 &.status-inactive {
-                    background-color: transparent;
-                    color: #424242;
-                    border: none;
-                    font-weight: 700;
-                    font-size: 14px;
-                    height: 28px;
+                    background-color: rgba(168, 170, 174, 0.12) !important;
+                    color: #a8aaae !important;
                 }
             }
 

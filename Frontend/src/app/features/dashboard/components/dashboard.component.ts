@@ -2,7 +2,8 @@ import { Component } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { MatCardModule } from '@angular/material/card';
 import { MatIconModule } from '@angular/material/icon';
-import { RouterModule } from '@angular/router';
+import { RouterModule, Router } from '@angular/router';
+import { AuthService } from '../../../core/services/auth.service';
 
 @Component({
   selector: 'app-dashboard',
@@ -67,4 +68,14 @@ import { RouterModule } from '@angular/router';
   styleUrl: './dashboard.component.scss'
 })
 
-export class DashboardComponent { }
+export class DashboardComponent {
+  constructor(
+    private authService: AuthService,
+    private router: Router
+  ) {
+    const user = this.authService.currentUserValue;
+    if (user && user.role === 'sales') {
+      this.router.navigate(['/salesman/dashboard']);
+    }
+  }
+}

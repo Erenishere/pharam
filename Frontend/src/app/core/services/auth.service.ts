@@ -11,6 +11,10 @@ export class AuthService {
     private currentUserSubject = new BehaviorSubject<User | null>(this.getUserFromStorage());
     public currentUser$ = this.currentUserSubject.asObservable();
 
+    public get currentUserValue(): User | null {
+        return this.currentUserSubject.value;
+    }
+
     constructor(private http: HttpClient) { }
 
     login(credentials: LoginRequest): Observable<LoginResponse> {

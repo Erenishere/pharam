@@ -4,14 +4,20 @@ const userSeeder = require('./userSeeder');
 const customerSeeder = require('./customerSeeder');
 const supplierSeeder = require('./supplierSeeder');
 const itemSeeder = require('./itemSeeder');
+const routeSeeder = require('./routeSeeder');
+const salesmanSeeder = require('./salesmanSeeder');
+const pharmaSeeder = require('./pharmaSeeder');
 
 class DatabaseSeeder {
   constructor() {
     this.seeders = [
       { name: 'Users', seeder: userSeeder },
+      { name: 'Routes', seeder: routeSeeder },
+      { name: 'Salesmen', seeder: salesmanSeeder },
       { name: 'Customers', seeder: customerSeeder },
       { name: 'Suppliers', seeder: supplierSeeder },
       { name: 'Items', seeder: itemSeeder },
+      { name: 'Pharma Items', seeder: pharmaSeeder },
     ];
   }
 
