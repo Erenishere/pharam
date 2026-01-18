@@ -1,0 +1,249 @@
+<div class="batch-statistics-container">
+  <div class="statistics-header">
+    <h1>Batch Statistics Dashboard</h1>
+    <p class="subtitle">Comprehensive analytics and insights for batch management</p>
+    
+    <!-- Date Range Filter -->
+    <div class="date-filter-section">
+      <mat-card class="filter-card">
+        <mat-card-content>
+          <div class="filter-controls">
+            <mat-form-field appearance="outline">
+              <mat-label>Start Date</mat-label>
+              <input matInput [matDatepicker]="startPicker" [(ngModel)]="dateFilter.start" (dateChange)="onDateFilterChange()">
+              <mat-datepicker-toggle matIconSuffix [for]="startPicker"></mat-datepicker-toggle>
+              <mat-datepicker #startPicker></mat-datepicker>
+            </mat-form-field>
+            
+            <mat-form-field appearance="outline">
+              <mat-label>End Date</mat-label>
+              <input matInput [matDatepicker]="endPicker" [(ngModel)]="dateFilter.end" (dateChange)="onDateFilterChange()">
+              <mat-datepicker-toggle matIconSuffix [for]="endPicker"></mat-datepicker-toggle>
+              <mat-datepicker #endPicker></mat-datepicker>
+            </mat-form-field>
+            
+            <div class="filter-actions">
+              <button mat-raised-button color="primary" (click)="applyDateFilter()">
+                <mat-icon>filter_list</mat-icon>
+                Apply Filter
+              </button>
+              <button mat-button (click)="clearDateFilter()">
+                <mat-icon>clear</mat-icon>
+                Clear
+              </button>
+            </div>
+            
+            <div class="quick-filters">
+              <button mat-button (click)="setQuickFilter('7days')">Last 7 Days</button>
+              <button mat-button (click)="setQuickFilter('30days')">Last 30 Days</button>
+              <button mat-button (click)="setQuickFilter('90days')">Last 90 Days</button>
+              <button mat-button (click)="setQuickFilter('year')">This Year</button>
+            </div>
+          </div>
+        </mat-card-content>
+      </mat-card>
+    </div>
+  </div>
+
+  <!-- Loading State -->
+  <div *ngIf="loading" class="loading-container">
+    <mat-spinner></mat-spinner>
+    <p>Loading statistics...</p>
+  </div>
+
+  <!-- Error State -->
+  <div *ngIf="error" class="error-container">
+    <mat-icon color="warn">error</mat-icon>
+    <p>{{ error }}</p>
+    <button mat-raised-button color="primary" (click)="loadStatistics()">
+      Retry
+    </button>
+  </div>
+
+  <!-- Statistics Content -->
+  <div *ngIf="!loading && !error && statistics" class="statistics-content">
+    
+    <!-- KPI Cards Section -->
+    <div class="kpi-section">
+      <h2>Key Performance Indicators</h2>
+      <div class="kpi-grid">
+        
+        <!-- Total Batches Card -->
+        <mat-card class="kpi-card primary">
+          <mat-card-content>
+            <div class="kpi-header">
+              <mat-icon>inventory</mat-icon>
+              <span class="kpi-title">Total Batches</span>
+            </div>
+            <div class="kpi-value">{{ statistics.totalBatches | number }}</div>
+            <div class="kpi-subtitle">Active inventory batches</div>
+          </mat-card-content>
+        </mat-card>
+
+        <!-- Total Inventory Value Card -->
+        <mat-card class="kpi-card success">
+          <mat-card-content>
+            <div class="kpi-header">
+              <mat-icon>attach_money</mat-icon>
+              <span class="kpi-title">Inventory Value</span>
+            </div>
+            <div class="kpi-value">{{ statistics.totalValue | currency }}</div>
+            <div class="kpi-subtitle">Total batch value</div>
+          </mat-card-content>
+        </mat-card>
+
+        <!-- Expired Batches Card -->
+        <mat-card class="kpi-card warn">
+          <mat-card-content>
+            <div class="kpi-header">
+              <mat-icon>warning</mat-icon>
+              <span class="kpi-title">Expired Batches</span>
+            </div>
+            <div class="kpi-value">{{ statistics.expiredBatches | number }}</div>
+            <div class="kpi-subtitle">Require attention</div>
+          </mat-card-content>
+        </mat-card>
+
+        <!-- Low Stock Alerts Card -->
+        <mat-card class="kpi-card accent">
+          <mat-card-content>
+            <div class="kpi-header">
+              <mat-icon>notifications</mat-icon>
+              <span class="kpi-title">Low Stock Alerts</span>
+            </div>
+            <div class="kpi-value">{{ statistics.lowStockAlerts | number }}</div>
+            <div class="kpi-subtitle">Items need restocking</div>
+          </mat-card-content>
+        </mat-card>
+
+        <!-- Average Batch Age Card -->
+        <mat-card class="kpi-card info">
+          <mat-card-content>
+            <div class="kpi-header">
+              <mat-icon>schedule</mat-icon>
+              <span class="kpi-title">Avg Batch Age</span>
+            </div>
+            <div class="kpi-value">{{ statistics.averageBatchAge | number:'1.0-0' }}</div>
+            <div class="kpi-subtitle">Days in inventory</div>
+          </mat-card-content>
+        </mat-card>
+
+        <!-- FIFO Compliance Card -->
+        <mat-card class="kpi-card" [ngClass]="getFifoComplianceClass()">
+          <mat-card-content>
+            <div class="kpi-header">
+              <mat-icon>trending_up</mat-icon>
+              <span class="kpi-title">FIFO Compliance</span>
+            </div>
+            <div class="kpi-value">{{ statistics.fifoCompliance.overallCompliance | number:'1.0-1' }}%</div>
+            <div class="kpi-subtitle">First-in-first-out adherence</div>
+          </mat-card-content>
+        </mat-card>
+
+      </div>
+    </div>
+
+    <!-- Quick Actions Section -->
+    <div class="quick-actions-section">
+      <h2>Quick Actions</h2>
+      <div class="action-buttons">
+        <button mat-raised-button color="primary" (click)="navigateToExpiringBatches()">
+          <mat-icon>schedule</mat-icon>
+          View Expiring Batches
+        </button>
+        <button mat-raised-button color="accent" (click)="navigateToBatchList()">
+          <mat-icon>list</mat-icon>
+          View All Batches
+        </button>
+        <button mat-raised-button (click)="exportStatistics()">
+          <mat-icon>download</mat-icon>
+          Export Report
+        </button>
+        <button mat-raised-button (click)="refreshStatistics()">
+          <mat-icon>refresh</mat-icon>
+          Refresh Data
+        </button>
+      </div>
+    </div>
+
+    <!-- Charts Section -->
+    <div class="charts-section">
+      <h2>Analytics Charts</h2>
+      <div class="charts-grid">
+        
+        <!-- Batch Status Distribution Chart -->
+        <mat-card class="chart-card clickable" (click)="drillDownToStatus()">
+          <mat-card-header>
+            <mat-card-title>Batch Distribution by Status</mat-card-title>
+            <mat-card-subtitle>Click to view detailed batch list</mat-card-subtitle>
+          </mat-card-header>
+          <mat-card-content>
+            <div class="chart-container">
+              <canvas #statusChart></canvas>
+            </div>
+          </mat-card-content>
+        </mat-card>
+
+        <!-- Location Distribution Chart -->
+        <mat-card class="chart-card clickable" (click)="drillDownToLocation()">
+          <mat-card-header>
+            <mat-card-title>Batches by Location</mat-card-title>
+            <mat-card-subtitle>Click to view batches by location</mat-card-subtitle>
+          </mat-card-header>
+          <mat-card-content>
+            <div class="chart-container">
+              <canvas #locationChart></canvas>
+            </div>
+          </mat-card-content>
+        </mat-card>
+
+        <!-- Supplier Value Distribution Chart -->
+        <mat-card class="chart-card clickable" (click)="drillDownToSupplier()">
+          <mat-card-header>
+            <mat-card-title>Value Distribution by Supplier</mat-card-title>
+            <mat-card-subtitle>Click to view supplier details</mat-card-subtitle>
+          </mat-card-header>
+          <mat-card-content>
+            <div class="chart-container">
+              <canvas #supplierChart></canvas>
+            </div>
+          </mat-card-content>
+        </mat-card>
+
+        <!-- Expiry Trend Chart -->
+        <mat-card class="chart-card full-width clickable" *ngIf="statistics.expiryAnalytics?.expiryTrend?.length" (click)="drillDownToExpiring()">
+          <mat-card-header>
+            <mat-card-title>Expiry Trend Analysis</mat-card-title>
+            <mat-card-subtitle>Click to view expiring batches</mat-card-subtitle>
+          </mat-card-header>
+          <mat-card-content>
+            <div class="chart-container">
+              <canvas #expiryTrendChart></canvas>
+            </div>
+          </mat-card-content>
+        </mat-card>
+
+      </div>
+    </div>
+
+    <!-- Additional Metrics Section -->
+    <div class="additional-metrics-section" *ngIf="statistics.expiryAnalytics">
+      <h2>Expiry Overview</h2>
+      <div class="expiry-metrics">
+        <div class="metric-item critical">
+          <span class="metric-label">Expiring in 7 days</span>
+          <span class="metric-value">{{ statistics.expiryAnalytics.expiringIn7Days }}</span>
+        </div>
+        <div class="metric-item warning">
+          <span class="metric-label">Expiring in 30 days</span>
+          <span class="metric-value">{{ statistics.expiryAnalytics.expiringIn30Days }}</span>
+        </div>
+        <div class="metric-item normal">
+          <span class="metric-label">Expiring in 90 days</span>
+          <span class="metric-value">{{ statistics.expiryAnalytics.expiringIn90Days }}</span>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>

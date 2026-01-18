@@ -1,0 +1,294 @@
+<div class="batch-detail-container">
+  <!-- Loading State -->
+  <div *ngIf="loading" class="loading-container">
+    <mat-spinner></mat-spinner>
+    <p>Loading batch details...</p>
+  </div>
+
+  <!-- Error State -->
+  <div *ngIf="error && !loading" class="error-container">
+    <mat-icon color="warn">error</mat-icon>
+    <p>{{ error }}</p>
+    <button mat-raised-button color="primary" (click)="goBack()">
+      <mat-icon>arrow_back</mat-icon>
+      Back to Batches
+    </button>
+  </div>
+
+  <!-- Batch Details -->
+  <div *ngIf="batch && !loading && !error" class="batch-content">
+    <!-- Header Section -->
+    <div class="batch-header">
+      <div class="header-info">
+        <h1 class="batch-title">{{ batch.batchNumber }}</h1>
+        <mat-chip-set>
+          <mat-chip [color]="getStatusColor(batch.status)" selected>
+            <mat-icon matChipAvatar>{{ getStatusIcon(batch.status) }}</mat-icon>
+            {{ batch.status | titlecase }}
+          </mat-chip>
+          <mat-chip *ngIf="isExpired(batch.expiryDate)" color="warn" selected>
+            <mat-icon matChipAvatar>warning</mat-icon>
+            Expired
+          </mat-chip>
+          <mat-chip *ngIf="isExpiringSoon(batch.expiryDate) && !isExpired(batch.expiryDate)" color="accent" selected>
+            <mat-icon matChipAvatar>schedule</mat-icon>
+            Expiring Soon
+          </mat-chip>
+        </mat-chip-set>
+      </div>
+      
+      <!-- Action Buttons -->
+      <div class="header-actions">
+        <button mat-raised-button color="primary" (click)="onEditBatch()">
+          <mat-icon>edit</mat-icon>
+          Edit
+        </button>
+        <button mat-raised-button color="accent" (click)="onAdjustQuantity()">
+          <mat-icon>tune</mat-icon>
+          Adjust Quantity
+        </button>
+        <button 
+          mat-raised-button 
+          color="warn" 
+          [disabled]="!canDeleteBatch()" 
+          (click)="onDeleteBatch()"
+          matTooltip="Can only delete batches with zero remaining quantity">
+          <mat-icon>delete</mat-icon>
+          Delete
+        </button>
+        <button mat-stroked-button (click)="goBack()">
+          <mat-icon>arrow_back</mat-icon>
+          Back
+        </button>
+      </div>
+    </div>
+
+    <mat-divider></mat-divider>
+
+    <!-- Content Cards -->
+    <div class="batch-cards">
+      <!-- Item Information Card -->
+      <mat-card class="info-card">
+        <mat-card-header>
+          <mat-card-title>
+            <mat-icon>inventory_2</mat-icon>
+            Item Information
+          </mat-card-title>
+        </mat-card-header>
+        <mat-card-content>
+          <div class="info-grid">
+            <div class="info-item">
+              <label>Item Name:</label>
+              <span>{{ batch.item?.name || 'N/A' }}</span>
+            </div>
+            <div class="info-item">
+              <label>Item Code:</label>
+              <span>{{ batch.item?.code || 'N/A' }}</span>
+            </div>
+            <div class="info-item">
+              <label>Category:</label>
+              <span>{{ batch.item?.category || 'N/A' }}</span>
+            </div>
+            <div class="info-item">
+              <label>Unit:</label>
+              <span>{{ batch.item?.unit || 'N/A' }}</span>
+            </div>
+            <div class="info-item" *ngIf="batch.item?.description">
+              <label>Description:</label>
+              <span>{{ batch.item?.description }}</span>
+            </div>
+          </div>
+        </mat-card-content>
+      </mat-card>
+
+      <!-- Quantity Information Card -->
+      <mat-card class="info-card">
+        <mat-card-header>
+          <mat-card-title>
+            <mat-icon>straighten</mat-icon>
+            Quantity Information
+          </mat-card-title>
+        </mat-card-header>
+        <mat-card-content>
+          <div class="quantity-grid">
+            <div class="quantity-item large">
+              <label>Original Quantity:</label>
+              <span class="quantity-value">{{ batch.quantity | number }}</span>
+            </div>
+            <div class="quantity-item large">
+              <label>Remaining Quantity:</label>
+              <span class="quantity-value" [class.low-stock]="batch.remainingQuantity < (batch.quantity * 0.2)">
+                {{ batch.remainingQuantity | number }}
+              </span>
+            </div>
+            <div class="quantity-item">
+              <label>Used Quantity:</label>
+              <span>{{ (batch.quantity - batch.remainingQuantity) | number }}</span>
+            </div>
+            <div class="quantity-item">
+              <label>Usage Percentage:</label>
+              <span>{{ ((batch.quantity - batch.remainingQuantity) / batch.quantity * 100) | number:'1.1-1' }}%</span>
+            </div>
+          </div>
+        </mat-card-content>
+      </mat-card>
+
+      <!-- Financial Information Card -->
+      <mat-card class="info-card">
+        <mat-card-header>
+          <mat-card-title>
+            <mat-icon>attach_money</mat-icon>
+            Financial Information
+          </mat-card-title>
+        </mat-card-header>
+        <mat-card-content>
+          <div class="info-grid">
+            <div class="info-item">
+              <label>Unit Cost:</label>
+              <span>{{ formatCurrency(batch.unitCost) }}</span>
+            </div>
+            <div class="info-item">
+              <label>Total Original Value:</label>
+              <span>{{ formatCurrency(batch.quantity * batch.unitCost) }}</span>
+            </div>
+            <div class="info-item">
+              <label>Current Value:</label>
+              <span class="highlight">{{ formatCurrency(calculateTotalValue()) }}</span>
+            </div>
+            <div class="info-item">
+              <label>Used Value:</label>
+              <span>{{ formatCurrency((batch.quantity - batch.remainingQuantity) * batch.unitCost) }}</span>
+            </div>
+          </div>
+        </mat-card-content>
+      </mat-card>
+
+      <!-- Date Information Card -->
+      <mat-card class="info-card">
+        <mat-card-header>
+          <mat-card-title>
+            <mat-icon>event</mat-icon>
+            Date Information
+          </mat-card-title>
+        </mat-card-header>
+        <mat-card-content>
+          <div class="info-grid">
+            <div class="info-item">
+              <label>Manufacturing Date:</label>
+              <span>{{ formatDate(batch.manufacturingDate) }}</span>
+            </div>
+            <div class="info-item">
+              <label>Expiry Date:</label>
+              <span [class.expired]="isExpired(batch.expiryDate)" [class.expiring-soon]="isExpiringSoon(batch.expiryDate)">
+                {{ formatDate(batch.expiryDate) }}
+              </span>
+            </div>
+            <div class="info-item">
+              <label>Created Date:</label>
+              <span>{{ formatDate(batch.createdAt) }}</span>
+            </div>
+            <div class="info-item">
+              <label>Last Updated:</label>
+              <span>{{ formatDate(batch.updatedAt) }}</span>
+            </div>
+          </div>
+        </mat-card-content>
+      </mat-card>
+
+      <!-- Location Information Card -->
+      <mat-card class="info-card">
+        <mat-card-header>
+          <mat-card-title>
+            <mat-icon>place</mat-icon>
+            Location Information
+          </mat-card-title>
+        </mat-card-header>
+        <mat-card-content>
+          <div class="info-grid">
+            <div class="info-item">
+              <label>Location Name:</label>
+              <span>{{ batch.location?.name || 'N/A' }}</span>
+            </div>
+            <div class="info-item">
+              <label>Location Code:</label>
+              <span>{{ batch.location?.code || 'N/A' }}</span>
+            </div>
+            <div class="info-item">
+              <label>Location Type:</label>
+              <span>{{ batch.location?.type || 'N/A' }}</span>
+            </div>
+          </div>
+        </mat-card-content>
+      </mat-card>
+
+      <!-- Supplier Information Card -->
+      <mat-card class="info-card" *ngIf="batch.supplier">
+        <mat-card-header>
+          <mat-card-title>
+            <mat-icon>business</mat-icon>
+            Supplier Information
+          </mat-card-title>
+        </mat-card-header>
+        <mat-card-content>
+          <div class="info-grid">
+            <div class="info-item">
+              <label>Supplier Name:</label>
+              <span>{{ batch.supplier.name }}</span>
+            </div>
+            <div class="info-item">
+              <label>Supplier Code:</label>
+              <span>{{ batch.supplier.code }}</span>
+            </div>
+            <div class="info-item" *ngIf="batch.supplier.contactInfo?.email">
+              <label>Email:</label>
+              <span>{{ batch.supplier.contactInfo?.email }}</span>
+            </div>
+            <div class="info-item" *ngIf="batch.supplier.contactInfo?.phone">
+              <label>Phone:</label>
+              <span>{{ batch.supplier.contactInfo?.phone }}</span>
+            </div>
+          </div>
+        </mat-card-content>
+      </mat-card>
+
+      <!-- Notes Section -->
+      <mat-card class="info-card full-width" *ngIf="batch.notes">
+        <mat-card-header>
+          <mat-card-title>
+            <mat-icon>note</mat-icon>
+            Notes
+          </mat-card-title>
+        </mat-card-header>
+        <mat-card-content>
+          <p class="notes-content">{{ batch.notes }}</p>
+        </mat-card-content>
+      </mat-card>
+
+      <!-- Audit Information Card -->
+      <mat-card class="info-card full-width">
+        <mat-card-header>
+          <mat-card-title>
+            <mat-icon>history</mat-icon>
+            Audit Information
+          </mat-card-title>
+        </mat-card-header>
+        <mat-card-content>
+          <div class="info-grid">
+            <div class="info-item">
+              <label>Created By:</label>
+              <span>{{ batch.createdBy }}</span>
+            </div>
+            <div class="info-item">
+              <label>Updated By:</label>
+              <span>{{ batch.updatedBy }}</span>
+            </div>
+            <div class="info-item">
+              <label>Batch ID:</label>
+              <span class="batch-id">{{ batch._id }}</span>
+            </div>
+          </div>
+        </mat-card-content>
+      </mat-card>
+    </div>
+  </div>
+</div>

@@ -1,0 +1,614 @@
+// Enhanced Expiry Tracker Styling
+@import '../../styles/batch-enhanced-theme';
+@import '../../styles/form-field-overrides';
+
+.expiry-tracker-container {
+    padding: $batch-spacing-xl;
+    max-width: 1400px;
+    margin: 0 auto;
+    background-color: $batch-bg-page;
+    min-height: 100vh;
+}
+
+// Header Card Styling
+.header-card {
+    @include batch-card;
+
+    .mat-mdc-card-title {
+        display: flex;
+        align-items: center;
+        gap: $batch-spacing-sm;
+        color: $batch-text-card-title !important;
+        font-weight: 600;
+
+        .mat-icon {
+            color: $batch-primary !important;
+        }
+    }
+
+    .mat-mdc-card-subtitle {
+        color: $batch-text-secondary !important;
+        margin-top: $batch-spacing-xs;
+    }
+}
+
+// Configuration Form Styling
+.config-form {
+    display: flex;
+    gap: $batch-spacing-lg;
+    align-items: flex-start;
+    flex-wrap: wrap;
+    margin-top: $batch-spacing-xl;
+
+    .mat-mdc-form-field {
+        @include batch-form-field;
+        min-width: 200px;
+        flex: 1;
+
+        // Enhanced border styling with #7367F0 - always visible
+        .mdc-notched-outline__leading,
+        .mdc-notched-outline__notch,
+        .mdc-notched-outline__trailing {
+            border-color: $batch-primary !important;
+            border-width: 1px !important;
+        }
+
+        // Focus state with thicker border
+        &.mat-focused {
+
+            .mdc-notched-outline__leading,
+            .mdc-notched-outline__notch,
+            .mdc-notched-outline__trailing {
+                border-color: $batch-primary !important;
+                border-width: 2px !important;
+            }
+        }
+
+        // Hover state
+        &:hover:not(.mat-focused) {
+
+            .mdc-notched-outline__leading,
+            .mdc-notched-outline__notch,
+            .mdc-notched-outline__trailing {
+                border-color: $batch-primary !important;
+            }
+        }
+
+        // Label styling - always visible and purple
+        .mat-mdc-floating-label {
+            color: $batch-primary !important;
+            opacity: 1 !important;
+            visibility: visible !important;
+        }
+
+        &.mat-focused .mat-mdc-floating-label {
+            color: $batch-primary !important;
+        }
+
+        // Alternative label selectors
+        mat-label {
+            color: $batch-primary !important;
+            opacity: 1 !important;
+            visibility: visible !important;
+        }
+
+        // Input text styling
+        .mat-mdc-input-element {
+            color: $batch-text-primary !important;
+            caret-color: $batch-primary !important;
+
+            // Enhanced placeholder styling with #7367F0
+            &::placeholder {
+                color: $batch-primary !important;
+                opacity: 0.7 !important;
+                font-style: italic;
+            }
+
+            &::-webkit-input-placeholder {
+                color: $batch-primary !important;
+                opacity: 0.7 !important;
+                font-style: italic;
+            }
+
+            &::-moz-placeholder {
+                color: $batch-primary !important;
+                opacity: 0.7 !important;
+                font-style: italic;
+            }
+
+            &:-ms-input-placeholder {
+                color: $batch-primary !important;
+                opacity: 0.7 !important;
+                font-style: italic;
+            }
+        }
+
+        // Select field styling
+        .mat-mdc-select-value-text {
+            color: $batch-text-primary !important;
+        }
+
+        .mat-mdc-select-placeholder {
+            color: $batch-primary !important;
+            opacity: 0.7 !important;
+            font-style: italic;
+        }
+
+        .mat-mdc-select-arrow {
+            color: $batch-primary !important;
+        }
+
+        // Hint text styling
+        .mat-mdc-form-field-hint {
+            color: $batch-text-muted !important;
+        }
+
+        // CSS Custom Properties for Material Design Components
+        --mdc-outlined-text-field-outline-color: #{$batch-primary} !important;
+        --mdc-outlined-text-field-focus-outline-color: #{$batch-primary} !important;
+        --mdc-outlined-text-field-hover-outline-color: #{$batch-primary} !important;
+        --mdc-outlined-text-field-label-text-color: #{$batch-primary} !important;
+        --mdc-outlined-text-field-focus-label-text-color: #{$batch-primary} !important;
+        --mat-form-field-label-text-color: #{$batch-primary} !important;
+        --mat-form-field-focus-label-text-color: #{$batch-primary} !important;
+    }
+}
+
+// Action Buttons Styling
+.action-buttons {
+    display: flex;
+    gap: $batch-spacing-sm;
+    align-items: flex-end;
+    margin-top: $batch-spacing-sm;
+
+    .mat-mdc-raised-button {
+        @include batch-button-primary;
+        white-space: nowrap;
+    }
+}
+
+// Summary Cards Grid
+.summary-cards {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: $batch-spacing-lg;
+    margin-bottom: $batch-spacing-xxl;
+
+    .summary-card {
+        @include batch-card;
+        border-left: 4px solid;
+
+        &.expired {
+            @include batch-summary-card('expired');
+        }
+
+        &.critical {
+            @include batch-summary-card('critical');
+        }
+
+        &.warning {
+            @include batch-summary-card('warning');
+        }
+
+        &.normal {
+            @include batch-summary-card('normal');
+        }
+
+        &.total {
+            @include batch-summary-card('total');
+        }
+    }
+}
+
+// Location Summary Card
+.location-summary-card {
+    @include batch-card;
+
+    .mat-mdc-card-title {
+        display: flex;
+        align-items: center;
+        gap: $batch-spacing-sm;
+
+        .mat-icon {
+            color: $batch-primary !important;
+        }
+    }
+}
+
+.location-summary-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: $batch-spacing-lg;
+}
+
+.location-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: $batch-spacing-md;
+    border: 1px solid #E0E0E0;
+    border-radius: $batch-radius-card;
+    background-color: $batch-bg-header;
+    @include batch-smooth-transition;
+
+    &:hover {
+        background-color: $batch-primary-lighter;
+        border-color: $batch-primary;
+    }
+
+    .location-info {
+        .location-name {
+            font-weight: 500;
+            font-size: 14px;
+            color: $batch-text-primary;
+        }
+
+        .location-code {
+            font-size: 12px;
+            color: $batch-text-secondary;
+        }
+    }
+
+    .location-counts {
+        display: flex;
+        gap: $batch-spacing-xs;
+        flex-wrap: wrap;
+
+        .mat-mdc-chip {
+            font-size: 11px;
+            min-height: 24px;
+            padding: 0 $batch-spacing-sm;
+            border-radius: 12px;
+
+            &.expired-chip {
+                @include batch-status-badge('expired');
+            }
+
+            &.critical-chip {
+                @include batch-status-badge('critical');
+            }
+
+            &.warning-chip {
+                @include batch-status-badge('warning');
+            }
+
+            &.normal-chip {
+                @include batch-status-badge('normal');
+            }
+        }
+    }
+}
+
+// Loading Container
+.loading-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 40px;
+    gap: $batch-spacing-lg;
+
+    .mat-mdc-progress-spinner {
+        --mdc-circular-progress-active-indicator-color: #{$batch-primary};
+    }
+
+    p {
+        color: $batch-text-secondary;
+        font-size: 16px;
+    }
+}
+
+// Expiry Groups
+.expiry-groups {
+    display: flex;
+    flex-direction: column;
+    gap: $batch-spacing-xl;
+}
+
+.group-card {
+    @include batch-card;
+    border-left: 4px solid;
+
+    &.critical {
+        border-left-color: $batch-status-critical;
+
+        .batch-card {
+            @include batch-expiry-card('critical');
+        }
+    }
+
+    &.warning {
+        border-left-color: $batch-status-warning;
+
+        .batch-card {
+            @include batch-expiry-card('warning');
+        }
+    }
+
+    &.normal {
+        border-left-color: $batch-status-normal;
+
+        .batch-card {
+            @include batch-expiry-card('normal');
+        }
+    }
+
+    .mat-mdc-card-title {
+        display: flex;
+        align-items: center;
+        gap: $batch-spacing-sm;
+
+        .mat-mdc-chip {
+            margin-left: auto;
+            background-color: $batch-primary !important;
+            color: white !important;
+        }
+    }
+}
+
+// Batch Table Container
+.batch-table-container {
+    overflow-x: auto;
+    border-radius: $batch-radius-card;
+    margin-top: $batch-spacing-lg;
+}
+
+.batch-table {
+    @include batch-table;
+    width: 100%;
+    min-width: 800px;
+
+    .batch-link {
+        color: $batch-primary;
+        text-decoration: none;
+        font-weight: 500;
+        @include batch-smooth-transition;
+
+        &:hover {
+            text-decoration: underline;
+            color: $batch-primary-hover;
+        }
+    }
+
+    .item-info {
+        .item-name {
+            font-weight: 500;
+            color: $batch-text-primary;
+        }
+
+        .item-code {
+            font-size: 12px;
+            color: $batch-text-secondary;
+        }
+    }
+
+    .quantity-info {
+        display: flex;
+        align-items: baseline;
+        gap: $batch-spacing-xs;
+
+        .remaining {
+            font-weight: 500;
+            color: $batch-text-primary;
+        }
+
+        .unit {
+            font-size: 12px;
+            color: $batch-text-secondary;
+        }
+    }
+
+    .expiry-info {
+        .date {
+            font-weight: 500;
+            color: $batch-text-primary;
+        }
+
+        .days-remaining {
+            font-size: 12px;
+            font-weight: 500;
+            margin-top: 2px;
+
+            &.expired {
+                color: $batch-status-expired;
+            }
+
+            &.critical {
+                color: $batch-status-critical;
+            }
+
+            &.warning {
+                color: $batch-status-warning;
+            }
+
+            &.normal {
+                color: $batch-status-normal;
+            }
+        }
+    }
+
+    .location-info {
+        .location-name {
+            font-weight: 500;
+            color: $batch-text-primary;
+        }
+
+        .location-code {
+            font-size: 12px;
+            color: $batch-text-secondary;
+        }
+    }
+
+    // Status Chips
+    .mat-mdc-chip {
+        &.status-active {
+            @include batch-status-badge('active');
+        }
+
+        &.status-expired {
+            @include batch-status-badge('expired');
+        }
+
+        &.status-depleted {
+            @include batch-status-badge('depleted');
+        }
+
+        &.status-quarantined {
+            @include batch-status-badge('quarantined');
+        }
+    }
+
+    .actions {
+        display: flex;
+        gap: $batch-spacing-xs;
+
+        .mat-mdc-icon-button {
+            color: $batch-primary !important;
+            @include batch-smooth-transition;
+
+            &:hover {
+                background-color: $batch-primary-light !important;
+                color: $batch-primary-hover !important;
+            }
+        }
+    }
+}
+
+// No Batches State
+.no-batches {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 40px;
+    color: $batch-text-secondary;
+
+    .mat-icon {
+        font-size: 48px;
+        width: 48px;
+        height: 48px;
+        color: $batch-status-normal;
+        margin-bottom: $batch-spacing-lg;
+    }
+
+    p {
+        margin: 0;
+        font-size: 16px;
+    }
+}
+
+// No Data State
+.no-data {
+    margin-top: 40px;
+
+    .mat-mdc-card {
+        @include batch-card;
+    }
+}
+
+.no-data-content {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 40px;
+    text-align: center;
+
+    .mat-icon {
+        font-size: 64px;
+        width: 64px;
+        height: 64px;
+        color: $batch-status-normal;
+        margin-bottom: $batch-spacing-lg;
+    }
+
+    h3 {
+        margin: 0 0 $batch-spacing-sm 0;
+        color: $batch-text-primary;
+        font-weight: 600;
+    }
+
+    p {
+        margin: 0;
+        color: $batch-text-secondary;
+    }
+}
+
+// Responsive Design
+@include batch-mobile {
+    .expiry-tracker-container {
+        padding: $batch-spacing-lg;
+    }
+
+    .summary-cards {
+        grid-template-columns: 1fr;
+    }
+
+    .config-form {
+        flex-direction: column;
+
+        .mat-mdc-form-field {
+            width: 100%;
+        }
+    }
+
+    .batch-table {
+        min-width: 600px;
+    }
+
+    .location-summary-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .location-item {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: $batch-spacing-sm;
+    }
+}
+
+@include batch-tablet {
+    .summary-cards {
+        grid-template-columns: repeat(2, 1fr);
+    }
+
+    .location-summary-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+}
+
+// Accessibility Enhancements
+@include batch-high-contrast {
+
+    .batch-card,
+    .summary-card,
+    .group-card {
+        border-width: 2px;
+    }
+
+    .batch-link {
+        text-decoration: underline;
+    }
+}
+
+// Focus Management
+.mat-mdc-button,
+.mat-mdc-icon-button,
+.batch-link {
+    @include batch-focus-visible;
+}
+
+// Print Styles
+@media print {
+    .expiry-tracker-container {
+        background-color: white;
+        padding: 0;
+    }
+
+    .action-buttons,
+    .actions {
+        display: none;
+    }
+
+    .summary-cards,
+    .expiry-groups {
+        break-inside: avoid;
+    }
+}

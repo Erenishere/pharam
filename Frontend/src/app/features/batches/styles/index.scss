@@ -1,0 +1,187 @@
+// Batch Management Enhanced Styling - Main Index
+// This file imports all enhanced batch management styles
+
+// Import Vuexy base variables first
+@import '../../../../styles/vuexy-vars';
+
+// Import our enhanced theme system
+@import './batch-enhanced-theme';
+
+// Import form field overrides to ensure visibility
+@import './form-field-overrides';
+
+// Import component-specific enhanced styles
+@import '../components/expiry-tracker/expiry-tracker-enhanced.component';
+@import '../components/batch-filters/batch-filters-enhanced.component';
+@import './batch-table-enhanced';
+
+// Global batch management overrides
+.batch-management-module {
+    // Ensure consistent background
+    background-color: $batch-bg-page;
+    min-height: 100vh;
+
+    // Global text color override
+    color: $batch-text-primary;
+
+    // Ensure all cards use enhanced styling
+    .mat-mdc-card {
+        @include batch-card;
+    }
+
+    // Ensure all buttons use enhanced styling
+    .mat-mdc-raised-button {
+        &.mat-primary {
+            @include batch-button-primary;
+        }
+    }
+
+    .mat-mdc-button {
+        &:not(.mat-mdc-raised-button) {
+            @include batch-button-outline;
+        }
+    }
+
+    // Ensure all form fields use enhanced styling
+    .mat-mdc-form-field {
+        @include batch-form-field;
+    }
+
+    // Ensure all tables use enhanced styling
+    .mat-mdc-table {
+        @include batch-table;
+    }
+
+    // Global search field enhancement
+    .search-field {
+        @include batch-search-field;
+    }
+}
+
+// Global Material Design Component overrides for batch management
+.batch-management-module {
+
+    // Snackbar styling
+    .mat-mdc-snack-bar-container {
+        &.success-snackbar {
+            background-color: $batch-status-normal !important;
+            color: white !important;
+        }
+
+        &.error-snackbar {
+            background-color: $batch-status-expired !important;
+            color: white !important;
+        }
+
+        &.warning-snackbar {
+            background-color: $batch-status-warning !important;
+            color: #B7791F !important;
+        }
+
+        &.info-snackbar {
+            background-color: $batch-primary !important;
+            color: white !important;
+        }
+    }
+
+    // Dialog styling
+    .mat-mdc-dialog-container {
+        background-color: $batch-bg-card !important;
+        color: $batch-text-primary !important;
+
+        .mat-mdc-dialog-title {
+            color: $batch-text-card-title !important;
+        }
+
+        .mat-mdc-dialog-actions {
+            .mat-mdc-button {
+                @include batch-button-outline;
+            }
+
+            .mat-mdc-raised-button {
+                @include batch-button-primary;
+            }
+        }
+    }
+
+    // Menu styling
+    .mat-mdc-menu-panel {
+        background-color: $batch-bg-card !important;
+
+        .mat-mdc-menu-item {
+            color: $batch-text-primary !important;
+
+            &:hover {
+                background-color: $batch-primary-lighter !important;
+            }
+        }
+    }
+
+    // Tooltip styling
+    .mat-mdc-tooltip {
+        background-color: $batch-text-primary !important;
+        color: $batch-bg-card !important;
+    }
+
+    // Progress bar styling
+    .mat-mdc-progress-bar {
+        .mdc-linear-progress__bar-inner {
+            border-color: $batch-primary !important;
+        }
+    }
+
+    // Slider styling
+    .mat-mdc-slider {
+        --mdc-slider-active-track-color: #{$batch-primary};
+        --mdc-slider-handle-color: #{$batch-primary};
+        --mdc-slider-focus-handle-color: #{$batch-primary};
+        --mdc-slider-hover-handle-color: #{$batch-primary-hover};
+    }
+}
+
+// Print-specific overrides
+@media print {
+    .batch-management-module {
+        background-color: white !important;
+        color: black !important;
+
+        .mat-mdc-card {
+            box-shadow: none !important;
+            border: 1px solid #ccc !important;
+        }
+
+        .batch-actions,
+        .filter-actions,
+        .actions-cell {
+            display: none !important;
+        }
+    }
+}
+
+// High contrast mode overrides
+@media (prefers-contrast: high) {
+    .batch-management-module {
+        .mat-mdc-card {
+            border: 2px solid $batch-text-primary !important;
+        }
+
+        .mat-mdc-button,
+        .mat-mdc-raised-button {
+            border: 2px solid currentColor !important;
+        }
+
+        .batch-link {
+            text-decoration: underline !important;
+        }
+    }
+}
+
+// Reduced motion overrides
+@media (prefers-reduced-motion: reduce) {
+    .batch-management-module {
+        * {
+            transition: none !important;
+            animation: none !important;
+        }
+    }
+}

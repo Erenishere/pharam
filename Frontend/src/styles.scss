@@ -1,6 +1,7 @@
 /* You can add global styles to this file, and also import other style files */
 @import 'styles/vuexy-vars';
 @import 'styles/vuexy-helpers';
+@import 'assets/styles/notifications';
 
 :root {
     --primary-color: #{$primary};
@@ -180,4 +181,194 @@ h6 {
     to {
         opacity: 0;
     }
+}
+
+/* Material Chip Text Color Override */
+::ng-deep .mdc-evolution-chip__text-label {
+    color: #424242 !important;
+}
+
+::ng-deep mat-chip .mdc-evolution-chip__text-label {
+    color: #424242 !important;
+}
+
+/* Remove chip container box/border completely */
+::ng-deep mat-chip {
+    background: transparent !important;
+    border: none !important;
+    box-shadow: none !important;
+    padding: 0 !important;
+}
+
+::ng-deep .mdc-evolution-chip__cell {
+    padding: 0 !important;
+}
+
+::ng-deep .mdc-evolution-chip__action {
+    padding: 0 !important;
+    background: transparent !important;
+    border: none !important;
+}
+
+::ng-deep .mat-mdc-chip-action {
+    padding: 0 !important;
+}
+
+::ng-deep .mdc-evolution-chip__text-label {
+    padding: 0 !important;
+}
+
+/* GLOBAL MATERIAL DESIGN FORM FIELD STYLING - CLEAN APPROACH */
+/* Target Material Design Components with high specificity */
+
+/* Form Field Styling - Clean borders without internal outlines */
+.mat-mdc-form-field {
+
+    /* Hide the notched outline borders completely */
+    .mdc-notched-outline__leading,
+    .mdc-notched-outline__notch,
+    .mdc-notched-outline__trailing {
+        border: none !important;
+        border-color: transparent !important;
+    }
+
+    /* Apply clean border to the wrapper instead */
+    .mat-mdc-text-field-wrapper {
+        border: 1px solid #7367F0 !important;
+        border-radius: 6px !important;
+        background: #ffffff !important;
+        transition: all 0.2s ease !important;
+    }
+
+    /* Focus state - thicker border and glow */
+    &.mat-focused {
+        .mat-mdc-text-field-wrapper {
+            border-width: 2px !important;
+            border-color: #7367F0 !important;
+            box-shadow: 0 0 0 2px rgba(115, 103, 240, 0.25) !important;
+        }
+    }
+
+    /* Hover state */
+    &:hover:not(.mat-focused) {
+        .mat-mdc-text-field-wrapper {
+            border-color: #7367F0 !important;
+        }
+    }
+}
+
+/* Input Elements */
+.mat-mdc-input-element {
+    color: #4B4B4B !important;
+    caret-color: #7367F0 !important;
+
+    &::placeholder {
+        color: #6c757d !important;
+        opacity: 1 !important;
+    }
+}
+
+/* Default: All floating labels are visible and purple */
+.mat-mdc-floating-label,
+.mdc-floating-label {
+    color: #7367F0 !important;
+    opacity: 1 !important;
+    visibility: visible !important;
+    font-weight: 500 !important;
+    transition: all 0.2s ease !important;
+
+    /* When floating above, maintain purple color */
+    &.mdc-floating-label--float-above {
+        opacity: 1 !important;
+        visibility: visible !important;
+        color: #7367F0 !important;
+        font-weight: 500 !important;
+        background: #ffffff !important;
+        padding: 0 4px !important;
+    }
+}
+
+/* Hide floating labels ONLY for fields WITH placeholders */
+.mat-mdc-form-field:has(input[placeholder]),
+.mat-mdc-form-field:has(input[placeholder]:not([placeholder=""])) {
+
+    .mat-mdc-floating-label,
+    .mdc-floating-label {
+        opacity: 0 !important;
+        visibility: hidden !important;
+
+        /* Show when focused or has value */
+        &.mdc-floating-label--float-above {
+            opacity: 1 !important;
+            visibility: visible !important;
+            color: #7367F0 !important;
+            font-weight: 500 !important;
+            background: #ffffff !important;
+            padding: 0 4px !important;
+        }
+    }
+
+    /* Show floating label on focus for fields with placeholders */
+    &.mat-focused {
+
+        .mat-mdc-floating-label,
+        .mdc-floating-label {
+            opacity: 1 !important;
+            visibility: visible !important;
+            color: #7367F0 !important;
+            font-weight: 500 !important;
+            background: #ffffff !important;
+            padding: 0 4px !important;
+        }
+    }
+}
+
+/* Fallback: Hide labels for search-type inputs (in case :has() isn't supported) */
+.mat-mdc-form-field input[placeholder*="search" i],
+.mat-mdc-form-field input[placeholder*="type" i] {
+
+    ~.mat-mdc-floating-label,
+    ~.mdc-floating-label {
+        opacity: 0 !important;
+        visibility: hidden !important;
+    }
+}
+
+/* Ensure all form field types maintain purple labels by default */
+.mat-mdc-form-field.mat-mdc-form-field-type-mat-select,
+.mat-mdc-form-field input[type="number"],
+.mat-mdc-form-field input[type="date"] {
+
+    .mat-mdc-floating-label,
+    .mdc-floating-label {
+        opacity: 1 !important;
+        visibility: visible !important;
+        color: #7367F0 !important;
+        font-weight: 500 !important;
+    }
+}
+
+/* Form Field Icons */
+.mat-mdc-form-field-icon-prefix,
+.mat-mdc-form-field-icon-suffix,
+.mat-datepicker-toggle,
+.mat-datepicker-toggle-default-icon {
+    color: #7367F0 !important;
+}
+
+/* Select Fields */
+.mat-mdc-select {
+    .mat-mdc-select-arrow {
+        color: #7367F0 !important;
+    }
+
+    .mat-mdc-select-value,
+    .mat-mdc-select-value-text {
+        color: #4B4B4B !important;
+    }
+}
+
+/* Remove Material Design underlines */
+.mdc-line-ripple {
+    display: none !important;
 }

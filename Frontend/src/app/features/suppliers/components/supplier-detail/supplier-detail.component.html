@@ -1,0 +1,158 @@
+<div class="supplier-detail-dialog">
+    <div class="dialog-header">
+        <h2 mat-dialog-title>
+            <mat-icon>business</mat-icon>
+            Supplier Details
+        </h2>
+        <button mat-icon-button (click)="onClose()">
+            <mat-icon>close</mat-icon>
+        </button>
+    </div>
+
+    <mat-dialog-content>
+        <div class="supplier-detail-content">
+            <!-- Supplier Avatar Section -->
+            <div class="supplier-avatar-section">
+                <div class="avatar-circle">
+                    <mat-icon>business</mat-icon>
+                </div>
+                <h3 class="supplier-name">{{ supplier.name }}</h3>
+                <p class="supplier-code">{{ supplier.code }}</p>
+            </div>
+
+            <mat-divider></mat-divider>
+
+            <!-- Supplier Information Grid -->
+            <div class="info-grid">
+                <div class="info-item">
+                    <div class="info-label">
+                        <mat-icon>category</mat-icon>
+                        <span>Type</span>
+                    </div>
+                    <div class="info-value">
+                        <mat-chip class="type-chip">{{ supplier.type | titlecase }}</mat-chip>
+                    </div>
+                </div>
+
+                <div class="info-item">
+                    <div class="info-label">
+                        <mat-icon>toggle_on</mat-icon>
+                        <span>Status</span>
+                    </div>
+                    <div class="info-value">
+                        <mat-chip [class.active-chip]="supplier.isActive" [class.inactive-chip]="!supplier.isActive">
+                            {{ supplier.isActive ? 'Active' : 'Inactive' }}
+                        </mat-chip>
+                    </div>
+                </div>
+
+                <div class="info-item" *ngIf="hasValue(supplier.route)">
+                    <div class="info-label">
+                        <mat-icon>route</mat-icon>
+                        <span>Route</span>
+                    </div>
+                    <div class="info-value">
+                        {{ supplier.route }}
+                    </div>
+                </div>
+
+                <div class="info-item" *ngIf="hasValue(supplier.contactInfo?.phone)">
+                    <div class="info-label">
+                        <mat-icon>phone</mat-icon>
+                        <span>Phone</span>
+                    </div>
+                    <div class="info-value">
+                        {{ supplier.contactInfo.phone }}
+                    </div>
+                </div>
+
+                <div class="info-item" *ngIf="hasValue(supplier.contactInfo?.email)">
+                    <div class="info-label">
+                        <mat-icon>email</mat-icon>
+                        <span>Email</span>
+                    </div>
+                    <div class="info-value">
+                        {{ supplier.contactInfo.email }}
+                    </div>
+                </div>
+
+                <div class="info-item" *ngIf="hasValue(supplier.contactInfo?.city)">
+                    <div class="info-label">
+                        <mat-icon>location_city</mat-icon>
+                        <span>City</span>
+                    </div>
+                    <div class="info-value">
+                        {{ supplier.contactInfo.city }}
+                    </div>
+                </div>
+
+                <div class="info-item" *ngIf="hasValue(supplier.contactInfo?.country)">
+                    <div class="info-label">
+                        <mat-icon>public</mat-icon>
+                        <span>Country</span>
+                    </div>
+                    <div class="info-value">
+                        {{ supplier.contactInfo.country }}
+                    </div>
+                </div>
+
+                <div class="info-item">
+                    <div class="info-label">
+                        <mat-icon>account_balance</mat-icon>
+                        <span>Credit Limit</span>
+                    </div>
+                    <div class="info-value">
+                        {{ formatCurrency(supplier.financialInfo.creditLimit, supplier.financialInfo.currency) }}
+                    </div>
+                </div>
+
+                <div class="info-item">
+                    <div class="info-label">
+                        <mat-icon>calendar_today</mat-icon>
+                        <span>Payment Terms</span>
+                    </div>
+                    <div class="info-value">
+                        {{ supplier.financialInfo.paymentTerms }} days
+                    </div>
+                </div>
+
+                <div class="info-item">
+                    <div class="info-label">
+                        <mat-icon>event</mat-icon>
+                        <span>Created At</span>
+                    </div>
+                    <div class="info-value">
+                        {{ formatDate(supplier.createdAt) }}
+                    </div>
+                </div>
+
+                <div class="info-item">
+                    <div class="info-label">
+                        <mat-icon>update</mat-icon>
+                        <span>Last Updated</span>
+                    </div>
+                    <div class="info-value">
+                        {{ formatDate(supplier.updatedAt) }}
+                    </div>
+                </div>
+
+                <div class="info-item">
+                    <div class="info-label">
+                        <mat-icon>fingerprint</mat-icon>
+                        <span>Supplier ID</span>
+                    </div>
+                    <div class="info-value supplier-id">
+                        {{ supplier._id }}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </mat-dialog-content>
+
+    <mat-dialog-actions align="end">
+        <button mat-raised-button color="primary" (click)="onClose()">
+            <mat-icon>close</mat-icon>
+            Close
+        </button>
+    </mat-dialog-actions>
+</div>

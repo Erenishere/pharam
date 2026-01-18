@@ -1,0 +1,624 @@
+// Enhanced Batch Table and List Styling
+@import './batch-enhanced-theme';
+
+// Batch List Container
+.batch-list-container {
+    padding: $batch-spacing-xl;
+    max-width: 1400px;
+    margin: 0 auto;
+    background-color: $batch-bg-page;
+    min-height: 100vh;
+}
+
+// Batch Actions Bar
+.batch-actions {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: $batch-spacing-xl;
+    padding: $batch-spacing-lg;
+    background-color: $batch-bg-card;
+    border-radius: $batch-radius-card;
+    box-shadow: $batch-shadow-elevated;
+
+    .actions-left {
+        display: flex;
+        gap: $batch-spacing-md;
+        align-items: center;
+    }
+
+    .actions-right {
+        display: flex;
+        gap: $batch-spacing-sm;
+        align-items: center;
+    }
+
+    .mat-mdc-raised-button {
+        @include batch-button-primary;
+    }
+
+    .mat-mdc-button {
+        @include batch-button-outline;
+    }
+
+    .view-toggle {
+        display: flex;
+        background-color: $batch-bg-header;
+        border-radius: $batch-radius-button;
+        padding: $batch-spacing-xs;
+
+        .mat-mdc-button {
+            margin: 0;
+            border: none;
+            border-radius: $batch-radius-button;
+
+            &.active {
+                background-color: $batch-primary !important;
+                color: white !important;
+            }
+        }
+    }
+}
+
+// Enhanced Batch Table
+.batch-table-card {
+    @include batch-card;
+    overflow: hidden;
+
+    .mat-mdc-card-content {
+        padding: 0;
+    }
+}
+
+.batch-table-container {
+    overflow-x: auto;
+
+    .mat-mdc-table {
+        @include batch-table;
+        width: 100%;
+
+        // Header styling
+        .mat-mdc-header-row {
+            background: $batch-bg-header;
+
+            .mat-mdc-header-cell {
+                color: $batch-text-secondary;
+                font-weight: 600;
+                font-size: 12px;
+                text-transform: uppercase;
+                letter-spacing: 0.5px;
+                padding: $batch-spacing-lg $batch-spacing-xl;
+                border-bottom: 1px solid #E0E0E0;
+
+                &.sortable {
+                    cursor: pointer;
+                    @include batch-smooth-transition;
+
+                    &:hover {
+                        background-color: $batch-primary-lighter;
+                        color: $batch-primary;
+                    }
+                }
+
+                .mat-sort-header-arrow {
+                    color: $batch-primary;
+                }
+            }
+        }
+
+        // Row styling
+        .mat-mdc-row {
+            @include batch-smooth-transition;
+
+            &:nth-child(even) {
+                background-color: $batch-bg-table-alt;
+            }
+
+            &:hover {
+                background: $batch-primary-lighter !important;
+                transform: translateY(-1px);
+                box-shadow: $batch-shadow-elevated;
+            }
+
+            .mat-mdc-cell {
+                color: $batch-text-primary;
+                font-weight: 400;
+                padding: $batch-spacing-lg $batch-spacing-xl;
+                border-bottom: 1px solid #F0F0F0;
+
+                // Batch number cell
+                &.batch-number-cell {
+                    .batch-link {
+                        color: $batch-primary;
+                        text-decoration: none;
+                        font-weight: 500;
+                        @include batch-smooth-transition;
+
+                        &:hover {
+                            text-decoration: underline;
+                            color: $batch-primary-hover;
+                        }
+                    }
+                }
+
+                // Item info cell
+                &.item-cell {
+                    .item-info {
+                        .item-name {
+                            font-weight: 500;
+                            color: $batch-text-primary;
+                            margin-bottom: 2px;
+                        }
+
+                        .item-code {
+                            font-size: 12px;
+                            color: $batch-text-secondary;
+                        }
+                    }
+                }
+
+                // Quantity cell
+                &.quantity-cell {
+                    .quantity-info {
+                        display: flex;
+                        align-items: baseline;
+                        gap: $batch-spacing-xs;
+
+                        .remaining {
+                            font-weight: 600;
+                            color: $batch-text-primary;
+                        }
+
+                        .total {
+                            font-size: 12px;
+                            color: $batch-text-muted;
+                        }
+
+                        .unit {
+                            font-size: 12px;
+                            color: $batch-text-secondary;
+                        }
+                    }
+                }
+
+                // Expiry date cell
+                &.expiry-cell {
+                    .expiry-info {
+                        .date {
+                            font-weight: 500;
+                            color: $batch-text-primary;
+                            margin-bottom: 2px;
+                        }
+
+                        .days-remaining {
+                            font-size: 11px;
+                            font-weight: 500;
+                            padding: 2px 6px;
+                            border-radius: 10px;
+
+                            &.expired {
+                                background-color: rgba($batch-status-expired, 0.1);
+                                color: $batch-status-expired;
+                            }
+
+                            &.critical {
+                                background-color: rgba($batch-status-critical, 0.1);
+                                color: $batch-status-critical;
+                            }
+
+                            &.warning {
+                                background-color: rgba($batch-status-warning, 0.1);
+                                color: #B7791F;
+                            }
+
+                            &.normal {
+                                background-color: rgba($batch-status-normal, 0.1);
+                                color: $batch-status-normal;
+                            }
+                        }
+                    }
+                }
+
+                // Location cell
+                &.location-cell {
+                    .location-info {
+                        .location-name {
+                            font-weight: 500;
+                            color: $batch-text-primary;
+                            margin-bottom: 2px;
+                        }
+
+                        .location-code {
+                            font-size: 12px;
+                            color: $batch-text-secondary;
+                        }
+                    }
+                }
+
+                // Status cell
+                &.status-cell {
+                    .mat-mdc-chip {
+                        &.status-active {
+                            @include batch-status-badge('active');
+                        }
+
+                        &.status-expired {
+                            @include batch-status-badge('expired');
+                        }
+
+                        &.status-depleted {
+                            @include batch-status-badge('depleted');
+                        }
+
+                        &.status-quarantined {
+                            @include batch-status-badge('quarantined');
+                        }
+                    }
+                }
+
+                // Actions cell
+                &.actions-cell {
+                    .actions {
+                        display: flex;
+                        gap: $batch-spacing-xs;
+
+                        .mat-mdc-icon-button {
+                            color: $batch-primary !important;
+                            @include batch-smooth-transition;
+
+                            &:hover {
+                                background-color: $batch-primary-light !important;
+                                color: $batch-primary-hover !important;
+                                transform: scale(1.1);
+                            }
+
+                            &:disabled {
+                                color: $batch-text-muted !important;
+                                cursor: not-allowed;
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
+
+// Pagination Styling
+.batch-pagination {
+    display: flex;
+    justify-content: center;
+    margin-top: $batch-spacing-xl;
+
+    .mat-mdc-paginator {
+        background-color: $batch-bg-card;
+        border-radius: $batch-radius-card;
+        box-shadow: $batch-shadow-elevated;
+
+        .mat-mdc-paginator-page-size-select {
+            .mat-mdc-select-value {
+                color: $batch-text-primary;
+            }
+        }
+
+        .mat-mdc-icon-button {
+            color: $batch-primary;
+
+            &:disabled {
+                color: $batch-text-muted;
+            }
+        }
+    }
+}
+
+// Grouped View Styling
+.batch-groups {
+    display: flex;
+    flex-direction: column;
+    gap: $batch-spacing-xl;
+}
+
+.batch-group {
+    @include batch-card;
+
+    .group-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: $batch-spacing-lg $batch-spacing-xl;
+        background-color: $batch-bg-header;
+        border-bottom: 1px solid #E0E0E0;
+        cursor: pointer;
+        @include batch-smooth-transition;
+
+        &:hover {
+            background-color: $batch-primary-lighter;
+        }
+
+        .group-info {
+            display: flex;
+            align-items: center;
+            gap: $batch-spacing-md;
+
+            .group-icon {
+                color: $batch-primary;
+            }
+
+            .group-title {
+                font-weight: 600;
+                color: $batch-text-card-title;
+                margin: 0;
+            }
+
+            .group-subtitle {
+                font-size: 14px;
+                color: $batch-text-secondary;
+                margin: 0;
+            }
+        }
+
+        .group-summary {
+            display: flex;
+            align-items: center;
+            gap: $batch-spacing-lg;
+
+            .summary-item {
+                text-align: center;
+
+                .count {
+                    font-size: 18px;
+                    font-weight: 600;
+                    color: $batch-text-primary;
+                }
+
+                .label {
+                    font-size: 12px;
+                    color: $batch-text-secondary;
+                    text-transform: uppercase;
+                }
+            }
+
+            .expand-icon {
+                color: $batch-primary;
+                @include batch-smooth-transition;
+
+                &.expanded {
+                    transform: rotate(180deg);
+                }
+            }
+        }
+    }
+
+    .group-content {
+        padding: 0;
+
+        &.collapsed {
+            display: none;
+        }
+    }
+}
+
+// Loading State
+.batch-loading {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 60px;
+
+    .mat-mdc-progress-spinner {
+        --mdc-circular-progress-active-indicator-color: #{$batch-primary};
+        margin-bottom: $batch-spacing-lg;
+    }
+
+    .loading-text {
+        color: $batch-text-secondary;
+        font-size: 16px;
+    }
+}
+
+// Empty State
+.batch-empty {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 60px;
+    text-align: center;
+
+    .empty-icon {
+        font-size: 64px;
+        width: 64px;
+        height: 64px;
+        color: $batch-text-muted;
+        margin-bottom: $batch-spacing-lg;
+    }
+
+    .empty-title {
+        font-size: 20px;
+        font-weight: 600;
+        color: $batch-text-primary;
+        margin-bottom: $batch-spacing-sm;
+    }
+
+    .empty-message {
+        color: $batch-text-secondary;
+        margin-bottom: $batch-spacing-xl;
+    }
+
+    .empty-actions {
+        display: flex;
+        gap: $batch-spacing-md;
+
+        .mat-mdc-raised-button {
+            @include batch-button-primary;
+        }
+
+        .mat-mdc-button {
+            @include batch-button-outline;
+        }
+    }
+}
+
+// Bulk Actions Bar
+.bulk-actions-bar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: $batch-spacing-md $batch-spacing-xl;
+    background-color: $batch-primary-light;
+    border-radius: $batch-radius-card;
+    margin-bottom: $batch-spacing-lg;
+    @include batch-smooth-transition;
+
+    .selection-info {
+        display: flex;
+        align-items: center;
+        gap: $batch-spacing-md;
+
+        .selection-count {
+            font-weight: 600;
+            color: $batch-primary;
+        }
+
+        .clear-selection {
+            color: $batch-text-secondary;
+            cursor: pointer;
+            @include batch-smooth-transition;
+
+            &:hover {
+                color: $batch-primary;
+            }
+        }
+    }
+
+    .bulk-actions {
+        display: flex;
+        gap: $batch-spacing-sm;
+
+        .mat-mdc-button {
+            @include batch-button-outline;
+            font-size: 12px;
+            padding: $batch-spacing-xs $batch-spacing-md;
+        }
+    }
+}
+
+// Responsive Design
+@include batch-mobile {
+    .batch-list-container {
+        padding: $batch-spacing-lg;
+    }
+
+    .batch-actions {
+        flex-direction: column;
+        gap: $batch-spacing-md;
+
+        .actions-left,
+        .actions-right {
+            width: 100%;
+            justify-content: center;
+        }
+    }
+
+    .batch-table-container {
+        .mat-mdc-table {
+            min-width: 600px;
+        }
+    }
+
+    .group-header {
+        .group-summary {
+            flex-direction: column;
+            gap: $batch-spacing-sm;
+        }
+    }
+
+    .bulk-actions-bar {
+        flex-direction: column;
+        gap: $batch-spacing-md;
+
+        .selection-info,
+        .bulk-actions {
+            width: 100%;
+            justify-content: center;
+        }
+    }
+}
+
+@include batch-tablet {
+    .batch-actions {
+        .view-toggle {
+            order: -1;
+        }
+    }
+
+    .group-header {
+        .group-summary {
+            .summary-item {
+                .count {
+                    font-size: 16px;
+                }
+            }
+        }
+    }
+}
+
+// High Contrast Mode
+@include batch-high-contrast {
+    .batch-table-container {
+        .mat-mdc-table {
+            .mat-mdc-row {
+                border-bottom: 2px solid #E0E0E0;
+            }
+        }
+    }
+
+    .batch-group {
+        border-width: 2px;
+    }
+}
+
+// Print Styles
+@media print {
+
+    .batch-actions,
+    .batch-pagination,
+    .bulk-actions-bar {
+        display: none;
+    }
+
+    .batch-table-container {
+        .mat-mdc-table {
+            .actions-cell {
+                display: none;
+            }
+        }
+    }
+
+    .batch-list-container {
+        background-color: white;
+        padding: 0;
+    }
+}
+
+// Focus Management
+.batch-link,
+.mat-mdc-icon-button,
+.mat-mdc-button,
+.mat-mdc-raised-button {
+    @include batch-focus-visible;
+}
+
+// Selection Checkbox Styling
+.mat-mdc-checkbox {
+    .mdc-checkbox__native-control:enabled:checked~.mdc-checkbox__background {
+        background-color: $batch-primary !important;
+        border-color: $batch-primary !important;
+    }
+
+    .mdc-checkbox__native-control:enabled:indeterminate~.mdc-checkbox__background {
+        background-color: $batch-primary !important;
+        border-color: $batch-primary !important;
+    }
+}

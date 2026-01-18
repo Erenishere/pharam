@@ -104,6 +104,7 @@ export class CustomerListComponent implements OnInit, OnDestroy, AfterViewInit {
     loadCustomers(): void {
         console.log('[CustomerListComponent] Loading customers...');
         console.log('[CustomerListComponent] showDeleted:', this.showDeleted);
+        console.log('[CustomerListComponent] selectedType:', this.selectedType);
         this.loading = true;
 
         const filters: CustomerFilters = {
@@ -112,19 +113,23 @@ export class CustomerListComponent implements OnInit, OnDestroy, AfterViewInit {
             search: this.searchControl.value || undefined,
         };
 
-        // ✅ Apply type filter ONLY when specific type is selected
-        if (this.selectedType) {
+        // ✅ Apply type filter ONLY when specific type is selected (not empty string)
+        if (this.selectedType && this.selectedType.trim() !== '') {
             filters.type = this.selectedType;
+            console.log('[CustomerListComponent] Adding type filter:', this.selectedType);
+        } else {
+            console.log('[CustomerListComponent] No type filter - showing ALL types');
         }
 
         // ✅ Apply deleted filter ONLY when toggle is ON
         if (this.showDeleted) {
             filters.isActive = false;
+            console.log('[CustomerListComponent] Showing inactive customers only');
+        } else {
+            console.log('[CustomerListComponent] Showing active customers (default)');
         }
 
-
-
-        console.log('[CustomerListComponent] Filters:', filters);
+        console.log('[CustomerListComponent] Final filters:', filters);
 
         this.customerService.getCustomers(filters)
             .pipe(takeUntil(this.destroy$))
@@ -209,7 +214,8 @@ export class CustomerListComponent implements OnInit, OnDestroy, AfterViewInit {
     }
 
     onTypeFilterChange(type: string): void {
-        this.selectedType = type;
+        console.log('[CustomerListComponent] Type filter changed to:', type);
+        this.selectedType = type || ''; // Ensure empty string for "All Types"
         this.pageIndex = 0;
         if (this.paginator) {
             this.paginator.pageIndex = 0;

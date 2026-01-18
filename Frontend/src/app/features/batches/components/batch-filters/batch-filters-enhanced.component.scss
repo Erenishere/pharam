@@ -1,0 +1,446 @@
+// Enhanced Batch Filters Styling
+@import '../../styles/batch-enhanced-theme';
+
+.filters-card {
+    @include batch-card;
+    background-color: $batch-bg-card !important;
+    box-shadow: $batch-shadow-card !important;
+    border: 1px solid #EBE9F1;
+
+    .mat-mdc-card-header {
+        background-color: $batch-bg-header;
+        border-bottom: 1px solid #E0E0E0;
+        padding: $batch-spacing-lg $batch-spacing-xl;
+
+        .mat-mdc-card-title {
+            color: $batch-text-card-title !important;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: $batch-spacing-sm;
+
+            .mat-icon {
+                color: $batch-primary !important;
+            }
+        }
+    }
+
+    .mat-mdc-card-content {
+        padding: $batch-spacing-xxl;
+    }
+}
+
+// Filters Form Layout
+.filters-form {
+    display: flex;
+    flex-direction: column;
+    gap: $batch-spacing-lg;
+}
+
+.filter-row {
+    display: flex;
+    gap: $batch-spacing-lg;
+    align-items: flex-start;
+
+    // Enhanced search field styling (first row)
+    &:first-child {
+        margin-top: $batch-spacing-xl;
+
+        .mat-mdc-form-field {
+            @include batch-search-field;
+
+            // Hide label by default for search field
+            .mat-mdc-floating-label {
+                opacity: 0 !important;
+                visibility: hidden !important;
+                transition: opacity 0.2s ease, visibility 0.2s ease !important;
+            }
+
+            // Show label only when focused
+            &.mat-focused .mat-mdc-floating-label {
+                opacity: 1 !important;
+                visibility: visible !important;
+                color: $batch-primary !important;
+            }
+
+            // Enhanced placeholder styling
+            .mat-mdc-input-element::placeholder {
+                color: $batch-primary !important;
+                opacity: 0.7 !important;
+                font-style: italic;
+            }
+
+            // Search icon styling
+            .mat-icon {
+                color: $batch-primary !important;
+            }
+        }
+    }
+}
+
+// Filter Section Headers
+.filter-section {
+    margin: $batch-spacing-lg 0;
+
+    h4 {
+        margin: 0 0 $batch-spacing-md 0;
+        color: $batch-text-primary !important;
+        font-size: 14px;
+        font-weight: 600;
+        border-bottom: 1px solid #E0E0E0;
+        padding-bottom: $batch-spacing-sm;
+    }
+}
+
+// Form Field Sizing
+.full-width {
+    width: 100%;
+}
+
+.half-width {
+    flex: 1;
+}
+
+// Checkbox Row
+.checkbox-row {
+    display: flex;
+    gap: $batch-spacing-xxl;
+    flex-wrap: wrap;
+
+    .mat-mdc-checkbox {
+        .mdc-checkbox__native-control:enabled:checked~.mdc-checkbox__background {
+            background-color: $batch-primary !important;
+            border-color: $batch-primary !important;
+        }
+
+        .mdc-form-field>label {
+            color: $batch-text-primary !important;
+            font-weight: 500;
+        }
+
+        &:hover .mdc-form-field>label {
+            color: $batch-text-card-title !important;
+        }
+    }
+}
+
+// Advanced Filters Panel
+.advanced-filters {
+    margin: $batch-spacing-lg 0;
+    background-color: $batch-bg-card !important;
+    border-radius: $batch-radius-card;
+    box-shadow: $batch-shadow-elevated;
+
+    .mat-expansion-panel-header {
+        background-color: $batch-bg-header !important;
+        border-radius: $batch-radius-card $batch-radius-card 0 0;
+
+        .mat-panel-title {
+            color: $batch-text-primary !important;
+            font-weight: 500;
+            display: flex;
+            align-items: center;
+            gap: $batch-spacing-sm;
+
+            .mat-icon {
+                color: $batch-primary !important;
+            }
+        }
+
+        // Expansion indicator styling
+        .mat-expansion-indicator::after,
+        .mat-expansion-indicator,
+        .mat-icon {
+            color: $batch-primary !important;
+        }
+
+        &:hover {
+            .mat-panel-title {
+                color: $batch-text-card-title !important;
+            }
+
+            .mat-expansion-indicator::after,
+            .mat-expansion-indicator,
+            .mat-icon {
+                color: $batch-primary-hover !important;
+            }
+        }
+    }
+
+    .mat-expansion-panel-content {
+        background-color: $batch-bg-card !important;
+
+        .mat-expansion-panel-body {
+            padding: $batch-spacing-xl;
+        }
+    }
+
+    // Advanced filters form fields
+    .mat-mdc-form-field {
+        @include batch-form-field;
+        background-color: $batch-bg-card !important;
+
+        // All labels in advanced filters should be visible and purple
+        .mat-mdc-floating-label,
+        mat-label {
+            color: $batch-primary !important;
+            opacity: 1 !important;
+            visibility: visible !important;
+        }
+
+        &.mat-focused .mat-mdc-floating-label {
+            color: $batch-primary !important;
+        }
+
+        .mat-mdc-input-element {
+            color: $batch-text-primary !important;
+            caret-color: $batch-primary !important;
+
+            &::placeholder {
+                color: $batch-text-muted !important;
+                opacity: 1 !important;
+                font-style: normal !important;
+            }
+        }
+
+        .mat-mdc-select-value-text {
+            color: $batch-text-primary !important;
+        }
+
+        .mat-mdc-select-placeholder {
+            color: $batch-text-muted !important;
+        }
+
+        .mat-mdc-select-arrow {
+            color: $batch-primary !important;
+        }
+
+        // Date picker styling
+        .mat-datepicker-toggle {
+            color: $batch-primary !important;
+        }
+
+        .mat-datepicker-toggle-default-icon {
+            color: $batch-primary !important;
+        }
+
+        .mat-mdc-form-field-hint {
+            color: $batch-text-muted !important;
+        }
+    }
+}
+
+// Filter Actions
+.filter-actions {
+    display: flex;
+    gap: $batch-spacing-md;
+    align-items: center;
+    margin-top: $batch-spacing-lg;
+    padding-top: $batch-spacing-lg;
+    border-top: 1px solid #E0E0E0;
+
+    .mat-mdc-raised-button {
+        @include batch-button-primary;
+    }
+
+    .mat-mdc-button {
+        @include batch-button-outline;
+    }
+}
+
+// Item Autocomplete Options
+.item-option {
+    display: flex;
+    flex-direction: column;
+    padding: $batch-spacing-sm 0;
+
+    .item-name {
+        font-weight: 500;
+        color: $batch-text-primary;
+    }
+
+    .item-code {
+        font-size: 12px;
+        color: $batch-text-secondary;
+    }
+}
+
+// Status Chips in Select Options
+.mat-mdc-chip {
+    &.status-active {
+        @include batch-status-badge('active');
+    }
+
+    &.status-expired {
+        @include batch-status-badge('expired');
+    }
+
+    &.status-depleted {
+        @include batch-status-badge('depleted');
+    }
+
+    &.status-quarantined {
+        @include batch-status-badge('quarantined');
+    }
+}
+
+// Dropdown Panels
+.mat-mdc-select-panel {
+    background-color: $batch-bg-card !important;
+    border: 1px solid #E0E0E0;
+    box-shadow: $batch-shadow-card;
+    border-radius: $batch-radius-card;
+
+    .mat-mdc-option {
+        background-color: $batch-bg-card !important;
+        color: $batch-text-primary !important;
+
+        &:hover {
+            background-color: $batch-primary-lighter !important;
+        }
+
+        &.mat-selected {
+            background-color: $batch-primary-light !important;
+            color: $batch-primary !important;
+        }
+    }
+}
+
+.mat-mdc-autocomplete-panel {
+    background-color: $batch-bg-card !important;
+    border: 1px solid #E0E0E0;
+    box-shadow: $batch-shadow-card;
+    border-radius: $batch-radius-card;
+
+    .mat-mdc-option {
+        color: $batch-text-primary !important;
+
+        &:hover {
+            background-color: $batch-primary-lighter !important;
+        }
+    }
+}
+
+// Enhanced Focus States
+.mat-mdc-form-field {
+    @include batch-focus-visible;
+}
+
+.mat-mdc-button,
+.mat-mdc-raised-button {
+    @include batch-focus-visible;
+}
+
+// Responsive Design
+@include batch-mobile {
+    .filter-row {
+        flex-direction: column;
+
+        .half-width {
+            width: 100%;
+        }
+    }
+
+    .filter-actions {
+        flex-direction: column;
+        align-items: stretch;
+
+        .mat-mdc-button,
+        .mat-mdc-raised-button {
+            width: 100%;
+        }
+    }
+
+    .checkbox-row {
+        flex-direction: column;
+        gap: $batch-spacing-md;
+    }
+
+    .filters-card {
+
+        .mat-mdc-card-header,
+        .mat-mdc-card-content {
+            padding: $batch-spacing-lg;
+        }
+    }
+}
+
+@include batch-tablet {
+    .filter-row {
+        flex-wrap: wrap;
+    }
+
+    .checkbox-row {
+        justify-content: space-between;
+    }
+}
+
+// High Contrast Mode
+@include batch-high-contrast {
+    .filters-card {
+        border-width: 2px;
+    }
+
+    .mat-mdc-form-field {
+
+        .mdc-notched-outline__leading,
+        .mdc-notched-outline__notch,
+        .mdc-notched-outline__trailing {
+            border-width: 2px !important;
+        }
+    }
+}
+
+// Print Styles
+@media print {
+    .filter-actions {
+        display: none;
+    }
+
+    .advanced-filters {
+        .mat-expansion-panel-header {
+            display: none;
+        }
+
+        .mat-expansion-panel-content {
+            display: block !important;
+        }
+    }
+}
+
+// Animation Enhancements
+.mat-mdc-form-field {
+    @include batch-smooth-transition;
+}
+
+.mat-mdc-button,
+.mat-mdc-raised-button {
+    @include batch-smooth-transition;
+}
+
+.advanced-filters {
+    .mat-expansion-panel-header {
+        @include batch-smooth-transition;
+    }
+}
+
+// Custom Scrollbar for Dropdowns
+.mat-mdc-select-panel,
+.mat-mdc-autocomplete-panel {
+    &::-webkit-scrollbar {
+        width: 6px;
+    }
+
+    &::-webkit-scrollbar-track {
+        background: $batch-bg-header;
+    }
+
+    &::-webkit-scrollbar-thumb {
+        background: $batch-primary;
+        border-radius: 3px;
+
+        &:hover {
+            background: $batch-primary-hover;
+        }
+    }
+}

@@ -78,6 +78,106 @@ router.post('/', authenticate, authorize(['admin', 'inventory_manager']), batchC
 
 /**
  * @swagger
+ * /api/batches:
+ *   get:
+ *     summary: Get all batches with filtering and pagination
+ *     tags: [Batches]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: query
+ *         name: page
+ *         schema:
+ *           type: integer
+ *           minimum: 1
+ *           default: 1
+ *         description: Page number
+ *       - in: query
+ *         name: limit
+ *         schema:
+ *           type: integer
+ *           minimum: 1
+ *           maximum: 100
+ *           default: 25
+ *         description: Number of items per page
+ *       - in: query
+ *         name: sortBy
+ *         schema:
+ *           type: string
+ *           enum: [batchNumber, expiryDate, quantity, remainingQuantity, createdAt]
+ *           default: expiryDate
+ *         description: Field to sort by
+ *       - in: query
+ *         name: sortOrder
+ *         schema:
+ *           type: string
+ *           enum: [asc, desc]
+ *           default: asc
+ *         description: Sort order
+ *       - in: query
+ *         name: itemSearch
+ *         schema:
+ *           type: string
+ *         description: Search in item name or code
+ *       - in: query
+ *         name: locationIds
+ *         schema:
+ *           type: string
+ *         description: Comma-separated location IDs
+ *       - in: query
+ *         name: supplierIds
+ *         schema:
+ *           type: string
+ *         description: Comma-separated supplier IDs
+ *       - in: query
+ *         name: statuses
+ *         schema:
+ *           type: string
+ *         description: Comma-separated status values
+ *       - in: query
+ *         name: expiryStart
+ *         schema:
+ *           type: string
+ *           format: date
+ *         description: Start date for expiry range filter
+ *       - in: query
+ *         name: expiryEnd
+ *         schema:
+ *           type: string
+ *           format: date
+ *         description: End date for expiry range filter
+ *       - in: query
+ *         name: quantityMin
+ *         schema:
+ *           type: integer
+ *         description: Minimum remaining quantity
+ *       - in: query
+ *         name: quantityMax
+ *         schema:
+ *           type: integer
+ *         description: Maximum remaining quantity
+ *       - in: query
+ *         name: includeExpired
+ *         schema:
+ *           type: boolean
+ *           default: false
+ *         description: Include expired batches
+ *       - in: query
+ *         name: includeDepleted
+ *         schema:
+ *           type: boolean
+ *           default: false
+ *         description: Include depleted batches
+ *     responses:
+ *       200:
+ *         description: Batches retrieved successfully
+ *       500:
+ *         description: Server error
+ */
+router.get('/', authenticate, batchController.getAllBatches);
+
+/**
+ * @swagger
  * /api/batches/{id}:
  *   get:
  *     summary: Get batch by ID

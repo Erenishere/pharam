@@ -1,0 +1,346 @@
+// BATCH FILTERS COMPONENT STYLING
+// Global form field styling is handled in styles.scss
+
+.filters-card {
+    background: #FFFFFF;
+    border-radius: 8px;
+    box-shadow: 0 4px 24px 0 rgba(34, 41, 47, .1);
+    border: 1px solid #EBE9F1;
+    margin-bottom: 24px;
+
+    .mat-mdc-card-header {
+        background-color: #F8F7FA;
+        border-bottom: 1px solid #E0E0E0;
+        padding: 24px 32px;
+
+        .mat-mdc-card-title {
+            color: #5E5873 !important;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+
+            .mat-icon {
+                color: #7367F0 !important;
+            }
+        }
+    }
+
+    .mat-mdc-card-content {
+        padding: 32px;
+    }
+}
+
+// Filters Form Layout
+.filters-form {
+    display: flex;
+    flex-direction: column;
+    gap: 24px;
+}
+
+.filter-row {
+    display: flex;
+    gap: 24px;
+    align-items: flex-start;
+
+    &:first-child {
+        margin-top: 32px;
+    }
+}
+
+// Filter Section Headers
+.filter-section {
+    margin: 24px 0;
+
+    h4 {
+        margin: 0 0 16px 0;
+        color: #4B4B4B !important;
+        font-size: 14px;
+        font-weight: 600;
+        border-bottom: 1px solid #E0E0E0;
+        padding-bottom: 12px;
+    }
+}
+
+// Form Field Sizing
+.full-width {
+    width: 100%;
+}
+
+.half-width {
+    flex: 1;
+}
+
+// Checkbox Row - Enhanced Visibility
+.checkbox-row {
+    display: flex;
+    gap: 48px;
+    flex-wrap: wrap;
+    margin: 16px 0;
+    padding: 16px;
+    background: #F8F7FA;
+    border-radius: 6px;
+    border: 1px solid #E0E0E0;
+
+    .mat-mdc-checkbox {
+        .mdc-checkbox__native-control:enabled:checked~.mdc-checkbox__background {
+            background-color: #7367F0 !important;
+            border-color: #7367F0 !important;
+        }
+
+        .mdc-form-field>label {
+            color: #2C2C2C !important;
+            font-weight: 600 !important;
+            font-size: 14px !important;
+            cursor: pointer !important;
+        }
+
+        /* Global override for Material Design checkbox labels */
+        ::ng-deep .mdc-form-field label {
+            color: #2C2C2C !important;
+            font-weight: 600 !important;
+            font-size: 14px !important;
+            cursor: pointer !important;
+        }
+
+        ::ng-deep .mat-mdc-checkbox-label {
+            color: #2C2C2C !important;
+            font-weight: 600 !important;
+            font-size: 14px !important;
+        }
+
+        &:hover {
+            .mdc-form-field>label {
+                color: #1A1A1A !important;
+            }
+
+            ::ng-deep .mdc-form-field label,
+            ::ng-deep .mat-mdc-checkbox-label {
+                color: #1A1A1A !important;
+            }
+
+            .mdc-checkbox__native-control:not(:checked)~.mdc-checkbox__background {
+                border-color: #7367F0 !important;
+            }
+        }
+
+        /* Unchecked checkbox border */
+        .mdc-checkbox__native-control:not(:checked)~.mdc-checkbox__background {
+            border-color: #7367F0 !important;
+            border-width: 2px !important;
+        }
+
+        /* Focus state */
+        .mdc-checkbox__native-control:focus~.mdc-checkbox__background {
+            border-color: #7367F0 !important;
+            box-shadow: 0 0 0 2px rgba(115, 103, 240, 0.25) !important;
+        }
+    }
+}
+
+/* Global checkbox styling to ensure visibility */
+::ng-deep .mat-mdc-checkbox {
+
+    .mdc-form-field label,
+    .mat-mdc-checkbox-label {
+        color: #2C2C2C !important;
+        font-weight: 600 !important;
+        font-size: 14px !important;
+        opacity: 1 !important;
+        visibility: visible !important;
+    }
+}
+
+/* Global override for Advanced Filters title */
+::ng-deep .mat-expansion-panel-header-title {
+    color: #2C2C2C !important;
+    font-weight: 600 !important;
+    font-size: 16px !important;
+}
+
+::ng-deep mat-panel-title {
+    color: #2C2C2C !important;
+    font-weight: 600 !important;
+}
+
+// Advanced Filters Panel
+.advanced-filters {
+    margin: 24px 0;
+    background-color: #FFFFFF !important;
+    border-radius: 8px;
+    box-shadow: 0 6px 32px rgba(34, 41, 47, 0.15);
+
+    .mat-expansion-panel-header {
+        background-color: #F8F7FA !important;
+        border-radius: 8px 8px 0 0;
+
+        .mat-panel-title {
+            color: #2C2C2C !important;
+            font-weight: 600 !important;
+            font-size: 16px !important;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+
+            .mat-icon {
+                color: #7367F0 !important;
+            }
+        }
+
+        /* Higher specificity for Material Design override */
+        ::ng-deep .mat-panel-title {
+            color: #2C2C2C !important;
+            font-weight: 600 !important;
+        }
+
+        /* Target the specific Material Design class */
+        ::ng-deep .mat-expansion-panel-header-title {
+            color: #2C2C2C !important;
+            font-weight: 600 !important;
+            font-size: 16px !important;
+        }
+
+        /* Additional specificity */
+        ::ng-deep mat-panel-title.mat-expansion-panel-header-title {
+            color: #2C2C2C !important;
+            font-weight: 600 !important;
+        }
+
+        .mat-expansion-indicator::after,
+        .mat-expansion-indicator,
+        .mat-icon {
+            color: #7367F0 !important;
+        }
+
+        &:hover {
+            .mat-panel-title {
+                color: #1A1A1A !important;
+            }
+
+            ::ng-deep .mat-panel-title {
+                color: #1A1A1A !important;
+            }
+
+            ::ng-deep .mat-expansion-panel-header-title {
+                color: #1A1A1A !important;
+            }
+
+            ::ng-deep mat-panel-title.mat-expansion-panel-header-title {
+                color: #1A1A1A !important;
+            }
+
+            .mat-expansion-indicator::after,
+            .mat-expansion-indicator,
+            .mat-icon {
+                color: #5E50EE !important;
+            }
+        }
+    }
+
+    .mat-expansion-panel-content {
+        background-color: #FFFFFF !important;
+
+        .mat-expansion-panel-body {
+            padding: 32px;
+        }
+    }
+
+    /* Advanced filters inherit global styling */
+}
+
+// Filter Actions
+.filter-actions {
+    display: flex;
+    gap: 16px;
+    align-items: center;
+    margin-top: 24px;
+    padding-top: 24px;
+    border-top: 1px solid #E0E0E0;
+
+    .mat-mdc-raised-button {
+        background: #7367F0;
+        color: #FFFFFF;
+        border: none;
+        border-radius: 6px;
+        padding: 8px 16px;
+        font-weight: 500;
+        transition: all 0.2s ease;
+
+        &:hover {
+            background: #5E50EE;
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(115, 103, 240, 0.3);
+        }
+    }
+
+    .mat-mdc-button {
+        background: transparent;
+        color: #7367F0;
+        border: 1px solid #7367F0;
+        border-radius: 6px;
+        padding: 8px 16px;
+        font-weight: 500;
+        transition: all 0.2s ease;
+
+        &:hover {
+            background: rgba(115, 103, 240, 0.04);
+            transform: translateY(-1px);
+        }
+    }
+}
+
+// Dropdown Panels
+::ng-deep .mat-mdc-select-panel {
+    background-color: #FFFFFF !important;
+    border: 1px solid #E0E0E0;
+    box-shadow: 0 4px 24px 0 rgba(34, 41, 47, .1);
+    border-radius: 8px;
+
+    .mat-mdc-option {
+        background-color: #FFFFFF !important;
+        color: #4B4B4B !important;
+
+        &:hover {
+            background-color: rgba(115, 103, 240, 0.04) !important;
+        }
+
+        &.mat-selected {
+            background-color: rgba(115, 103, 240, 0.08) !important;
+            color: #7367F0 !important;
+        }
+    }
+}
+
+// Responsive Design
+@media (max-width: 768px) {
+    .filter-row {
+        flex-direction: column;
+
+        .half-width {
+            width: 100%;
+        }
+    }
+
+    .filter-actions {
+        flex-direction: column;
+        align-items: stretch;
+
+        .mat-mdc-button,
+        .mat-mdc-raised-button {
+            width: 100%;
+        }
+    }
+
+    .checkbox-row {
+        flex-direction: column;
+        gap: 16px;
+    }
+
+    .filters-card {
+
+        .mat-mdc-card-header,
+        .mat-mdc-card-content {
+            padding: 24px;
+        }
+    }
+}

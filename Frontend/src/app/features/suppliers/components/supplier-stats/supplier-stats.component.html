@@ -1,0 +1,139 @@
+<div class="supplier-stats">
+  <!-- Loading State -->
+  <div class="stats-loading" *ngIf="loading">
+    <mat-spinner diameter="40"></mat-spinner>
+    <p>Loading statistics...</p>
+  </div>
+
+  <!-- Error State -->
+  <div class="stats-error" *ngIf="error && !loading">
+    <mat-icon color="warn">error</mat-icon>
+    <p>{{ error }}</p>
+    <button mat-raised-button color="primary" (click)="onRetry()">
+      <mat-icon>refresh</mat-icon>
+      Retry
+    </button>
+  </div>
+
+  <!-- Statistics Cards -->
+  <div class="stats-grid" *ngIf="statistics && !loading && !error">
+    <!-- Total Suppliers Card -->
+    <mat-card class="stat-card total-card">
+      <mat-card-content>
+        <div class="stat-icon">
+          <mat-icon>business</mat-icon>
+        </div>
+        <div class="stat-info">
+          <div class="stat-value">{{ formatNumber(statistics.total) }}</div>
+          <div class="stat-label">Total Suppliers</div>
+        </div>
+      </mat-card-content>
+    </mat-card>
+
+    <!-- Active Suppliers Card -->
+    <mat-card class="stat-card active-card">
+      <mat-card-content>
+        <div class="stat-icon">
+          <mat-icon>check_circle</mat-icon>
+        </div>
+        <div class="stat-info">
+          <div class="stat-value">{{ formatNumber(statistics.active) }}</div>
+          <div class="stat-label">Active Suppliers</div>
+          <div class="stat-percentage" *ngIf="statistics.total > 0">
+            {{ calculatePercentage(statistics.active, statistics.total) }}% of total
+          </div>
+        </div>
+      </mat-card-content>
+    </mat-card>
+
+    <!-- Inactive Suppliers Card -->
+    <mat-card class="stat-card inactive-card">
+      <mat-card-content>
+        <div class="stat-icon">
+          <mat-icon>cancel</mat-icon>
+        </div>
+        <div class="stat-info">
+          <div class="stat-value">{{ formatNumber(statistics.inactive) }}</div>
+          <div class="stat-label">Inactive Suppliers</div>
+          <div class="stat-percentage" *ngIf="statistics.total > 0">
+            {{ calculatePercentage(statistics.inactive, statistics.total) }}% of total
+          </div>
+        </div>
+      </mat-card-content>
+    </mat-card>
+
+    <!-- Customers Card -->
+    <mat-card class="stat-card customer-card">
+      <mat-card-content>
+        <div class="stat-icon">
+          <mat-icon>person</mat-icon>
+        </div>
+        <div class="stat-info">
+          <div class="stat-value">{{ formatNumber(statistics.byType.customer) }}</div>
+          <div class="stat-label">Customers</div>
+          <div class="stat-percentage" *ngIf="statistics.total > 0">
+            {{ calculatePercentage(statistics.byType.customer, statistics.total) }}% of total
+          </div>
+        </div>
+      </mat-card-content>
+    </mat-card>
+
+    <!-- Suppliers Card -->
+    <mat-card class="stat-card supplier-card">
+      <mat-card-content>
+        <div class="stat-icon">
+          <mat-icon>local_shipping</mat-icon>
+        </div>
+        <div class="stat-info">
+          <div class="stat-value">{{ formatNumber(statistics.byType.supplier) }}</div>
+          <div class="stat-label">Suppliers</div>
+          <div class="stat-percentage" *ngIf="statistics.total > 0">
+            {{ calculatePercentage(statistics.byType.supplier, statistics.total) }}% of total
+          </div>
+        </div>
+      </mat-card-content>
+    </mat-card>
+
+    <!-- Both (Customer & Supplier) Card -->
+    <mat-card class="stat-card both-card">
+      <mat-card-content>
+        <div class="stat-icon">
+          <mat-icon>swap_horiz</mat-icon>
+        </div>
+        <div class="stat-info">
+          <div class="stat-value">{{ formatNumber(statistics.byType.both) }}</div>
+          <div class="stat-label">Both (Customer & Supplier)</div>
+          <div class="stat-percentage" *ngIf="statistics.total > 0">
+            {{ calculatePercentage(statistics.byType.both, statistics.total) }}% of total
+          </div>
+        </div>
+      </mat-card-content>
+    </mat-card>
+
+    <!-- Total Credit Limit Card (if available) -->
+    <mat-card class="stat-card financial-card" *ngIf="statistics.totalCreditLimit !== undefined">
+      <mat-card-content>
+        <div class="stat-icon">
+          <mat-icon>account_balance</mat-icon>
+        </div>
+        <div class="stat-info">
+          <div class="stat-value">{{ formatCurrency(statistics.totalCreditLimit) }}</div>
+          <div class="stat-label">Total Credit Limit</div>
+        </div>
+      </mat-card-content>
+    </mat-card>
+
+    <!-- Average Payment Terms Card (if available) -->
+    <mat-card class="stat-card financial-card" *ngIf="statistics.averagePaymentTerms !== undefined">
+      <mat-card-content>
+        <div class="stat-icon">
+          <mat-icon>schedule</mat-icon>
+        </div>
+        <div class="stat-info">
+          <div class="stat-value">{{ formatNumber(statistics.averagePaymentTerms) }}</div>
+          <div class="stat-label">Avg. Payment Terms (days)</div>
+        </div>
+      </mat-card-content>
+    </mat-card>
+  </div>
+</div>
