@@ -1,0 +1,243 @@
+<mat-card class="filters-card" role="search" aria-labelledby="filters-title">
+  <!-- Skip link for accessibility -->
+  <a href="#invoice-list" class="skip-link">Skip to invoice list</a>
+  
+  <mat-card-header>
+    <mat-card-title id="filters-title">
+      <mat-icon aria-hidden="true">filter_list</mat-icon>
+      Invoice Filters
+    </mat-card-title>
+  </mat-card-header>
+  
+  <mat-card-content>
+    <form [formGroup]="filterForm" class="filters-form" role="search" aria-label="Filter invoices">
+      
+      <!-- Quick Search -->
+      <div class="filter-row">
+        <mat-form-field appearance="outline" class="full-width">
+          <mat-label>Search Invoices</mat-label>
+          <input matInput 
+                 formControlName="search" 
+                 placeholder="Search by invoice number, customer name, or customer code..."
+                 aria-label="Search invoices by number, customer name, or code"
+                 aria-describedby="search-help">
+          <mat-icon matSuffix aria-hidden="true">search</mat-icon>
+          <mat-hint id="search-help">Search across invoice numbers, customer names, and customer codes</mat-hint>
+        </mat-form-field>
+      </div>
+
+      <!-- Advanced Filters -->
+      <mat-expansion-panel class="advanced-filters" 
+                           [expanded]="showAdvancedFilters"
+                           aria-label="Advanced filter options">
+        <mat-expansion-panel-header>
+          <mat-panel-title>
+            <mat-icon aria-hidden="true">tune</mat-icon>
+            Advanced Filters
+          </mat-panel-title>
+        </mat-expansion-panel-header>
+
+        <!-- Customer and Salesman Filters -->
+        <div class="filter-row">
+          <mat-form-field appearance="outline" class="half-width">
+            <mat-label>Customer</mat-label>
+            <input matInput 
+                   formControlName="customerSearch" 
+                   placeholder="Search customer..."
+                   [matAutocomplete]="customerAuto"
+                   aria-label="Search and select customer"
+                   aria-describedby="customer-help">
+            <mat-icon matSuffix *ngIf="!filterForm.get('customerId')?.value" aria-hidden="true">search</mat-icon>
+            <button matSuffix 
+                    mat-icon-button 
+                    *ngIf="filterForm.get('customerId')?.value"
+                    (click)="clearCustomerSelection()"
+                    type="button"
+                    aria-label="Clear customer selection">
+              <mat-icon>clear</mat-icon>
+            </button>
+            <mat-hint id="customer-help">Type to search for customers by name or code</mat-hint>
+            <mat-autocomplete #customerAuto="matAutocomplete" 
+                              [displayWith]="displayCustomerFn"
+                              (optionSelected)="onCustomerSelected($event.option.value)"
+                              aria-label="Customer options">
+              <mat-option *ngFor="let customer of filteredCustomers$ | async" 
+                          [value]="customer"
+                          [attr.aria-label]="customer.label + ' - ' + customer.code">
+                <div class="customer-option">
+                  <div class="customer-name">{{ customer.label }}</div>
+                  <div class="customer-code">{{ customer.code }}</div>
+                </div>
+              </mat-option>
+            </mat-autocomplete>
+          </mat-form-field>
+
+          <mat-form-field appearance="outline" class="half-width">
+            <mat-label>Salesman</mat-label>
+            <mat-select formControlName="salesmanId" aria-label="Select salesman">
+              <mat-option value="" aria-label="All salesmen">All Salesmen</mat-option>
+              <mat-option *ngFor="let salesman of salesmanOptions$ | async" 
+                          [value]="salesman.value"
+                          [attr.aria-label]="salesman.label + ' - ' + salesman.code">
+                {{ salesman.label }} ({{ salesman.code }})
+              </mat-option>
+            </mat-select>
+          </mat-form-field>
+        </div>
+
+        <!-- Warehouse and Status Filters -->
+        <div class="filter-row">
+          <mat-form-field appearance="outline" class="half-width">
+            <mat-label>Warehouse</mat-label>
+            <mat-select formControlName="warehouseId" aria-label="Select warehouse">
+              <mat-option value="" aria-label="All warehouses">All Warehouses</mat-option>
+              <mat-option *ngFor="let warehouse of warehouseOptions$ | async" 
+                          [value]="warehouse.value"
+                          [attr.aria-label]="warehouse.label + ' - ' + warehouse.code">
+                {{ warehouse.label }} ({{ warehouse.code }})
+              </mat-option>
+            </mat-select>
+          </mat-form-field>
+
+          <mat-form-field appearance="outline" class="half-width">
+            <mat-label>Invoice Status</mat-label>
+            <mat-select formControlName="status" 
+                        multiple 
+                        aria-label="Select invoice status"
+                        aria-describedby="status-help">
+              <mat-option *ngFor="let status of statusOptions" 
+                          [value]="status.value"
+                          [attr.aria-label]="status.label + ' status'">
+                <mat-chip [class]="'status-' + status.value" role="img" [attr.aria-label]="status.label + ' status chip'">
+                  {{ status.label }}
+                </mat-chip>
+              </mat-option>
+            </mat-select>
+            <mat-hint id="status-help">Select one or more invoice statuses to filter by</mat-hint>
+          </mat-form-field>
+        </div>
+
+        <!-- Payment Status Filter -->
+        <div class="filter-row">
+          <mat-form-field appearance="outline" class="full-width">
+            <mat-label>Payment Status</mat-label>
+            <mat-select formControlName="paymentStatus" 
+                        multiple 
+                        aria-label="Select payment status"
+                        aria-describedby="payment-status-help">
+              <mat-option *ngFor="let paymentStatus of paymentStatusOptions" 
+                          [value]="paymentStatus.value"
+                          [attr.aria-label]="paymentStatus.label + ' payment status'">
+                <mat-chip [class]="'payment-status-' + paymentStatus.value" 
+                          role="img" 
+                          [attr.aria-label]="paymentStatus.label + ' payment status chip'">
+                  {{ paymentStatus.label }}
+                </mat-chip>
+              </mat-option>
+            </mat-select>
+            <mat-hint id="payment-status-help">Select one or more payment statuses to filter by</mat-hint>
+          </mat-form-field>
+        </div>
+
+        <!-- Date Range Filters -->
+        <fieldset class="filter-section">
+          <legend>Invoice Date Range</legend>
+          
+          <!-- Date Presets -->
+          <div class="date-presets" role="group" aria-label="Quick date range selection">
+            <button mat-button type="button" (click)="setDateRange('today')" aria-label="Filter by today's invoices">Today</button>
+            <button mat-button type="button" (click)="setDateRange('yesterday')" aria-label="Filter by yesterday's invoices">Yesterday</button>
+            <button mat-button type="button" (click)="setDateRange('thisWeek')" aria-label="Filter by this week's invoices">This Week</button>
+            <button mat-button type="button" (click)="setDateRange('lastWeek')" aria-label="Filter by last week's invoices">Last Week</button>
+            <button mat-button type="button" (click)="setDateRange('thisMonth')" aria-label="Filter by this month's invoices">This Month</button>
+            <button mat-button type="button" (click)="setDateRange('lastMonth')" aria-label="Filter by last month's invoices">Last Month</button>
+          </div>
+
+          <div class="filter-row">
+            <mat-form-field appearance="outline" class="half-width">
+              <mat-label>From Date</mat-label>
+              <input matInput 
+                     [matDatepicker]="dateFromPicker" 
+                     formControlName="dateFrom"
+                     aria-label="Select start date for date range filter"
+                     aria-describedby="date-from-help">
+              <mat-datepicker-toggle matSuffix [for]="dateFromPicker" aria-label="Open calendar for start date"></mat-datepicker-toggle>
+              <mat-datepicker #dateFromPicker></mat-datepicker>
+              <mat-hint id="date-from-help">Select the earliest invoice date to include</mat-hint>
+            </mat-form-field>
+
+            <mat-form-field appearance="outline" class="half-width">
+              <mat-label>To Date</mat-label>
+              <input matInput 
+                     [matDatepicker]="dateToPicker" 
+                     formControlName="dateTo"
+                     aria-label="Select end date for date range filter"
+                     aria-describedby="date-to-help">
+              <mat-datepicker-toggle matSuffix [for]="dateToPicker" aria-label="Open calendar for end date"></mat-datepicker-toggle>
+              <mat-datepicker #dateToPicker></mat-datepicker>
+              <mat-hint id="date-to-help">Select the latest invoice date to include</mat-hint>
+            </mat-form-field>
+          </div>
+        </fieldset>
+
+        <!-- Amount Range -->
+        <div class="filter-section">
+          <h4>Amount Range</h4>
+          <div class="filter-row">
+            <mat-form-field appearance="outline" class="half-width">
+              <mat-label>Min Amount</mat-label>
+              <input matInput type="number" formControlName="amountFrom" min="0" step="0.01">
+              <span matPrefix>$&nbsp;</span>
+            </mat-form-field>
+
+            <mat-form-field appearance="outline" class="half-width">
+              <mat-label>Max Amount</mat-label>
+              <input matInput type="number" formControlName="amountTo" min="0" step="0.01">
+              <span matPrefix>$&nbsp;</span>
+            </mat-form-field>
+          </div>
+        </div>
+
+      </mat-expansion-panel>
+
+      <!-- Filter Actions -->
+      <div class="filter-actions" role="group" aria-label="Filter actions">
+        <button mat-raised-button 
+                color="primary" 
+                type="button" 
+                (click)="applyFilters()"
+                aria-describedby="apply-help">
+          <mat-icon aria-hidden="true">search</mat-icon>
+          Apply Filters
+        </button>
+        <button mat-button 
+                type="button" 
+                (click)="clearFilters()"
+                aria-describedby="clear-help">
+          <mat-icon aria-hidden="true">clear</mat-icon>
+          Clear All
+        </button>
+        <button mat-button 
+                type="button" 
+                (click)="toggleAdvancedFilters()"
+                [attr.aria-expanded]="showAdvancedFilters"
+                aria-controls="advanced-filters">
+          <mat-icon aria-hidden="true">{{ showAdvancedFilters ? 'expand_less' : 'expand_more' }}</mat-icon>
+          {{ showAdvancedFilters ? 'Hide' : 'Show' }} Advanced
+        </button>
+        
+        <!-- Screen reader announcements -->
+        <div class="sr-only" aria-live="polite" id="filter-status">
+          <!-- Dynamic filter status announcements will be inserted here -->
+        </div>
+        
+        <!-- Hidden help text -->
+        <div class="sr-only">
+          <div id="apply-help">Apply the selected filters to update the invoice list</div>
+          <div id="clear-help">Clear all filters and show all invoices</div>
+        </div>
+      </div>
+
+    </form>
+  </mat-card-content>
+</mat-card>

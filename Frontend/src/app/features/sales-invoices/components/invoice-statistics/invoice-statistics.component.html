@@ -1,0 +1,334 @@
+<div class="invoice-statistics-container">
+  <div class="statistics-header">
+    <h1>Sales Invoice Statistics</h1>
+    <p class="subtitle">Comprehensive analytics and insights for sales performance</p>
+    
+    <!-- Role-based access message -->
+    <div class="role-info" *ngIf="canViewStatistics && roleBasedMessage">
+      <mat-card class="info-card">
+        <mat-card-content>
+          <div class="role-message">
+            <mat-icon color="primary">info</mat-icon>
+            <span>{{ roleBasedMessage }}</span>
+            <span class="role-badge" [ngClass]="'role-' + userRole">{{ userRole | titlecase }}</span>
+          </div>
+        </mat-card-content>
+      </mat-card>
+    </div>
+    
+    <!-- Date Range Filter -->
+    <div class="date-filter-section" *ngIf="canViewStatistics">
+      <mat-card class="filter-card">
+        <mat-card-content>
+          <div class="filter-controls">
+            <mat-form-field appearance="outline">
+              <mat-label>Start Date</mat-label>
+              <input matInput [matDatepicker]="startPicker" [(ngModel)]="dateFilter.dateFrom" (dateChange)="onDateFilterChange()">
+              <mat-datepicker-toggle matIconSuffix [for]="startPicker"></mat-datepicker-toggle>
+              <mat-datepicker #startPicker></mat-datepicker>
+            </mat-form-field>
+            
+            <mat-form-field appearance="outline">
+              <mat-label>End Date</mat-label>
+              <input matInput [matDatepicker]="endPicker" [(ngModel)]="dateFilter.dateTo" (dateChange)="onDateFilterChange()">
+              <mat-datepicker-toggle matIconSuffix [for]="endPicker"></mat-datepicker-toggle>
+              <mat-datepicker #endPicker></mat-datepicker>
+            </mat-form-field>
+            
+            <div class="filter-actions">
+              <button mat-raised-button color="primary" (click)="applyDateFilter()">
+                <mat-icon>filter_list</mat-icon>
+                Apply Filter
+              </button>
+              <button mat-button (click)="clearDateFilter()">
+                <mat-icon>clear</mat-icon>
+                Clear
+              </button>
+            </div>
+            
+            <div class="quick-filters">
+              <button mat-button (click)="setQuickFilter('7days')">Last 7 Days</button>
+              <button mat-button (click)="setQuickFilter('30days')">Last 30 Days</button>
+              <button mat-button (click)="setQuickFilter('90days')">Last 90 Days</button>
+              <button mat-button (click)="setQuickFilter('thisMonth')">This Month</button>
+              <button mat-button (click)="setQuickFilter('lastMonth')">Last Month</button>
+              <button mat-button (click)="setQuickFilter('thisYear')">This Year</button>
+            </div>
+          </div>
+        </mat-card-content>
+      </mat-card>
+    </div>
+  </div>
+
+  <!-- Permission Denied Message -->
+  <div *ngIf="!canViewStatistics" class="permission-denied">
+    <mat-card class="error-card">
+      <mat-card-content>
+        <div class="error-content">
+          <mat-icon color="warn">lock</mat-icon>
+          <h2>Access Denied</h2>
+          <p>{{ getRoleSpecificErrorMessage() }}</p>
+          <div class="role-info" *ngIf="userRole">
+            <span class="role-badge" [ngClass]="'role-' + userRole">{{ userRole | titlecase }}</span>
+          </div>
+          <button mat-raised-button color="primary" (click)="navigateToInvoiceList()">
+            <mat-icon>receipt</mat-icon>
+            Go to Invoice List
+          </button>
+        </div>
+      </mat-card-content>
+    </mat-card>
+  </div>
+
+  <!-- Loading State -->
+  <div *ngIf="loading && canViewStatistics" class="loading-container">
+    <mat-spinner></mat-spinner>
+    <p>{{ getRoleSpecificLoadingMessage() }}</p>
+  </div>
+
+  <!-- Error State -->
+  <div *ngIf="error && canViewStatistics" class="error-container">
+    <mat-icon color="warn">error</mat-icon>
+    <p>{{ error }}</p>
+    <button mat-raised-button color="primary" (click)="loadStatistics()">
+      <mat-icon>refresh</mat-icon>
+      Retry
+    </button>
+  </div>
+
+  <!-- Statistics Content -->
+  <div *ngIf="!loading && !error && statistics && canViewStatistics" class="statistics-content">
+    
+    <!-- KPI Cards Section -->
+    <div class="kpi-section">
+      <h2>Key Performance Indicators</h2>
+      <div class="kpi-grid">
+        
+        <mat-card *ngFor="let kpi of kpiCards" [ngClass]="getKPICardClass(kpi.color || 'primary')" class="clickable">
+          <mat-card-content>
+            <div class="kpi-header">
+              <mat-icon>{{ kpi.icon }}</mat-icon>
+              <span class="kpi-title">{{ kpi.title }}</span>
+            </div>
+            <div class="kpi-value">{{ formatKPIValue(kpi.value, kpi.format) }}</div>
+            <div class="kpi-change" *ngIf="kpi.change !== undefined" [ngClass]="getChangeClass(kpi.changeType)">
+              <mat-icon>{{ getChangeIcon(kpi.changeType) }}</mat-icon>
+              <span>{{ formatKPIValue(Math.abs(kpi.change), 'percentage') }}</span>
+            </div>
+          </mat-card-content>
+        </mat-card>
+
+      </div>
+    </div>
+
+    <!-- Quick Actions Section -->
+    <div class="quick-actions-section">
+      <h2>Quick Actions</h2>
+      <div class="action-buttons">
+        <button mat-raised-button color="primary" (click)="navigateToCreateInvoice()" *ngIf="canPerformAction('create_invoice')">
+          <mat-icon>add</mat-icon>
+          Create Invoice
+        </button>
+        <button mat-raised-button color="accent" (click)="navigateToInvoiceList()">
+          <mat-icon>list</mat-icon>
+          View All Invoices
+        </button>
+        <button mat-raised-button (click)="navigateToPendingPayments()" *ngIf="canViewDetailedStats">
+          <mat-icon>schedule</mat-icon>
+          Pending Payments
+        </button>
+        <button mat-raised-button (click)="navigateToOverdueInvoices()" *ngIf="canViewDetailedStats">
+          <mat-icon>warning</mat-icon>
+          Overdue Invoices
+        </button>
+        <button mat-raised-button (click)="exportStatistics()" *ngIf="canExportData">
+          <mat-icon>download</mat-icon>
+          Export Report
+        </button>
+        <button mat-raised-button (click)="refreshStatistics()">
+          <mat-icon>refresh</mat-icon>
+          Refresh Data
+        </button>
+      </div>
+    </div>
+
+    <!-- Charts Section -->
+    <div class="charts-section" *ngIf="canViewDetailedStats">
+      <h2>Analytics Charts</h2>
+      <div class="charts-grid">
+        
+        <!-- Sales Trend Chart -->
+        <mat-card class="chart-card full-width" *ngIf="statistics.salesTrend?.length">
+          <mat-card-header>
+            <mat-card-title>Sales Trend Over Time</mat-card-title>
+            <mat-card-subtitle>Sales amount and invoice count trends</mat-card-subtitle>
+          </mat-card-header>
+          <mat-card-content>
+            <div class="chart-container">
+              <canvas #salesTrendChart></canvas>
+            </div>
+          </mat-card-content>
+        </mat-card>
+
+        <!-- Invoice Status Distribution Chart -->
+        <mat-card class="chart-card clickable" (click)="navigateToInvoiceList()">
+          <mat-card-header>
+            <mat-card-title>Invoice Status Distribution</mat-card-title>
+            <mat-card-subtitle>Click to view detailed invoice list</mat-card-subtitle>
+          </mat-card-header>
+          <mat-card-content>
+            <div class="chart-container">
+              <canvas #statusChart></canvas>
+            </div>
+          </mat-card-content>
+        </mat-card>
+
+        <!-- Payment Status Distribution Chart -->
+        <mat-card class="chart-card clickable" (click)="navigateToPendingPayments()">
+          <mat-card-header>
+            <mat-card-title>Payment Status Distribution</mat-card-title>
+            <mat-card-subtitle>Click to view pending payments</mat-card-subtitle>
+          </mat-card-header>
+          <mat-card-content>
+            <div class="chart-container">
+              <canvas #paymentChart></canvas>
+            </div>
+          </mat-card-content>
+        </mat-card>
+
+        <!-- Top Customers Chart -->
+        <mat-card class="chart-card full-width" *ngIf="statistics.topCustomers?.length">
+          <mat-card-header>
+            <mat-card-title>Top Customers by Sales Volume</mat-card-title>
+            <mat-card-subtitle>Top 10 customers contributing to sales</mat-card-subtitle>
+          </mat-card-header>
+          <mat-card-content>
+            <div class="chart-container">
+              <canvas #topCustomersChart></canvas>
+            </div>
+          </mat-card-content>
+        </mat-card>
+
+      </div>
+    </div>
+
+    <!-- Monthly Comparison Section -->
+    <div class="monthly-comparison-section" *ngIf="statistics.monthlyComparison && canViewDetailedStats">
+      <h2>Monthly Performance Comparison</h2>
+      <div class="comparison-grid">
+        
+        <mat-card class="comparison-card">
+          <mat-card-header>
+            <mat-card-title>Current Month</mat-card-title>
+          </mat-card-header>
+          <mat-card-content>
+            <div class="comparison-metrics">
+              <div class="metric-item">
+                <span class="metric-label">Sales</span>
+                <span class="metric-value">{{ formatKPIValue(statistics.monthlyComparison.currentMonth.sales, 'currency') }}</span>
+              </div>
+              <div class="metric-item">
+                <span class="metric-label">Invoices</span>
+                <span class="metric-value">{{ formatKPIValue(statistics.monthlyComparison.currentMonth.invoices, 'number') }}</span>
+              </div>
+              <div class="metric-item">
+                <span class="metric-label">Average</span>
+                <span class="metric-value">{{ formatKPIValue(statistics.monthlyComparison.currentMonth.average, 'currency') }}</span>
+              </div>
+            </div>
+          </mat-card-content>
+        </mat-card>
+
+        <mat-card class="comparison-card">
+          <mat-card-header>
+            <mat-card-title>Previous Month</mat-card-title>
+          </mat-card-header>
+          <mat-card-content>
+            <div class="comparison-metrics">
+              <div class="metric-item">
+                <span class="metric-label">Sales</span>
+                <span class="metric-value">{{ formatKPIValue(statistics.monthlyComparison.previousMonth.sales, 'currency') }}</span>
+              </div>
+              <div class="metric-item">
+                <span class="metric-label">Invoices</span>
+                <span class="metric-value">{{ formatKPIValue(statistics.monthlyComparison.previousMonth.invoices, 'number') }}</span>
+              </div>
+              <div class="metric-item">
+                <span class="metric-label">Average</span>
+                <span class="metric-value">{{ formatKPIValue(statistics.monthlyComparison.previousMonth.average, 'currency') }}</span>
+              </div>
+            </div>
+          </mat-card-content>
+        </mat-card>
+
+        <mat-card class="comparison-card growth-card">
+          <mat-card-header>
+            <mat-card-title>Growth</mat-card-title>
+          </mat-card-header>
+          <mat-card-content>
+            <div class="comparison-metrics">
+              <div class="metric-item" [ngClass]="getChangeClass(getSalesGrowthType())">
+                <span class="metric-label">Sales Growth</span>
+                <span class="metric-value">
+                  <mat-icon>{{ getChangeIcon(getSalesGrowthType()) }}</mat-icon>
+                  {{ formatKPIValue(Math.abs(statistics.monthlyComparison.growth.salesGrowth), 'percentage') }}
+                </span>
+              </div>
+              <div class="metric-item" [ngClass]="getChangeClass(getInvoiceGrowthType())">
+                <span class="metric-label">Invoice Growth</span>
+                <span class="metric-value">
+                  <mat-icon>{{ getChangeIcon(getInvoiceGrowthType()) }}</mat-icon>
+                  {{ formatKPIValue(Math.abs(statistics.monthlyComparison.growth.invoiceGrowth), 'percentage') }}
+                </span>
+              </div>
+              <div class="metric-item">
+                <span class="metric-label">Average Growth</span>
+                <span class="metric-value">
+                  <mat-icon>trending_up</mat-icon>
+                  {{ formatKPIValue(Math.abs(statistics.monthlyComparison.growth.averageGrowth), 'percentage') }}
+                </span>
+              </div>
+            </div>
+          </mat-card-content>
+        </mat-card>
+
+      </div>
+    </div>
+
+    <!-- Top Customers Table -->
+    <div class="top-customers-section" *ngIf="statistics.topCustomers?.length && canViewDetailedStats">
+      <h2>Top Customers</h2>
+      <mat-card class="customers-table-card">
+        <mat-card-content>
+          <div class="table-container">
+            <table class="customers-table">
+              <thead>
+                <tr>
+                  <th>Rank</th>
+                  <th>Customer</th>
+                  <th>Code</th>
+                  <th>Total Sales</th>
+                  <th>Invoice Count</th>
+                  <th>Average Invoice</th>
+                  <th>Last Invoice</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr *ngFor="let customer of statistics.topCustomers.slice(0, 10); let i = index">
+                  <td>{{ i + 1 }}</td>
+                  <td class="customer-name">{{ customer.customerName }}</td>
+                  <td>{{ customer.customerCode }}</td>
+                  <td class="amount">{{ formatKPIValue(customer.totalSales, 'currency') }}</td>
+                  <td>{{ customer.invoiceCount }}</td>
+                  <td class="amount">{{ formatKPIValue(customer.averageInvoiceValue, 'currency') }}</td>
+                  <td>{{ customer.lastInvoiceDate | date:'shortDate' }}</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </mat-card-content>
+      </mat-card>
+    </div>
+
+  </div>
+</div>

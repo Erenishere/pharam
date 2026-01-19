@@ -1,0 +1,536 @@
+/**
+ * Warranty Management Component Styles
+ * Following Vuexy theme patterns and Material Design principles
+ */
+
+.warranty-management-container {
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+
+/* Header Section */
+.header-section {
+    .title-section {
+        margin-bottom: 16px;
+
+        .section-title {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin: 0 0 8px 0;
+            font-size: 20px;
+            font-weight: 600;
+            color: var(--mat-primary-500);
+
+            mat-icon {
+                font-size: 24px;
+                width: 24px;
+                height: 24px;
+            }
+        }
+
+        .section-subtitle {
+            margin: 0;
+            color: var(--mat-text-secondary);
+            font-size: 14px;
+            line-height: 1.5;
+        }
+    }
+}
+
+/* Warranty Alerts */
+.warranty-alerts {
+    margin-bottom: 16px;
+
+    .alert-card {
+        border-radius: 12px;
+
+        &.expiring-alert {
+            background: var(--mat-warn-50);
+            border: 1px solid var(--mat-warn-200);
+
+            .mat-mdc-card-content {
+                padding: 16px;
+            }
+        }
+
+        .alert-content {
+            display: flex;
+            align-items: flex-start;
+            gap: 12px;
+
+            .alert-icon {
+                color: var(--mat-warn-600);
+                font-size: 24px;
+                width: 24px;
+                height: 24px;
+                margin-top: 2px;
+            }
+
+            .alert-text {
+                flex: 1;
+
+                strong {
+                    color: var(--mat-warn-700);
+                    font-size: 16px;
+                }
+
+                p {
+                    margin: 4px 0 0 0;
+                    color: var(--mat-warn-600);
+                    font-size: 14px;
+                }
+            }
+        }
+    }
+}
+
+/* Loading Container */
+.loading-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 40px 20px;
+    gap: 16px;
+
+    p {
+        margin: 0;
+        color: var(--mat-text-secondary);
+        font-size: 14px;
+    }
+}
+
+/* Claim Form Card */
+.claim-form-card {
+    border-radius: 12px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+
+    .mat-mdc-card-header {
+        background: var(--mat-primary-50);
+        border-radius: 12px 12px 0 0;
+        padding: 20px 24px;
+
+        .mat-mdc-card-title {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            font-size: 18px;
+            font-weight: 600;
+            color: var(--mat-primary-700);
+
+            mat-icon {
+                font-size: 20px;
+                width: 20px;
+                height: 20px;
+            }
+        }
+
+        .mat-mdc-card-subtitle {
+            color: var(--mat-primary-600);
+            font-size: 14px;
+            margin-top: 4px;
+        }
+    }
+
+    .mat-mdc-card-content {
+        padding: 24px;
+    }
+}
+
+.claim-form {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+
+    .full-width {
+        width: 100%;
+    }
+
+    textarea {
+        resize: vertical;
+        min-height: 80px;
+    }
+}
+
+.claim-actions {
+    padding: 16px 24px;
+    border-top: 1px solid var(--mat-divider);
+    display: flex;
+    justify-content: flex-end;
+    gap: 12px;
+
+    button {
+        min-width: 120px;
+
+        &.mat-mdc-raised-button {
+            mat-spinner {
+                margin-right: 8px;
+            }
+
+            mat-icon {
+                margin-right: 4px;
+            }
+        }
+    }
+}
+
+/* Warranty Table Card */
+.warranty-table-card {
+    border-radius: 12px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+
+    .mat-mdc-card-content {
+        padding: 0;
+    }
+}
+
+/* No Warranty Container */
+.no-warranty-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 60px 20px;
+    text-align: center;
+
+    .no-warranty-icon {
+        font-size: 64px;
+        width: 64px;
+        height: 64px;
+        color: var(--mat-text-disabled);
+        margin-bottom: 16px;
+    }
+
+    h3 {
+        margin: 0 0 8px 0;
+        color: var(--mat-text-primary);
+        font-size: 20px;
+        font-weight: 500;
+    }
+
+    p {
+        margin: 0;
+        color: var(--mat-text-secondary);
+        font-size: 14px;
+    }
+}
+
+/* Table Container */
+.table-container {
+    .warranty-table {
+        width: 100%;
+        background: white;
+
+        .mat-mdc-header-cell {
+            font-weight: 600;
+            color: var(--mat-text-primary);
+            border-bottom: 2px solid var(--mat-divider);
+            padding: 16px 12px;
+        }
+
+        .mat-mdc-cell {
+            border-bottom: 1px solid var(--mat-divider);
+            padding: 16px 12px;
+        }
+
+        .mat-mdc-row:hover {
+            background-color: var(--mat-action-hover);
+        }
+    }
+}
+
+/* Table Cell Styles */
+.item-info {
+    .item-name {
+        font-weight: 500;
+        color: var(--mat-text-primary);
+        margin-bottom: 2px;
+    }
+
+    .item-code {
+        font-size: 12px;
+        color: var(--mat-text-secondary);
+    }
+}
+
+.warranty-period {
+    font-weight: 500;
+    color: var(--mat-text-primary);
+}
+
+.expiry-info {
+    .expiry-date {
+        font-weight: 500;
+    }
+}
+
+.days-remaining {
+    font-size: 13px;
+    padding: 4px 8px;
+    border-radius: 12px;
+    display: inline-block;
+    font-weight: 500;
+
+    &.expired {
+        background-color: var(--mat-error-50);
+        color: var(--mat-error-700);
+    }
+
+    &.expiring-soon {
+        background-color: var(--mat-warn-50);
+        color: var(--mat-warn-700);
+    }
+
+    &:not(.expired):not(.expiring-soon) {
+        background-color: var(--mat-success-50);
+        color: var(--mat-success-700);
+    }
+}
+
+/* Action Buttons */
+.action-buttons {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+
+    .mat-mdc-icon-button {
+        width: 36px;
+        height: 36px;
+
+        mat-icon {
+            font-size: 18px;
+            width: 18px;
+            height: 18px;
+        }
+    }
+
+    .mat-mdc-raised-button {
+        font-size: 12px;
+        padding: 0 12px;
+        height: 32px;
+
+        mat-icon {
+            font-size: 16px;
+            width: 16px;
+            height: 16px;
+            margin-right: 4px;
+        }
+    }
+}
+
+/* Status Chips */
+.mat-mdc-chip {
+    font-size: 12px;
+    font-weight: 500;
+    min-height: 24px;
+
+    &.mat-primary {
+        background-color: var(--mat-success-100);
+        color: var(--mat-success-700);
+    }
+
+    &.mat-accent {
+        background-color: var(--mat-warn-100);
+        color: var(--mat-warn-700);
+    }
+
+    &.mat-warn {
+        background-color: var(--mat-error-100);
+        color: var(--mat-error-700);
+    }
+}
+
+/* Warranty Information Panel */
+.warranty-info-panel {
+    border-radius: 12px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+
+    .mat-expansion-panel-header {
+        padding: 16px 20px;
+
+        .mat-panel-title {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            font-weight: 600;
+            color: var(--mat-primary-600);
+
+            mat-icon {
+                font-size: 20px;
+                width: 20px;
+                height: 20px;
+            }
+        }
+    }
+
+    .warranty-guidelines {
+        padding: 20px;
+
+        h4 {
+            margin: 0 0 12px 0;
+            color: var(--mat-text-primary);
+            font-size: 16px;
+            font-weight: 600;
+        }
+
+        ul,
+        ol {
+            margin: 0 0 20px 0;
+            padding-left: 20px;
+
+            li {
+                margin-bottom: 8px;
+                color: var(--mat-text-secondary);
+                line-height: 1.5;
+
+                strong {
+                    color: var(--mat-text-primary);
+                }
+            }
+        }
+
+        &:last-child {
+
+            h4,
+            ul,
+            ol {
+                margin-bottom: 0;
+            }
+        }
+    }
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+    .warranty-management-container {
+        gap: 16px;
+    }
+
+    .header-section {
+        .title-section {
+            .section-title {
+                font-size: 18px;
+
+                mat-icon {
+                    font-size: 20px;
+                    width: 20px;
+                    height: 20px;
+                }
+            }
+        }
+    }
+
+    .claim-form-card {
+        .mat-mdc-card-header {
+            padding: 16px 20px;
+
+            .mat-mdc-card-title {
+                font-size: 16px;
+            }
+        }
+
+        .mat-mdc-card-content {
+            padding: 20px;
+        }
+    }
+
+    .claim-form {
+        gap: 16px;
+    }
+
+    .claim-actions {
+        padding: 12px 20px;
+        flex-direction: column-reverse;
+
+        button {
+            width: 100%;
+        }
+    }
+
+    .warranty-table {
+
+        .mat-mdc-cell,
+        .mat-mdc-header-cell {
+            padding: 12px 8px;
+            font-size: 13px;
+        }
+    }
+
+    .action-buttons {
+        flex-direction: column;
+        gap: 4px;
+
+        button {
+            width: 100%;
+            font-size: 11px;
+        }
+    }
+
+    .item-info {
+        .item-name {
+            font-size: 13px;
+        }
+
+        .item-code {
+            font-size: 11px;
+        }
+    }
+
+    .warranty-info-panel {
+        .warranty-guidelines {
+            padding: 16px;
+
+            h4 {
+                font-size: 14px;
+            }
+
+            ul,
+            ol {
+                li {
+                    font-size: 13px;
+                }
+            }
+        }
+    }
+}
+
+/* Material Form Field Customization */
+.mat-mdc-form-field {
+    .mat-mdc-text-field-wrapper {
+        border-radius: 8px;
+    }
+
+    &.mat-form-field-appearance-outline {
+        .mat-mdc-form-field-outline {
+            border-radius: 8px;
+        }
+    }
+}
+
+/* Snackbar Styles */
+::ng-deep {
+    .success-snackbar {
+        background-color: var(--mat-success-500) !important;
+        color: white !important;
+    }
+
+    .error-snackbar {
+        background-color: var(--mat-error-500) !important;
+        color: white !important;
+    }
+
+    .info-snackbar {
+        background-color: var(--mat-primary-500) !important;
+        color: white !important;
+    }
+}
+
+/* Paginator Styling */
+.mat-mdc-paginator {
+    border-top: 1px solid var(--mat-divider);
+    background: var(--mat-surface);
+    border-radius: 0 0 12px 12px;
+}

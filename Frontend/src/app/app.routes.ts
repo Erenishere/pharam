@@ -74,6 +74,14 @@ export const routes: Routes = [
                         data: { title: 'Batch Statistics' }
                     }
                 ]
+            },
+            {
+                path: 'sales-invoices',
+                loadChildren: () => import('./features/sales-invoices/sales-invoices.module').then(m => m.SalesInvoicesModule),
+                data: {
+                    title: 'Sales Invoices',
+                    breadcrumb: 'Sales Invoices'
+                }
             }
         ]
     }

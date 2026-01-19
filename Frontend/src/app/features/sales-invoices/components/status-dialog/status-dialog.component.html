@@ -1,0 +1,235 @@
+<div class="status-dialog">
+  <div class="dialog-header">
+    <h2 mat-dialog-title>
+      <mat-icon [class]="actionColor + '-icon'">{{ actionIcon }}</mat-icon>
+      {{ actionTitle }}
+    </h2>
+    <button mat-icon-button mat-dialog-close class="close-button">
+      <mat-icon>close</mat-icon>
+    </button>
+  </div>
+
+  <mat-dialog-content class="dialog-content">
+    
+    <!-- Invoice Summary -->
+    <mat-card class="invoice-summary">
+      <mat-card-header>
+        <mat-card-title>Invoice Information</mat-card-title>
+      </mat-card-header>
+      <mat-card-content>
+        <div class="summary-grid">
+          <div class="summary-item">
+            <span class="label">Invoice Number:</span>
+            <span class="value">{{ data.invoice.invoiceNumber }}</span>
+          </div>
+          <div class="summary-item">
+            <span class="label">Customer:</span>
+            <span class="value">{{ data.invoice.customer?.name || 'N/A' }}</span>
+          </div>
+          <div class="summary-item">
+            <span class="label">Current Status:</span>
+            <mat-chip [class]="getStatusClass(currentStatus)">
+              {{ getStatusLabel(currentStatus) }}
+            </mat-chip>
+          </div>
+          <div class="summary-item">
+            <span class="label">New Status:</span>
+            <mat-chip [class]="getStatusClass(newStatus)">
+              {{ getStatusLabel(newStatus) }}
+            </mat-chip>
+          </div>
+          <div class="summary-item">
+            <span class="label">Total Amount:</span>
+            <span class="value amount">{{ formatCurrency(data.invoice.totals.grandTotal) }}</span>
+          </div>
+          <div class="summary-item">
+            <span class="label">Remaining Balance:</span>
+            <span class="value amount">{{ formatCurrency(data.invoice.payment.remainingAmount) }}</span>
+          </div>
+        </div>
+      </mat-card-content>
+    </mat-card>
+
+    <!-- Validation Errors -->
+    <mat-card class="validation-errors" *ngIf="hasValidationErrors">
+      <mat-card-header>
+        <mat-card-title class="error-title">
+          <mat-icon>error</mat-icon>
+          Validation Errors
+        </mat-card-title>
+      </mat-card-header>
+      <mat-card-content>
+        <div class="error-list">
+          <div class="error-item" *ngFor="let error of validationErrors">
+            <mat-icon>warning</mat-icon>
+            <span>{{ error }}</span>
+          </div>
+        </div>
+      </mat-card-content>
+    </mat-card>
+
+    <!-- Impact Warnings -->
+    <mat-card class="impact-warnings" *ngIf="impactWarnings.length > 0">
+      <mat-card-header>
+        <mat-card-title class="warning-title">
+          <mat-icon>info</mat-icon>
+          Important Information
+        </mat-card-title>
+      </mat-card-header>
+      <mat-card-content>
+        <div class="warning-list">
+          <div class="warning-item" *ngFor="let warning of impactWarnings">
+            <mat-icon>arrow_right</mat-icon>
+            <span>{{ warning }}</span>
+          </div>
+        </div>
+      </mat-card-content>
+    </mat-card>
+
+    <!-- Status Change Form -->
+    <mat-card class="status-form-card">
+      <mat-card-header>
+        <mat-card-title>{{ actionTitle }} Details</mat-card-title>
+      </mat-card-header>
+      <mat-card-content>
+        <form [formGroup]="statusForm" class="status-form">
+          
+          <!-- Reason (Required for cancellation) -->
+          <div class="form-row" *ngIf="newStatus === 'cancelled'">
+            <mat-form-field appearance="outline" class="full-width">
+              <mat-label>Reason for Cancellation *</mat-label>
+              <textarea matInput 
+                        formControlName="reason" 
+                        rows="3" 
+                        placeholder="Please provide a detailed reason for cancelling this invoice..."
+                        maxlength="500"></textarea>
+              <mat-hint align="end">{{ statusForm.get('reason')?.value?.length || 0 }}/500</mat-hint>
+              <mat-error>{{ getReasonErrorMessage() }}</mat-error>
+            </mat-form-field>
+          </div>
+
+          <!-- Optional Reason for Confirmation -->
+          <div class="form-row" *ngIf="newStatus === 'confirmed'">
+            <mat-form-field appearance="outline" class="full-width">
+              <mat-label>Reason (Optional)</mat-label>
+              <textarea matInput 
+                        formControlName="reason" 
+                        rows="2" 
+                        placeholder="Optional reason for confirming this invoice..."
+                        maxlength="500"></textarea>
+              <mat-hint align="end">{{ statusForm.get('reason')?.value?.length || 0 }}/500</mat-hint>
+            </mat-form-field>
+          </div>
+
+          <!-- Additional Notes -->
+          <div class="form-row">
+            <mat-form-field appearance="outline" class="full-width">
+              <mat-label>Additional Notes (Optional)</mat-label>
+              <textarea matInput 
+                        formControlName="notes" 
+                        rows="3" 
+                        placeholder="Any additional notes or comments..."
+                        maxlength="1000"></textarea>
+              <mat-hint align="end">{{ statusForm.get('notes')?.value?.length || 0 }}/1000</mat-hint>
+            </mat-form-field>
+          </div>
+
+        </form>
+      </mat-card-content>
+    </mat-card>
+
+    <!-- Status History -->
+    <mat-card class="status-history" *ngIf="statusHistory.length > 0">
+      <mat-card-header>
+        <mat-card-title>Status Change History</mat-card-title>
+      </mat-card-header>
+      <mat-card-content>
+        <div class="table-container">
+          <table mat-table [dataSource]="statusHistory" class="history-table">
+            
+            <ng-container matColumnDef="date">
+              <th mat-header-cell *matHeaderCellDef>Date & Time</th>
+              <td mat-cell *matCellDef="let history">{{ formatDate(history.performedAt) }}</td>
+            </ng-container>
+
+            <ng-container matColumnDef="action">
+              <th mat-header-cell *matHeaderCellDef>Action</th>
+              <td mat-cell *matCellDef="let history">{{ history.action }}</td>
+            </ng-container>
+
+            <ng-container matColumnDef="previousStatus">
+              <th mat-header-cell *matHeaderCellDef>From</th>
+              <td mat-cell *matCellDef="let history">
+                <mat-chip [class]="getStatusClass(history.previousStatus)" *ngIf="history.previousStatus">
+                  {{ getStatusLabel(history.previousStatus) }}
+                </mat-chip>
+                <span *ngIf="!history.previousStatus">-</span>
+              </td>
+            </ng-container>
+
+            <ng-container matColumnDef="newStatus">
+              <th mat-header-cell *matHeaderCellDef>To</th>
+              <td mat-cell *matCellDef="let history">
+                <mat-chip [class]="getStatusClass(history.newStatus)" *ngIf="history.newStatus">
+                  {{ getStatusLabel(history.newStatus) }}
+                </mat-chip>
+                <span *ngIf="!history.newStatus">-</span>
+              </td>
+            </ng-container>
+
+            <ng-container matColumnDef="performedBy">
+              <th mat-header-cell *matHeaderCellDef>Performed By</th>
+              <td mat-cell *matCellDef="let history">{{ history.performedBy || 'System' }}</td>
+            </ng-container>
+
+            <ng-container matColumnDef="reason">
+              <th mat-header-cell *matHeaderCellDef>Reason</th>
+              <td mat-cell *matCellDef="let history">
+                <span class="reason-text" [matTooltip]="history.reason" *ngIf="history.reason">
+                  {{ history.reason.length > 50 ? (history.reason | slice:0:50) + '...' : history.reason }}
+                </span>
+                <span *ngIf="!history.reason">-</span>
+              </td>
+            </ng-container>
+
+            <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
+            <tr mat-row *matRowDef="let row; columns: displayedColumns;"></tr>
+          </table>
+        </div>
+      </mat-card-content>
+    </mat-card>
+
+    <!-- Permission Warning -->
+    <mat-card class="permission-warning" *ngIf="!canProceed">
+      <mat-card-content>
+        <div class="warning-content">
+          <mat-icon class="warning-icon">lock</mat-icon>
+          <div class="warning-text">
+            <h3>Insufficient Permissions</h3>
+            <p>You do not have the required permissions to {{ actionTitle.toLowerCase() }}. Please contact your administrator.</p>
+          </div>
+        </div>
+      </mat-card-content>
+    </mat-card>
+
+  </mat-dialog-content>
+
+  <mat-dialog-actions class="dialog-actions">
+    <button mat-button 
+            type="button" 
+            (click)="onCancel()" 
+            [disabled]="isLoading">
+      Cancel
+    </button>
+    <button mat-raised-button 
+            [color]="actionColor === 'danger' ? 'warn' : 'primary'"
+            type="button" 
+            (click)="onSubmit()" 
+            [disabled]="!statusForm.valid || isLoading || !canProceed || hasValidationErrors">
+      <mat-spinner diameter="20" *ngIf="isLoading"></mat-spinner>
+      <mat-icon *ngIf="!isLoading">{{ actionIcon }}</mat-icon>
+      {{ isLoading ? 'Processing...' : actionTitle }}
+    </button>
+  </mat-dialog-actions>
+
+</div>

@@ -1,0 +1,318 @@
+<!-- Mobile Invoice List Layout -->
+<div class="mobile-invoice-list" role="main" aria-labelledby="mobile-list-title">
+  <!-- Skip link for accessibility -->
+  <a href="#mobile-filters" class="skip-link">Skip to filters</a>
+  
+  <!-- Mobile Header -->
+  <header class="mobile-header">
+    <h1 id="mobile-list-title" class="mobile-title">Sales Invoices</h1>
+    <div class="mobile-actions">
+      <button mat-fab 
+              color="primary" 
+              (click)="createInvoice()" 
+              *ngIf="canCreate"
+              aria-label="Create new invoice"
+              class="mobile-fab">
+        <mat-icon>add</mat-icon>
+      </button>
+    </div>
+  </header>
+
+  <!-- Mobile Statistics (if enabled) -->
+  <section class="mobile-stats" *ngIf="showStatistics" aria-labelledby="stats-title">
+    <h2 id="stats-title" class="sr-only">Invoice Statistics</h2>
+    <app-invoice-statistics></app-invoice-statistics>
+  </section>
+
+  <!-- Mobile Filters -->
+  <section class="mobile-filters" id="mobile-filters" aria-labelledby="filters-title">
+    <h2 id="filters-title" class="sr-only">Filter Options</h2>
+    <app-invoice-filters (filtersChanged)="onFiltersChanged($event)"></app-invoice-filters>
+  </section>
+
+  <!-- Loading State -->
+  <div class="mobile-loading" *ngIf="loading" role="status" aria-live="polite">
+    <mat-spinner diameter="40" aria-label="Loading invoices"></mat-spinner>
+    <p>Loading invoices...</p>
+  </div>
+
+  <!-- Invoice Cards -->
+  <section class="mobile-cards" 
+           *ngIf="!loading && invoices.length > 0" 
+           aria-labelledby="invoices-title"
+           role="region">
+    <h2 id="invoices-title" class="sr-only">Invoice List</h2>
+    
+    <!-- Results summary for screen readers -->
+    <div class="sr-only" aria-live="polite">
+      Showing {{ invoices.length }} of {{ totalCount }} invoices
+    </div>
+
+    <div class="card-container">
+      <article class="invoice-card" 
+               *ngFor="let invoice of invoices; trackBy: trackByInvoiceId; let i = index"
+               [attr.aria-labelledby]="'invoice-title-' + i"
+               [attr.aria-describedby]="'invoice-details-' + i"
+               tabindex="0"
+               role="button"
+               (click)="viewInvoice(invoice)"
+               (keydown.enter)="viewInvoice(invoice)"
+               (keydown.space)="viewInvoice(invoice)"
+               [class.swipeable-card]="true">
+        
+        <!-- Card Header -->
+        <header class="card-header">
+          <div class="invoice-info">
+            <h3 [id]="'invoice-title-' + i" class="invoice-number">
+              <a [routerLink]="['/sales-invoices', invoice._id]" 
+                 class="invoice-link"
+                 [attr.aria-label]="'View invoice ' + invoice.invoiceNumber">
+                {{ invoice.invoiceNumber }}
+              </a>
+            </h3>
+            <time class="invoice-date" [dateTime]="invoice.invoiceDate | date:'yyyy-MM-dd'">
+              {{ formatDate(invoice.invoiceDate) }}
+            </time>
+          </div>
+          
+          <div class="status-chips" role="group" [attr.aria-label]="'Status: ' + invoice.status + ', Payment: ' + invoice.payment.paymentStatus">
+            <mat-chip [class]="'status-' + invoice.status" 
+                      role="img" 
+                      [attr.aria-label]="invoice.status + ' status'">
+              <mat-icon matChipAvatar aria-hidden="true">
+                {{ getStatusIcon(invoice.status) }}
+              </mat-icon>
+              {{ invoice.status | titlecase }}
+            </mat-chip>
+            <mat-chip [class]="'payment-' + invoice.payment.paymentStatus" 
+                      role="img" 
+                      [attr.aria-label]="invoice.payment.paymentStatus + ' payment status'">
+              <mat-icon matChipAvatar aria-hidden="true">
+                {{ getPaymentStatusIcon(invoice.payment.paymentStatus) }}
+              </mat-icon>
+              {{ invoice.payment.paymentStatus | titlecase }}
+            </mat-chip>
+          </div>
+        </header>
+
+        <!-- Card Content -->
+        <div class="card-content" [id]="'invoice-details-' + i">
+          <dl class="detail-list">
+            <div class="detail-row">
+              <dt>Customer:</dt>
+              <dd class="customer-info">
+                <div class="customer-name">{{ invoice.customer?.name || 'Unknown Customer' }}</div>
+                <div class="customer-code" *ngIf="invoice.customer?.code">{{ invoice.customer.code }}</div>
+              </dd>
+            </div>
+            
+            <div class="detail-row">
+              <dt>Amount:</dt>
+              <dd class="amount">{{ formatCurrency(invoice.totals.grandTotal) }}</dd>
+            </div>
+            
+            <div class="detail-row" *ngIf="invoice.dueDate">
+              <dt>Due Date:</dt>
+              <dd class="due-date" [class]="getDueDateClass(invoice.dueDate)">
+                <time [dateTime]="invoice.dueDate | date:'yyyy-MM-dd'">
+                  {{ formatDate(invoice.dueDate) }}
+                </time>
+              </dd>
+            </div>
+            
+            <div class="detail-row" *ngIf="invoice.payment.remainingAmount > 0">
+              <dt>Remaining:</dt>
+              <dd class="remaining-amount">{{ formatCurrency(invoice.payment.remainingAmount) }}</dd>
+            </div>
+            
+            <div class="detail-row" *ngIf="invoice.salesman">
+              <dt>Salesman:</dt>
+              <dd>{{ invoice.salesman.name }}</dd>
+            </div>
+          </dl>
+        </div>
+
+        <!-- Card Actions -->
+        <footer class="card-actions" role="group" [attr.aria-label]="'Actions for invoice ' + invoice.invoiceNumber">
+          <button mat-button 
+                  (click)="viewInvoice(invoice); $event.stopPropagation()"
+                  [attr.aria-label]="'View details for invoice ' + invoice.invoiceNumber">
+            <mat-icon aria-hidden="true">visibility</mat-icon>
+            View
+          </button>
+          
+          <button mat-button 
+                  (click)="editInvoice(invoice); $event.stopPropagation()" 
+                  *ngIf="canEditInvoice(invoice)"
+                  [attr.aria-label]="'Edit invoice ' + invoice.invoiceNumber">
+            <mat-icon aria-hidden="true">edit</mat-icon>
+            Edit
+          </button>
+          
+          <button mat-button 
+                  [matMenuTriggerFor]="mobileActionsMenu"
+                  (click)="$event.stopPropagation()"
+                  [attr.aria-label]="'More actions for invoice ' + invoice.invoiceNumber">
+            <mat-icon aria-hidden="true">more_vert</mat-icon>
+            More
+          </button>
+          
+          <!-- Mobile Actions Menu -->
+          <mat-menu #mobileActionsMenu="matMenu" aria-label="Additional invoice actions">
+            <button mat-menu-item 
+                    (click)="confirmInvoice(invoice)" 
+                    *ngIf="canConfirmInvoice(invoice)"
+                    [attr.aria-label]="'Confirm invoice ' + invoice.invoiceNumber">
+              <mat-icon>check_circle</mat-icon>
+              Confirm
+            </button>
+            <button mat-menu-item 
+                    (click)="managePayment(invoice)" 
+                    *ngIf="canManagePayments(invoice)"
+                    [attr.aria-label]="'Record payment for invoice ' + invoice.invoiceNumber">
+              <mat-icon>payment</mat-icon>
+              Record Payment
+            </button>
+            <button mat-menu-item 
+                    (click)="cancelInvoice(invoice)" 
+                    *ngIf="canCancelInvoice(invoice)"
+                    [attr.aria-label]="'Cancel invoice ' + invoice.invoiceNumber">
+              <mat-icon>cancel</mat-icon>
+              Cancel
+            </button>
+            <mat-divider></mat-divider>
+            <button mat-menu-item 
+                    (click)="printInvoice(invoice)"
+                    [attr.aria-label]="'Print invoice ' + invoice.invoiceNumber">
+              <mat-icon>print</mat-icon>
+              Print
+            </button>
+            <button mat-menu-item 
+                    (click)="exportInvoice(invoice)"
+                    [attr.aria-label]="'Export invoice ' + invoice.invoiceNumber + ' as PDF'">
+              <mat-icon>picture_as_pdf</mat-icon>
+              Export PDF
+            </button>
+          </mat-menu>
+        </footer>
+
+        <!-- Swipe Actions (hidden by default) -->
+        <div class="swipe-actions" role="group" aria-label="Quick actions">
+          <button class="swipe-action" 
+                  (click)="viewInvoice(invoice)"
+                  aria-label="View invoice">
+            <mat-icon>visibility</mat-icon>
+          </button>
+          <button class="swipe-action" 
+                  (click)="editInvoice(invoice)" 
+                  *ngIf="canEditInvoice(invoice)"
+                  aria-label="Edit invoice">
+            <mat-icon>edit</mat-icon>
+          </button>
+        </div>
+      </article>
+    </div>
+  </section>
+
+  <!-- Empty State -->
+  <section class="mobile-empty" 
+           *ngIf="!loading && invoices.length === 0" 
+           role="region" 
+           aria-labelledby="empty-title">
+    <div class="empty-content">
+      <mat-icon class="empty-icon" aria-hidden="true">receipt_long</mat-icon>
+      <h2 id="empty-title">No Invoices Found</h2>
+      <p>{{ hasActiveFilters ? 'No invoices match your current filters.' : 'No invoices have been created yet.' }}</p>
+      <div class="empty-actions">
+        <button mat-raised-button 
+                color="primary" 
+                (click)="createInvoice()" 
+                *ngIf="canCreate && !hasActiveFilters">
+          <mat-icon>add</mat-icon>
+          Create First Invoice
+        </button>
+        <button mat-button 
+                (click)="clearFilters()" 
+                *ngIf="hasActiveFilters">
+          <mat-icon>clear</mat-icon>
+          Clear Filters
+        </button>
+      </div>
+    </div>
+  </section>
+
+  <!-- Error State -->
+  <section class="mobile-error" 
+           *ngIf="error" 
+           role="alert" 
+           aria-labelledby="error-title">
+    <div class="error-content">
+      <mat-icon class="error-icon" aria-hidden="true">error_outline</mat-icon>
+      <h2 id="error-title">Error Loading Invoices</h2>
+      <p>{{ error.message || 'An unexpected error occurred while loading invoices.' }}</p>
+      <div class="error-actions">
+        <button mat-raised-button 
+                color="primary" 
+                (click)="retryLoad()">
+          <mat-icon>refresh</mat-icon>
+          Try Again
+        </button>
+        <button mat-button (click)="clearError()">
+          <mat-icon>clear</mat-icon>
+          Dismiss
+        </button>
+      </div>
+    </div>
+  </section>
+
+  <!-- Mobile Pagination -->
+  <footer class="mobile-pagination" 
+          *ngIf="!loading && invoices.length > 0"
+          role="navigation" 
+          aria-label="Invoice pagination">
+    <mat-paginator [length]="totalCount"
+                   [pageSize]="pageSize"
+                   [pageIndex]="currentPage"
+                   [pageSizeOptions]="[10, 25, 50]"
+                   (page)="onPageChange($event)"
+                   [showFirstLastButtons]="true"
+                   aria-label="Navigate through invoice pages">
+    </mat-paginator>
+    
+    <!-- Results summary -->
+    <div class="pagination-summary" aria-live="polite">
+      Showing {{ getResultsStart() }}-{{ getResultsEnd() }} of {{ totalCount }} invoices
+    </div>
+  </footer>
+
+  <!-- Floating Action Button for Quick Actions -->
+  <div class="mobile-fab-container" *ngIf="!loading">
+    <button mat-fab 
+            [matMenuTriggerFor]="quickActionsMenu"
+            color="accent"
+            class="quick-actions-fab"
+            aria-label="Quick actions menu">
+      <mat-icon>more_horiz</mat-icon>
+    </button>
+    
+    <mat-menu #quickActionsMenu="matMenu" xPosition="before" yPosition="above">
+      <button mat-menu-item (click)="refreshList()" aria-label="Refresh invoice list">
+        <mat-icon>refresh</mat-icon>
+        Refresh
+      </button>
+      <button mat-menu-item (click)="exportAll()" *ngIf="canExport" aria-label="Export all invoices">
+        <mat-icon>download</mat-icon>
+        Export All
+      </button>
+      <button mat-menu-item (click)="toggleView()" aria-label="Switch to desktop view">
+        <mat-icon>desktop_windows</mat-icon>
+        Desktop View
+      </button>
+    </mat-menu>
+  </div>
+
+  <!-- Live region for announcements -->
+  <div class="sr-only" aria-live="polite" id="mobile-announcements">
+    <!-- Dynamic announcements will be inserted here -->
+  </div>
+</div>

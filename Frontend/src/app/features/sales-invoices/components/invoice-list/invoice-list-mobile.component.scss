@@ -1,0 +1,886 @@
+/**
+ * Mobile Invoice List Component Styles
+ * Optimized for touch interactions and mobile viewports
+ * White theme with #7367F0 primary color
+ */
+
+@import '../../styles/responsive.scss';
+@import '../../styles/accessibility.scss';
+
+.mobile-invoice-list {
+    @extend .responsive-container;
+    @extend .high-contrast;
+    @extend .touch-accessible;
+
+    background: #FFFFFF;
+    min-height: 100vh;
+    padding: 12px;
+
+    // Skip link
+    .skip-link {
+        @extend .skip-link;
+    }
+}
+
+/* ========================================
+   MOBILE HEADER
+   ======================================== */
+
+.mobile-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 16px 0 24px 0;
+    border-bottom: 1px solid #EBE9F1;
+    margin-bottom: 16px;
+
+    .mobile-title {
+        font-size: 1.5rem;
+        font-weight: 600;
+        color: #4B4B4B;
+        margin: 0;
+
+        @media (max-width: 360px) {
+            font-size: 1.25rem;
+        }
+    }
+
+    .mobile-actions {
+        display: flex;
+        gap: 8px;
+
+        .mobile-fab {
+            width: 48px;
+            height: 48px;
+            background: #7367F0 !important;
+            color: #FFFFFF !important;
+
+            &:hover {
+                background: #5E50EE !important;
+                transform: scale(1.05);
+            }
+
+            &:active {
+                transform: scale(0.95);
+            }
+
+            .mat-icon {
+                font-size: 24px;
+                width: 24px;
+                height: 24px;
+            }
+        }
+    }
+}
+
+/* ========================================
+   MOBILE STATISTICS
+   ======================================== */
+
+.mobile-stats {
+    margin-bottom: 16px;
+
+    ::ng-deep app-invoice-statistics {
+        .statistics-container {
+            padding: 12px;
+
+            .stat-card {
+                margin-bottom: 8px;
+                padding: 12px;
+
+                .stat-value {
+                    font-size: 1.25rem;
+                }
+
+                .stat-label {
+                    font-size: 0.875rem;
+                }
+            }
+        }
+    }
+}
+
+/* ========================================
+   MOBILE FILTERS
+   ======================================== */
+
+.mobile-filters {
+    margin-bottom: 16px;
+
+    ::ng-deep app-invoice-filters {
+        .filters-card {
+            box-shadow: 0 2px 8px rgba(34, 41, 47, 0.08);
+
+            .mat-mdc-card-header {
+                padding: 16px;
+            }
+
+            .mat-mdc-card-content {
+                padding: 16px;
+            }
+
+            .filter-actions {
+                flex-direction: column;
+                gap: 8px;
+
+                button {
+                    width: 100%;
+                    min-height: 44px;
+                    justify-content: center;
+                }
+            }
+        }
+    }
+}
+
+/* ========================================
+   LOADING STATE
+   ======================================== */
+
+.mobile-loading {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 48px 16px;
+    text-align: center;
+
+    .mat-mdc-progress-spinner {
+        --mdc-circular-progress-active-indicator-color: #7367F0;
+        margin-bottom: 16px;
+    }
+
+    p {
+        color: #6E6B7B;
+        font-size: 0.875rem;
+        margin: 0;
+    }
+}
+
+/* ========================================
+   MOBILE CARDS
+   ======================================== */
+
+.mobile-cards {
+    .card-container {
+        display: flex;
+        flex-direction: column;
+        gap: 12px;
+    }
+}
+
+.invoice-card {
+    @extend .mobile-card;
+    @extend .swipeable-card;
+    @extend .touch-feedback;
+
+    background: #FFFFFF;
+    border: 1px solid #EBE9F1;
+    border-radius: 8px;
+    box-shadow: 0 2px 8px rgba(34, 41, 47, 0.08);
+    transition: all 0.2s ease;
+    cursor: pointer;
+    position: relative;
+    overflow: hidden;
+
+    // Touch interactions
+    &:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 16px rgba(34, 41, 47, 0.12);
+        border-color: #7367F0;
+    }
+
+    &:active {
+        transform: scale(0.98);
+        box-shadow: 0 1px 4px rgba(34, 41, 47, 0.1);
+    }
+
+    // Focus state for accessibility
+    &:focus-visible {
+        outline: 2px solid #7367F0;
+        outline-offset: 2px;
+        border-color: #7367F0;
+    }
+
+    // Card Header
+    .card-header {
+        padding: 16px 16px 12px 16px;
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-start;
+        border-bottom: 1px solid #F8F7FA;
+
+        .invoice-info {
+            flex: 1;
+
+            .invoice-number {
+                font-size: 1.125rem;
+                font-weight: 600;
+                margin: 0 0 4px 0;
+
+                .invoice-link {
+                    color: #7367F0;
+                    text-decoration: none;
+                    transition: color 0.2s ease;
+
+                    &:hover,
+                    &:focus {
+                        color: #5E50EE;
+                        text-decoration: underline;
+                    }
+
+                    &:focus-visible {
+                        outline: 2px solid #7367F0;
+                        outline-offset: 2px;
+                        border-radius: 2px;
+                    }
+                }
+            }
+
+            .invoice-date {
+                font-size: 0.875rem;
+                color: #6E6B7B;
+                font-weight: 400;
+            }
+        }
+
+        .status-chips {
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+            align-items: flex-end;
+
+            @media (max-width: 360px) {
+                flex-direction: row;
+                align-items: flex-start;
+                flex-wrap: wrap;
+                justify-content: flex-end;
+            }
+
+            .mat-mdc-chip {
+                @extend .responsive-chip;
+
+                font-size: 0.75rem;
+                height: 24px;
+                line-height: 24px;
+                padding: 0 8px;
+
+                .mat-icon {
+                    font-size: 14px;
+                    width: 14px;
+                    height: 14px;
+                    margin-right: 4px;
+                }
+            }
+        }
+    }
+
+    // Card Content
+    .card-content {
+        padding: 12px 16px;
+
+        .detail-list {
+            margin: 0;
+
+            .detail-row {
+                display: flex;
+                justify-content: space-between;
+                align-items: flex-start;
+                margin-bottom: 8px;
+                font-size: 0.875rem;
+
+                &:last-child {
+                    margin-bottom: 0;
+                }
+
+                dt {
+                    font-weight: 500;
+                    color: #6E6B7B;
+                    min-width: 80px;
+                    margin: 0;
+                }
+
+                dd {
+                    color: #4B4B4B;
+                    text-align: right;
+                    flex: 1;
+                    margin: 0;
+
+                    &.amount {
+                        font-weight: 600;
+                        color: #28C76F;
+                        font-size: 0.9375rem;
+                    }
+
+                    &.remaining-amount {
+                        font-weight: 500;
+                        color: #FF9F43;
+                    }
+
+                    &.customer-info {
+                        .customer-name {
+                            font-weight: 500;
+                            color: #4B4B4B;
+                            margin-bottom: 2px;
+                        }
+
+                        .customer-code {
+                            font-size: 0.75rem;
+                            color: #6E6B7B;
+                        }
+                    }
+
+                    &.due-date {
+                        &.overdue {
+                            color: #EA5455;
+                            font-weight: 500;
+                        }
+
+                        &.due-soon {
+                            color: #FF9F43;
+                            font-weight: 500;
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    // Card Actions
+    .card-actions {
+        padding: 8px 16px 16px 16px;
+        border-top: 1px solid #F8F7FA;
+        display: flex;
+        gap: 8px;
+        justify-content: space-between;
+
+        button {
+            @extend .touch-target;
+            @extend .focus-visible;
+
+            flex: 1;
+            min-height: 44px;
+            font-size: 0.875rem;
+            font-weight: 500;
+            border-radius: 6px;
+            transition: all 0.2s ease;
+
+            &.mat-mdc-button {
+                color: #7367F0;
+                border: 1px solid rgba(115, 103, 240, 0.3);
+
+                &:hover {
+                    background: rgba(115, 103, 240, 0.04);
+                    border-color: #7367F0;
+                }
+
+                &:active {
+                    background: rgba(115, 103, 240, 0.08);
+                }
+            }
+
+            .mat-icon {
+                font-size: 18px;
+                width: 18px;
+                height: 18px;
+                margin-right: 4px;
+            }
+        }
+    }
+
+    // Swipe Actions
+    .swipe-actions {
+        position: absolute;
+        top: 0;
+        right: -100px;
+        height: 100%;
+        width: 100px;
+        background: linear-gradient(135deg, #7367F0, #5E50EE);
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+        transition: right 0.3s ease;
+        border-radius: 0 8px 8px 0;
+
+        .swipe-action {
+            background: transparent;
+            border: none;
+            color: #FFFFFF;
+            padding: 8px;
+            border-radius: 4px;
+            min-height: 44px;
+            min-width: 44px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.2s ease;
+
+            &:hover {
+                background: rgba(255, 255, 255, 0.1);
+            }
+
+            &:active {
+                background: rgba(255, 255, 255, 0.2);
+                transform: scale(0.95);
+            }
+
+            &:focus-visible {
+                outline: 2px solid #FFFFFF;
+                outline-offset: 2px;
+            }
+
+            .mat-icon {
+                font-size: 20px;
+                width: 20px;
+                height: 20px;
+            }
+        }
+    }
+
+    &.swiped .swipe-actions {
+        right: 0;
+    }
+}
+
+/* ========================================
+   EMPTY STATE
+   ======================================== */
+
+.mobile-empty {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 300px;
+    padding: 32px 16px;
+
+    .empty-content {
+        text-align: center;
+        max-width: 300px;
+
+        .empty-icon {
+            font-size: 64px;
+            width: 64px;
+            height: 64px;
+            color: #B9B9C3;
+            margin-bottom: 16px;
+            opacity: 0.6;
+        }
+
+        h2 {
+            font-size: 1.25rem;
+            font-weight: 600;
+            color: #4B4B4B;
+            margin: 0 0 8px 0;
+        }
+
+        p {
+            color: #6E6B7B;
+            font-size: 0.875rem;
+            margin: 0 0 24px 0;
+            line-height: 1.5;
+        }
+
+        .empty-actions {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+
+            button {
+                @extend .touch-target;
+
+                min-height: 44px;
+                font-weight: 500;
+                border-radius: 6px;
+
+                &.mat-mdc-raised-button {
+                    background: #7367F0 !important;
+                    color: #FFFFFF !important;
+
+                    &:hover {
+                        background: #5E50EE !important;
+                    }
+                }
+
+                &.mat-mdc-button {
+                    color: #7367F0;
+                    border: 1px solid #7367F0;
+
+                    &:hover {
+                        background: rgba(115, 103, 240, 0.04);
+                    }
+                }
+            }
+        }
+    }
+}
+
+/* ========================================
+   ERROR STATE
+   ======================================== */
+
+.mobile-error {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 300px;
+    padding: 32px 16px;
+
+    .error-content {
+        text-align: center;
+        max-width: 300px;
+
+        .error-icon {
+            font-size: 48px;
+            width: 48px;
+            height: 48px;
+            color: #EA5455;
+            margin-bottom: 16px;
+        }
+
+        h2 {
+            font-size: 1.25rem;
+            font-weight: 600;
+            color: #EA5455;
+            margin: 0 0 8px 0;
+        }
+
+        p {
+            color: #6E6B7B;
+            font-size: 0.875rem;
+            margin: 0 0 24px 0;
+            line-height: 1.5;
+        }
+
+        .error-actions {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+
+            button {
+                @extend .touch-target;
+
+                min-height: 44px;
+                font-weight: 500;
+                border-radius: 6px;
+
+                &.mat-mdc-raised-button {
+                    background: #7367F0 !important;
+                    color: #FFFFFF !important;
+
+                    &:hover {
+                        background: #5E50EE !important;
+                    }
+                }
+
+                &.mat-mdc-button {
+                    color: #6E6B7B;
+                    border: 1px solid #D1D5DB;
+
+                    &:hover {
+                        background: #F9FAFB;
+                    }
+                }
+            }
+        }
+    }
+}
+
+/* ========================================
+   MOBILE PAGINATION
+   ======================================== */
+
+.mobile-pagination {
+    margin-top: 24px;
+    padding: 16px 0;
+    border-top: 1px solid #EBE9F1;
+    background: #FFFFFF;
+
+    .mat-mdc-paginator {
+        background: transparent;
+        border: none;
+
+        // Make pagination buttons touch-friendly
+        .mat-mdc-icon-button {
+            width: 44px;
+            height: 44px;
+            color: #7367F0;
+
+            &:disabled {
+                color: #B9B9C3;
+            }
+        }
+
+        .mat-mdc-paginator-range-label {
+            color: #6E6B7B;
+            font-size: 0.875rem;
+        }
+
+        .mat-mdc-select {
+            .mat-mdc-select-value {
+                color: #4B4B4B;
+                font-size: 0.875rem;
+            }
+
+            .mat-mdc-select-arrow {
+                color: #7367F0;
+            }
+        }
+    }
+
+    .pagination-summary {
+        text-align: center;
+        color: #6E6B7B;
+        font-size: 0.875rem;
+        margin-top: 8px;
+        padding: 8px;
+        background: #F8F7FA;
+        border-radius: 4px;
+    }
+}
+
+/* ========================================
+   FLOATING ACTION BUTTON
+   ======================================== */
+
+.mobile-fab-container {
+    position: fixed;
+    bottom: 24px;
+    right: 24px;
+    z-index: 100;
+
+    .quick-actions-fab {
+        width: 56px;
+        height: 56px;
+        background: #7367F0 !important;
+        color: #FFFFFF !important;
+        box-shadow: 0 4px 12px rgba(115, 103, 240, 0.4);
+
+        &:hover {
+            background: #5E50EE !important;
+            transform: scale(1.05);
+            box-shadow: 0 6px 16px rgba(115, 103, 240, 0.5);
+        }
+
+        &:active {
+            transform: scale(0.95);
+        }
+
+        &:focus-visible {
+            outline: 2px solid #FFFFFF;
+            outline-offset: 2px;
+        }
+
+        .mat-icon {
+            font-size: 24px;
+            width: 24px;
+            height: 24px;
+        }
+    }
+}
+
+/* ========================================
+   MENU STYLES
+   ======================================== */
+
+::ng-deep .mat-mdc-menu-panel {
+    border-radius: 8px;
+    box-shadow: 0 4px 24px rgba(34, 41, 47, 0.15);
+    background: #FFFFFF;
+
+    .mat-mdc-menu-item {
+        font-size: 0.875rem;
+        color: #4B4B4B;
+        min-height: 44px; // Touch-friendly
+        padding: 12px 16px;
+        transition: all 0.2s ease;
+
+        &:hover {
+            background: #F8F7FA;
+            color: #7367F0;
+        }
+
+        &:focus-visible {
+            background: #F8F7FA;
+            color: #7367F0;
+            outline: 2px solid #7367F0;
+            outline-offset: -2px;
+        }
+
+        .mat-icon {
+            color: #6E6B7B;
+            margin-right: 12px;
+            font-size: 20px;
+            width: 20px;
+            height: 20px;
+            transition: color 0.2s ease;
+        }
+
+        &:hover .mat-icon,
+        &:focus .mat-icon {
+            color: #7367F0;
+        }
+    }
+
+    .mat-mdc-menu-item[disabled] {
+        color: #B9B9C3;
+
+        .mat-icon {
+            color: #B9B9C3;
+        }
+    }
+}
+
+/* ========================================
+   RESPONSIVE ADJUSTMENTS
+   ======================================== */
+
+@media (max-width: 360px) {
+    .mobile-invoice-list {
+        padding: 8px;
+    }
+
+    .mobile-header {
+        padding: 12px 0 16px 0;
+        margin-bottom: 12px;
+    }
+
+    .invoice-card {
+        .card-header {
+            padding: 12px 12px 8px 12px;
+
+            .invoice-info .invoice-number {
+                font-size: 1rem;
+            }
+        }
+
+        .card-content {
+            padding: 8px 12px;
+
+            .detail-list .detail-row {
+                font-size: 0.8125rem;
+                margin-bottom: 6px;
+
+                dt {
+                    min-width: 70px;
+                }
+            }
+        }
+
+        .card-actions {
+            padding: 6px 12px 12px 12px;
+
+            button {
+                font-size: 0.8125rem;
+                min-height: 40px;
+
+                .mat-icon {
+                    font-size: 16px;
+                    width: 16px;
+                    height: 16px;
+                }
+            }
+        }
+    }
+
+    .mobile-fab-container {
+        bottom: 16px;
+        right: 16px;
+
+        .quick-actions-fab {
+            width: 48px;
+            height: 48px;
+
+            .mat-icon {
+                font-size: 20px;
+                width: 20px;
+                height: 20px;
+            }
+        }
+    }
+}
+
+/* ========================================
+   HIGH CONTRAST MODE
+   ======================================== */
+
+@media (prefers-contrast: high) {
+    .invoice-card {
+        border: 2px solid #000000;
+
+        &:hover,
+        &:focus-visible {
+            border-color: #7367F0;
+            border-width: 3px;
+        }
+
+        .card-header {
+            border-bottom-color: #000000;
+        }
+
+        .card-actions {
+            border-top-color: #000000;
+
+            button {
+                border: 2px solid #7367F0;
+
+                &:hover {
+                    background: #F0F0F0;
+                }
+            }
+        }
+    }
+
+    .mat-mdc-chip {
+        border: 2px solid currentColor;
+    }
+}
+
+/* ========================================
+   REDUCED MOTION
+   ======================================== */
+
+@media (prefers-reduced-motion: reduce) {
+
+    .invoice-card,
+    .mobile-fab-container .quick-actions-fab,
+    .swipe-actions,
+    button {
+        transition: none;
+        animation: none;
+    }
+
+    .invoice-card:hover {
+        transform: none;
+    }
+
+    .mobile-fab-container .quick-actions-fab:hover {
+        transform: none;
+    }
+}
+
+/* ========================================
+   PRINT STYLES
+   ======================================== */
+
+@media print {
+    .mobile-invoice-list {
+        background: white;
+        padding: 0;
+    }
+
+    .mobile-header .mobile-actions,
+    .card-actions,
+    .mobile-fab-container,
+    .mobile-pagination {
+        display: none;
+    }
+
+    .invoice-card {
+        box-shadow: none;
+        border: 1px solid #000000;
+        margin-bottom: 16px;
+        break-inside: avoid;
+    }
+}

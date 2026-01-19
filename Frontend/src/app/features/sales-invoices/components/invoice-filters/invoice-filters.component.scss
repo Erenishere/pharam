@@ -1,0 +1,579 @@
+// INVOICE FILTERS COMPONENT STYLING
+// Following Vuexy theme patterns with responsive design and accessibility
+
+@import '../../styles/responsive.scss';
+@import '../../styles/accessibility.scss';
+
+.filters-card {
+    @extend .responsive-filters;
+    @extend .accessible-form;
+
+    background: #FFFFFF; // White theme as specified
+    border-radius: 8px;
+    box-shadow: 0 4px 24px 0 rgba(34, 41, 47, .1);
+    border: 1px solid #EBE9F1;
+    margin-bottom: 24px;
+    margin-top: 0; // Ensure no top margin that could cause sticking
+
+    .mat-mdc-card-header {
+        @extend .filters-header;
+
+        background-color: #F8F7FA;
+        border-bottom: 1px solid #E0E0E0;
+        padding: 24px 32px;
+
+        // Mobile responsive
+        @media (max-width: 768px) {
+            padding: 20px 24px;
+        }
+
+        @media (max-width: 480px) {
+            padding: 16px;
+        }
+
+        .mat-mdc-card-title {
+            @extend .filters-title;
+
+            color: #5E5873 !important;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+
+            .mat-icon {
+                color: #7367F0 !important;
+            }
+        }
+    }
+
+    .mat-mdc-card-content {
+        @extend .filters-content;
+
+        padding: 32px;
+        padding-top: 24px; // Reduce top padding to prevent excessive spacing
+
+        // Mobile responsive
+        @media (max-width: 768px) {
+            padding: 24px;
+            padding-top: 20px;
+        }
+
+        @media (max-width: 480px) {
+            padding: 16px;
+            padding-top: 16px;
+        }
+    }
+}
+
+// Filters Form Layout
+.filters-form {
+    @extend .responsive-form;
+
+    display: flex;
+    flex-direction: column;
+    gap: 24px;
+
+    // Mobile responsive
+    @media (max-width: 768px) {
+        gap: 16px;
+    }
+}
+
+.filter-row {
+    @extend .form-row;
+
+    display: flex;
+    gap: 24px;
+    align-items: flex-start;
+
+    &:first-child {
+        margin-top: 0; // Remove the margin-top to prevent sticking to top
+
+        // Mobile responsive
+        @media (max-width: 768px) {
+            margin-top: 0;
+        }
+
+        @media (max-width: 480px) {
+            margin-top: 0;
+        }
+    }
+
+    // Mobile responsive
+    @media (max-width: 768px) {
+        flex-direction: column;
+        gap: 16px;
+    }
+}
+
+// Filter Section Headers
+.filter-section {
+    @extend .filter-group;
+
+    margin: 24px 0;
+
+    // Mobile responsive
+    @media (max-width: 768px) {
+        margin: 16px 0;
+    }
+
+    h4 {
+        @extend .filter-label;
+
+        margin: 0 0 16px 0;
+        color: #4B4B4B !important;
+        font-size: 14px;
+        font-weight: 600;
+        border-bottom: 1px solid #E0E0E0;
+        padding-bottom: 12px;
+
+        // Mobile responsive
+        @media (max-width: 768px) {
+            font-size: 13px;
+            margin-bottom: 12px;
+            padding-bottom: 8px;
+        }
+    }
+}
+
+// Form Field Sizing
+.full-width {
+    width: 100%;
+}
+
+.half-width {
+    flex: 1;
+
+    // Mobile responsive - full width on mobile
+    @media (max-width: 768px) {
+        width: 100%;
+    }
+}
+
+// Date Presets
+.date-presets {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+    margin-bottom: 16px;
+    padding: 16px;
+    background: #F8F7FA;
+    border-radius: 6px;
+    border: 1px solid #E0E0E0;
+
+    // Mobile responsive
+    @media (max-width: 768px) {
+        flex-direction: column;
+        gap: 8px;
+        padding: 12px;
+    }
+
+    .mat-mdc-button {
+        @extend .touch-target;
+        @extend .focus-visible;
+
+        background: transparent;
+        color: #7367F0;
+        border: 1px solid #7367F0;
+        border-radius: 4px;
+        padding: 4px 12px;
+        font-size: 12px;
+        font-weight: 500;
+        min-width: auto;
+        height: 32px;
+        line-height: 1;
+        transition: all 0.2s ease;
+
+        // Mobile responsive
+        @media (max-width: 768px) {
+            width: 100%;
+            height: 44px; // Touch-friendly
+            font-size: 14px;
+            justify-content: center;
+        }
+
+        &:hover {
+            background: rgba(115, 103, 240, 0.04);
+            transform: translateY(-1px);
+        }
+
+        &:active {
+            background: rgba(115, 103, 240, 0.08);
+        }
+
+        &:focus-visible {
+            outline: 2px solid #7367F0;
+            outline-offset: 2px;
+        }
+    }
+}
+
+// Customer/Salesman Option Styling
+.customer-option,
+.salesman-option {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+
+    .customer-name,
+    .salesman-name {
+        font-weight: 500;
+        color: #2C2C2C;
+    }
+
+    .customer-code,
+    .salesman-code {
+        font-size: 12px;
+        color: #6E6B7B;
+    }
+}
+
+// Status Chips
+.mat-mdc-chip {
+    @extend .responsive-chip;
+
+    &.status-draft {
+        background-color: rgba(255, 159, 67, 0.12);
+        color: #FF9F43;
+        border: 1px solid rgba(255, 159, 67, 0.3);
+    }
+
+    &.status-confirmed {
+        background-color: rgba(40, 199, 111, 0.12);
+        color: #28C76F;
+        border: 1px solid rgba(40, 199, 111, 0.3);
+    }
+
+    &.status-cancelled {
+        background-color: rgba(234, 84, 85, 0.12);
+        color: #EA5455;
+        border: 1px solid rgba(234, 84, 85, 0.3);
+    }
+
+    &.payment-status-pending {
+        background-color: rgba(255, 159, 67, 0.12);
+        color: #FF9F43;
+        border: 1px solid rgba(255, 159, 67, 0.3);
+    }
+
+    &.payment-status-partial {
+        background-color: rgba(0, 207, 232, 0.12);
+        color: #00CFE8;
+        border: 1px solid rgba(0, 207, 232, 0.3);
+    }
+
+    &.payment-status-paid {
+        background-color: rgba(40, 199, 111, 0.12);
+        color: #28C76F;
+        border: 1px solid rgba(40, 199, 111, 0.3);
+    }
+}
+
+// Advanced Filters Panel
+.advanced-filters {
+    margin: 24px 0;
+    background-color: #FFFFFF !important;
+    border-radius: 8px;
+    box-shadow: 0 6px 32px rgba(34, 41, 47, 0.15);
+
+    .mat-expansion-panel-header {
+        background-color: #F8F7FA !important;
+        border-radius: 8px 8px 0 0;
+
+        .mat-panel-title {
+            color: #2C2C2C !important;
+            font-weight: 600 !important;
+            font-size: 16px !important;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+
+            .mat-icon {
+                color: #7367F0 !important;
+            }
+        }
+
+        /* Higher specificity for Material Design override */
+        ::ng-deep .mat-panel-title {
+            color: #2C2C2C !important;
+            font-weight: 600 !important;
+        }
+
+        /* Target the specific Material Design class */
+        ::ng-deep .mat-expansion-panel-header-title {
+            color: #2C2C2C !important;
+            font-weight: 600 !important;
+            font-size: 16px !important;
+        }
+
+        /* Additional specificity */
+        ::ng-deep mat-panel-title.mat-expansion-panel-header-title {
+            color: #2C2C2C !important;
+            font-weight: 600 !important;
+        }
+
+        .mat-expansion-indicator::after,
+        .mat-expansion-indicator,
+        .mat-icon {
+            color: #7367F0 !important;
+        }
+
+        &:hover {
+            .mat-panel-title {
+                color: #1A1A1A !important;
+            }
+
+            ::ng-deep .mat-panel-title {
+                color: #1A1A1A !important;
+            }
+
+            ::ng-deep .mat-expansion-panel-header-title {
+                color: #1A1A1A !important;
+            }
+
+            ::ng-deep mat-panel-title.mat-expansion-panel-header-title {
+                color: #1A1A1A !important;
+            }
+
+            .mat-expansion-indicator::after,
+            .mat-expansion-indicator,
+            .mat-icon {
+                color: #5E50EE !important;
+            }
+        }
+    }
+
+    .mat-expansion-panel-content {
+        background-color: #FFFFFF !important;
+
+        .mat-expansion-panel-body {
+            padding: 32px;
+        }
+    }
+}
+
+// Filter Actions
+.filter-actions {
+    @extend .filters-actions;
+
+    display: flex;
+    gap: 16px;
+    align-items: center;
+    margin-top: 24px;
+    padding-top: 24px;
+    border-top: 1px solid #E0E0E0;
+
+    // Mobile responsive
+    @media (max-width: 768px) {
+        flex-direction: column;
+        align-items: stretch;
+        gap: 12px;
+        margin-top: 16px;
+        padding-top: 16px;
+    }
+
+    .mat-mdc-raised-button {
+        @extend .touch-target;
+        @extend .focus-visible;
+
+        background: #7367F0;
+        color: #FFFFFF;
+        border: none;
+        border-radius: 6px;
+        padding: 8px 16px;
+        font-weight: 500;
+        transition: all 0.2s ease;
+
+        // Mobile responsive
+        @media (max-width: 768px) {
+            width: 100%;
+            height: 44px; // Touch-friendly
+            justify-content: center;
+        }
+
+        &:hover {
+            background: #5E50EE;
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(115, 103, 240, 0.3);
+        }
+
+        &:focus-visible {
+            outline: 2px solid #FFFFFF;
+            outline-offset: 2px;
+        }
+    }
+
+    .mat-mdc-button {
+        @extend .touch-target;
+        @extend .focus-visible;
+
+        background: transparent;
+        color: #7367F0;
+        border: 1px solid #7367F0;
+        border-radius: 6px;
+        padding: 8px 16px;
+        font-weight: 500;
+        transition: all 0.2s ease;
+
+        // Mobile responsive
+        @media (max-width: 768px) {
+            width: 100%;
+            height: 44px; // Touch-friendly
+            justify-content: center;
+        }
+
+        &:hover {
+            background: rgba(115, 103, 240, 0.04);
+            transform: translateY(-1px);
+        }
+
+        &:focus-visible {
+            outline: 2px solid #7367F0;
+            outline-offset: 2px;
+        }
+    }
+}
+
+// Dropdown Panels
+::ng-deep .mat-mdc-select-panel {
+    background-color: #FFFFFF !important;
+    border: 1px solid #E0E0E0;
+    box-shadow: 0 4px 24px 0 rgba(34, 41, 47, .1);
+    border-radius: 8px;
+
+    .mat-mdc-option {
+        background-color: #FFFFFF !important;
+        color: #4B4B4B !important;
+
+        &:hover {
+            background-color: rgba(115, 103, 240, 0.04) !important;
+        }
+
+        &.mat-selected {
+            background-color: rgba(115, 103, 240, 0.08) !important;
+            color: #7367F0 !important;
+        }
+    }
+}
+
+// Autocomplete Panel
+::ng-deep .mat-mdc-autocomplete-panel {
+    background-color: #FFFFFF !important;
+    border: 1px solid #E0E0E0;
+    box-shadow: 0 4px 24px 0 rgba(34, 41, 47, .1);
+    border-radius: 8px;
+
+    .mat-mdc-option {
+        background-color: #FFFFFF !important;
+        color: #4B4B4B !important;
+
+        &:hover {
+            background-color: rgba(115, 103, 240, 0.04) !important;
+        }
+
+        &.mat-selected {
+            background-color: rgba(115, 103, 240, 0.08) !important;
+            color: #7367F0 !important;
+        }
+    }
+}
+
+// Form Field Styling
+::ng-deep .mat-mdc-form-field {
+    .mat-mdc-text-field-wrapper {
+        background-color: #FFFFFF;
+        border-radius: 6px;
+    }
+
+    &.mat-form-field-appearance-outline {
+        .mat-mdc-form-field-outline {
+            color: #D8D6DE;
+        }
+
+        &.mat-focused .mat-mdc-form-field-outline-thick {
+            color: #7367F0;
+        }
+
+        .mat-mdc-form-field-label {
+            color: #6E6B7B;
+        }
+
+        &.mat-focused .mat-mdc-form-field-label {
+            color: #7367F0;
+        }
+    }
+
+    .mat-mdc-input-element {
+        color: #2C2C2C;
+    }
+
+    // Ensure proper spacing for search field
+    &.full-width {
+        margin-top: 8px; // Add small top margin to prevent sticking
+        margin-bottom: 8px;
+    }
+}
+
+// Responsive Design
+@media (max-width: 768px) {
+    .filter-row {
+        flex-direction: column;
+
+        .half-width {
+            width: 100%;
+        }
+    }
+
+    .filter-actions {
+        flex-direction: column;
+        align-items: stretch;
+
+        .mat-mdc-button,
+        .mat-mdc-raised-button {
+            width: 100%;
+        }
+    }
+
+    .date-presets {
+        flex-direction: column;
+        gap: 8px;
+
+        .mat-mdc-button {
+            width: 100%;
+        }
+    }
+
+    .filters-card {
+
+        .mat-mdc-card-header,
+        .mat-mdc-card-content {
+            padding: 24px;
+        }
+    }
+
+    .advanced-filters {
+        .mat-expansion-panel-body {
+            padding: 24px;
+        }
+    }
+}
+
+// Clear button styling for customer search
+.mat-mdc-form-field-suffix {
+    .mat-mdc-icon-button {
+        width: 32px;
+        height: 32px;
+        color: #6E6B7B;
+
+        &:hover {
+            color: #7367F0;
+            background-color: rgba(115, 103, 240, 0.04);
+        }
+
+        .mat-icon {
+            font-size: 18px;
+            width: 18px;
+            height: 18px;
+        }
+    }
+}

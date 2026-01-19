@@ -1,0 +1,295 @@
+<!-- Warranty Management Component Template -->
+<div class="warranty-management-container">
+  <!-- Header Section -->
+  <div class="header-section">
+    <div class="title-section">
+      <h3 class="section-title">
+        <mat-icon>verified_user</mat-icon>
+        Warranty Information
+      </h3>
+      <p class="section-subtitle">
+        Track warranty status and manage warranty claims for invoice items
+      </p>
+    </div>
+
+    <!-- Warranty Alerts -->
+    <div *ngIf="expiringWarranties.length > 0" class="warranty-alerts">
+      <mat-card class="alert-card expiring-alert">
+        <mat-card-content>
+          <div class="alert-content">
+            <mat-icon class="alert-icon">warning</mat-icon>
+            <div class="alert-text">
+              <strong>{{ getWarrantyAlertMessage() }}</strong>
+              <p>Please review and take necessary action before expiry.</p>
+            </div>
+          </div>
+        </mat-card-content>
+      </mat-card>
+    </div>
+  </div>
+
+  <!-- Loading Spinner -->
+  <div *ngIf="isLoading && !showClaimForm" class="loading-container">
+    <mat-spinner diameter="50"></mat-spinner>
+    <p>Loading warranty information...</p>
+  </div>
+
+  <!-- Warranty Claim Form -->
+  <mat-card *ngIf="showClaimForm" class="claim-form-card">
+    <mat-card-header>
+      <mat-card-title>
+        <mat-icon>assignment</mat-icon>
+        Submit Warranty Claim
+      </mat-card-title>
+      <mat-card-subtitle>
+        Fill out the form below to submit a warranty claim
+      </mat-card-subtitle>
+    </mat-card-header>
+    
+    <mat-card-content>
+      <form [formGroup]="claimForm" class="claim-form">
+        <!-- Claim Reason -->
+        <mat-form-field appearance="outline" class="full-width">
+          <mat-label>Claim Reason</mat-label>
+          <mat-select formControlName="claimReason">
+            <mat-option value="defective">Defective Product</mat-option>
+            <mat-option value="malfunction">Product Malfunction</mat-option>
+            <mat-option value="damage">Damage During Shipping</mat-option>
+            <mat-option value="performance">Performance Issues</mat-option>
+            <mat-option value="other">Other</mat-option>
+          </mat-select>
+          <mat-error *ngIf="claimForm.get('claimReason')?.hasError('required')">
+            Claim reason is required
+          </mat-error>
+        </mat-form-field>
+
+        <!-- Requested Action -->
+        <mat-form-field appearance="outline" class="full-width">
+          <mat-label>Requested Action</mat-label>
+          <mat-select formControlName="requestedAction">
+            <mat-option value="repair">Repair</mat-option>
+            <mat-option value="replace">Replace</mat-option>
+            <mat-option value="refund">Refund</mat-option>
+          </mat-select>
+          <mat-error *ngIf="claimForm.get('requestedAction')?.hasError('required')">
+            Requested action is required
+          </mat-error>
+        </mat-form-field>
+
+        <!-- Customer Reported Issue -->
+        <mat-form-field appearance="outline" class="full-width">
+          <mat-label>Customer Reported Issue</mat-label>
+          <textarea matInput 
+                    formControlName="customerReportedIssue"
+                    rows="3"
+                    placeholder="Describe the issue as reported by the customer"></textarea>
+          <mat-error *ngIf="claimForm.get('customerReportedIssue')?.hasError('required')">
+            Customer reported issue is required
+          </mat-error>
+          <mat-error *ngIf="claimForm.get('customerReportedIssue')?.hasError('minlength')">
+            Please provide more details (minimum 10 characters)
+          </mat-error>
+        </mat-form-field>
+
+        <!-- Claim Description -->
+        <mat-form-field appearance="outline" class="full-width">
+          <mat-label>Detailed Description</mat-label>
+          <textarea matInput 
+                    formControlName="claimDescription"
+                    rows="4"
+                    placeholder="Provide detailed description of the issue and any troubleshooting steps taken"></textarea>
+          <mat-error *ngIf="claimForm.get('claimDescription')?.hasError('required')">
+            Detailed description is required
+          </mat-error>
+          <mat-error *ngIf="claimForm.get('claimDescription')?.hasError('minlength')">
+            Please provide more details (minimum 10 characters)
+          </mat-error>
+        </mat-form-field>
+
+        <!-- Claim Date -->
+        <mat-form-field appearance="outline" class="full-width">
+          <mat-label>Claim Date</mat-label>
+          <input matInput 
+                 [matDatepicker]="claimDatePicker" 
+                 formControlName="claimDate">
+          <mat-datepicker-toggle matSuffix [for]="claimDatePicker"></mat-datepicker-toggle>
+          <mat-datepicker #claimDatePicker></mat-datepicker>
+          <mat-error *ngIf="claimForm.get('claimDate')?.hasError('required')">
+            Claim date is required
+          </mat-error>
+        </mat-form-field>
+      </form>
+    </mat-card-content>
+
+    <mat-card-actions class="claim-actions">
+      <button mat-stroked-button 
+              (click)="cancelClaim()" 
+              [disabled]="isLoading">
+        Cancel
+      </button>
+      <button mat-raised-button 
+              color="primary" 
+              (click)="submitClaim()" 
+              [disabled]="claimForm.invalid || isLoading">
+        <mat-spinner *ngIf="isLoading" diameter="20"></mat-spinner>
+        <mat-icon *ngIf="!isLoading">send</mat-icon>
+        {{ isLoading ? 'Submitting...' : 'Submit Claim' }}
+      </button>
+    </mat-card-actions>
+  </mat-card>
+
+  <!-- Warranty Information Table -->
+  <mat-card *ngIf="!isLoading && !showClaimForm" class="warranty-table-card">
+    <mat-card-content>
+      <!-- No Warranty Items Message -->
+      <div *ngIf="warranties.length === 0" class="no-warranty-container">
+        <mat-icon class="no-warranty-icon">verified_user</mat-icon>
+        <h3>No Warranty Items</h3>
+        <p>This invoice does not contain any items with warranty coverage.</p>
+      </div>
+
+      <!-- Warranty Table -->
+      <div *ngIf="warranties.length > 0" class="table-container">
+        <table mat-table [dataSource]="dataSource" matSort class="warranty-table">
+          
+          <!-- Item Column -->
+          <ng-container matColumnDef="item">
+            <th mat-header-cell *matHeaderCellDef>Item</th>
+            <td mat-cell *matCellDef="let warranty">
+              <div class="item-info">
+                <div class="item-name">{{ warranty.item?.name || 'N/A' }}</div>
+                <div class="item-code">{{ warranty.item?.code || '' }}</div>
+              </div>
+            </td>
+          </ng-container>
+
+          <!-- Warranty Period Column -->
+          <ng-container matColumnDef="warrantyPeriod">
+            <th mat-header-cell *matHeaderCellDef>Warranty Period</th>
+            <td mat-cell *matCellDef="let warranty">
+              <div class="warranty-period">
+                {{ warranty.warrantyPeriod }} 
+                {{ warranty.warrantyPeriod === 1 ? 'month' : 'months' }}
+              </div>
+            </td>
+          </ng-container>
+
+          <!-- Start Date Column -->
+          <ng-container matColumnDef="startDate">
+            <th mat-header-cell *matHeaderCellDef mat-sort-header>Start Date</th>
+            <td mat-cell *matCellDef="let warranty">
+              {{ warranty.warrantyStartDate | date:'dd/MM/yyyy' }}
+            </td>
+          </ng-container>
+
+          <!-- Expiry Date Column -->
+          <ng-container matColumnDef="expiryDate">
+            <th mat-header-cell *matHeaderCellDef mat-sort-header>Expiry Date</th>
+            <td mat-cell *matCellDef="let warranty">
+              <div class="expiry-info">
+                <div class="expiry-date">{{ warranty.warrantyEndDate | date:'dd/MM/yyyy' }}</div>
+              </div>
+            </td>
+          </ng-container>
+
+          <!-- Status Column -->
+          <ng-container matColumnDef="status">
+            <th mat-header-cell *matHeaderCellDef>Status</th>
+            <td mat-cell *matCellDef="let warranty">
+              <mat-chip [color]="getStatusColor(getWarrantyStatus(warranty).status)" selected>
+                {{ getStatusText(warranty) }}
+              </mat-chip>
+            </td>
+          </ng-container>
+
+          <!-- Days Remaining Column -->
+          <ng-container matColumnDef="daysRemaining">
+            <th mat-header-cell *matHeaderCellDef>Days Remaining</th>
+            <td mat-cell *matCellDef="let warranty">
+              <div class="days-remaining" 
+                   [class.expired]="getWarrantyStatus(warranty).status === 'expired'"
+                   [class.expiring-soon]="getWarrantyStatus(warranty).status === 'expiring_soon'">
+                <ng-container *ngIf="getWarrantyStatus(warranty).status !== 'expired'">
+                  {{ getWarrantyStatus(warranty).daysRemaining }} days
+                </ng-container>
+                <ng-container *ngIf="getWarrantyStatus(warranty).status === 'expired'">
+                  Expired
+                </ng-container>
+              </div>
+            </td>
+          </ng-container>
+
+          <!-- Actions Column -->
+          <ng-container matColumnDef="actions">
+            <th mat-header-cell *matHeaderCellDef>Actions</th>
+            <td mat-cell *matCellDef="let warranty">
+              <div class="action-buttons">
+                <button mat-icon-button 
+                        matTooltip="View Warranty Terms"
+                        (click)="viewWarrantyTerms(warranty)">
+                  <mat-icon>description</mat-icon>
+                </button>
+                
+                <button mat-icon-button 
+                        matTooltip="Download Certificate"
+                        (click)="downloadWarrantyCertificate(warranty)">
+                  <mat-icon>download</mat-icon>
+                </button>
+                
+                <button mat-raised-button 
+                        color="accent"
+                        size="small"
+                        [disabled]="!canClaimWarranty(warranty)"
+                        (click)="openClaimDialog(warranty)"
+                        matTooltip="Submit Warranty Claim">
+                  <mat-icon>assignment</mat-icon>
+                  Claim
+                </button>
+              </div>
+            </td>
+          </ng-container>
+
+          <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
+          <tr mat-row *matRowDef="let row; columns: displayedColumns;"></tr>
+        </table>
+
+        <!-- Paginator -->
+        <mat-paginator *ngIf="warranties.length > 5"
+                       [length]="warranties.length"
+                       [pageSize]="5"
+                       [pageSizeOptions]="[5, 10, 25]"
+                       showFirstLastButtons>
+        </mat-paginator>
+      </div>
+    </mat-card-content>
+  </mat-card>
+
+  <!-- Warranty Information Panel -->
+  <mat-expansion-panel *ngIf="warranties.length > 0 && !showClaimForm" class="warranty-info-panel">
+    <mat-expansion-panel-header>
+      <mat-panel-title>
+        <mat-icon>info</mat-icon>
+        Warranty Information & Guidelines
+      </mat-panel-title>
+    </mat-expansion-panel-header>
+    
+    <div class="warranty-guidelines">
+      <h4>Important Warranty Information:</h4>
+      <ul>
+        <li><strong>Coverage:</strong> Warranty covers manufacturing defects and material failures under normal use.</li>
+        <li><strong>Exclusions:</strong> Damage due to misuse, accidents, normal wear and tear, or unauthorized repairs.</li>
+        <li><strong>Claims:</strong> Submit warranty claims within the warranty period with proper documentation.</li>
+        <li><strong>Process:</strong> Claims are processed within 5-7 business days after submission.</li>
+        <li><strong>Documentation:</strong> Keep your invoice and warranty certificate for claim processing.</li>
+      </ul>
+      
+      <h4>How to Submit a Warranty Claim:</h4>
+      <ol>
+        <li>Click the "Claim" button next to the item you want to claim warranty for</li>
+        <li>Fill out the warranty claim form with detailed information</li>
+        <li>Submit the form and wait for confirmation</li>
+        <li>Our warranty team will contact you within 2 business days</li>
+      </ol>
+    </div>
+  </mat-expansion-panel>
+</div>

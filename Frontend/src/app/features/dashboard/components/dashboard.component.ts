@@ -2,14 +2,13 @@ import { Component } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { MatCardModule } from '@angular/material/card';
 import { MatIconModule } from '@angular/material/icon';
-import { MatMenuModule } from '@angular/material/menu';
 import { MatButtonModule } from '@angular/material/button';
 import { RouterModule } from '@angular/router';
 
 @Component({
   selector: 'app-dashboard',
   standalone: true,
-  imports: [CommonModule, MatCardModule, MatIconModule, MatMenuModule, MatButtonModule, RouterModule],
+  imports: [CommonModule, MatCardModule, MatIconModule, MatButtonModule, RouterModule],
   template: `
     <div class="dashboard-container">
       <h1>Dashboard</h1>
@@ -48,37 +47,13 @@ import { RouterModule } from '@angular/router';
           </mat-card-content>
         </mat-card>
 
-        <!-- Batch Management Card with Dropdown -->
-        <mat-card class="dashboard-card batch-card">
+        <!-- Batch Management Card (Simple like Sales card) -->
+        <mat-card class="dashboard-card" routerLink="/batches">
           <mat-card-content>
-            <div class="card-header">
-              <mat-icon class="card-icon">qr_code</mat-icon>
-              <button mat-icon-button [matMenuTriggerFor]="batchMenu" class="dropdown-trigger">
-                <mat-icon>keyboard_arrow_down</mat-icon>
-              </button>
-            </div>
+            <mat-icon class="card-icon">qr_code</mat-icon>
             <h2>Batch Management</h2>
             <p>Manage product batches</p>
           </mat-card-content>
-          
-          <mat-menu #batchMenu="matMenu" class="batch-dropdown-menu">
-            <button mat-menu-item routerLink="/batches/list">
-              <mat-icon>list</mat-icon>
-              <span>All Batches</span>
-            </button>
-            <button mat-menu-item routerLink="/batches/create">
-              <mat-icon>add</mat-icon>
-              <span>Create Batch</span>
-            </button>
-            <button mat-menu-item routerLink="/batches/expiring">
-              <mat-icon>warning</mat-icon>
-              <span>Expiring Batches</span>
-            </button>
-            <button mat-menu-item routerLink="/batches/statistics">
-              <mat-icon>analytics</mat-icon>
-              <span>Statistics</span>
-            </button>
-          </mat-menu>
         </mat-card>
 
         <mat-card class="dashboard-card" routerLink="/sales-invoices">

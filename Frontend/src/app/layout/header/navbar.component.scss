@@ -21,42 +21,175 @@ $hover-bg: rgba($primary, .08);
   /* hamburger */
   .menu-btn {
     margin-right: 8px;
-    ::ng-deep .mat-icon { color: $text-body; }
-    &:hover { background-color: $hover-bg; }
+
+    ::ng-deep .mat-icon {
+      color: $text-body;
+    }
+
+    &:hover {
+      background-color: $hover-bg;
+    }
   }
 
-  /* search field – expands on focus */
-  .search-input-container {
-    width: 240px;
-    transition: width .3s ease;
-    input {
-      width: 100%;
-      height: 38px;
-      padding: 0 14px;
-      border: $border-input;
-      border-radius: $radius-input;
-      font-size: 14px;
-      color: $text-body;
-      background-color: #fff;
-      transition: all .2s ease;
-      &:focus {
-        width: 320px;
-        border-color: $primary;
-        box-shadow: 0 0 0 3px rgba($primary, .15);
-        outline: none;
+  /* search container with autocomplete */
+  .search-container {
+    width: 450px; // Changed from 300px to 450px as requested
+    transition: width .3s cubic-bezier(0.4, 0, 0.2, 1);
+    display: flex;
+    align-items: flex-start; // Change from center to flex-start to allow margin-top to work
+    margin-top: 12px; // Increased margin-top for better spacing
+    margin-bottom: 12px; // Increased margin-bottom for symmetry
+    padding-top: 8px; // Add padding-top to create additional spacing
+
+    // Responsive adjustments for smaller screens
+    @media (max-width: 1200px) {
+      width: 350px;
+
+      &:focus-within {
+        width: 420px;
       }
-      &::placeholder { color: $text-muted; }
     }
-    &:focus-within { width: 320px; }
+
+    @media (max-width: 768px) {
+      width: 250px;
+
+      &:focus-within {
+        width: 320px;
+      }
+    }
+
+    @media (max-width: 480px) {
+      width: 200px;
+
+      &:focus-within {
+        width: 280px;
+      }
+    }
+
+    .search-field {
+      width: 100%;
+      margin-top: 8px !important; // Force margin-top on the search field
+
+      ::ng-deep {
+        .mat-mdc-form-field-wrapper {
+          padding-bottom: 0;
+          padding-top: 0;
+          margin: 8px 0 0 0 !important; // Add top margin to the form field wrapper itself
+        }
+
+        .mat-mdc-form-field-flex {
+          align-items: center;
+          margin: 8px 0 0 0 !important; // Add top margin to form field flex
+        }
+
+        .mat-mdc-text-field-wrapper {
+          height: 42px;
+          background: linear-gradient(135deg, #ffffff 0%, #fafbfc 100%);
+          border-radius: 10px;
+          border: 1.5px solid #e8e8e8;
+          transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+          display: flex;
+          align-items: center;
+          position: relative;
+          margin: 8px 0 0 0 !important; // Add top margin to create spacing from navbar top
+
+          // Add subtle inner shadow
+          box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.04);
+
+          &:hover {
+            border-color: #7367f0;
+            background: linear-gradient(135deg, #ffffff 0%, #f8f9ff 100%);
+            box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.04), 0 0 0 3px rgba(115, 103, 240, 0.08);
+          }
+        }
+
+        .mat-mdc-form-field-focus-overlay {
+          background-color: transparent;
+        }
+
+        .mat-mdc-form-field-outline {
+          display: none;
+        }
+
+        .mat-mdc-form-field-infix {
+          padding: 0;
+          border: none;
+          min-height: auto;
+          display: flex;
+          align-items: center;
+        }
+
+        .mat-mdc-input-element {
+          padding: 0 14px;
+          font-size: 14px;
+          color: #2d3748;
+          height: 40px;
+          line-height: 40px;
+          font-weight: 500;
+          background: transparent;
+
+          &::placeholder {
+            color: #a0aec0;
+            font-weight: 400;
+            transition: color 0.2s ease;
+          }
+
+          &:focus::placeholder {
+            color: #cbd5e0;
+          }
+        }
+
+        .mat-mdc-form-field-icon-suffix {
+          color: #7367f0;
+          padding-right: 14px;
+          display: flex;
+          align-items: center;
+          height: 42px;
+          transition: all 0.2s ease;
+
+          mat-icon {
+            font-size: 20px;
+            width: 20px;
+            height: 20px;
+          }
+        }
+
+        &.mat-focused {
+          .mat-mdc-text-field-wrapper {
+            border-color: #7367f0;
+            background: linear-gradient(135deg, #ffffff 0%, #f8f9ff 100%);
+            box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.04), 0 0 0 4px rgba(115, 103, 240, 0.12);
+            transform: translateY(-1px);
+          }
+
+          .mat-mdc-form-field-icon-suffix {
+            color: #7367f0;
+            transform: scale(1.1);
+          }
+        }
+      }
+    }
+
+    &:focus-within {
+      width: 520px; // Increased proportionally from 420px to maintain expansion ratio
+    }
   }
 
   /* generic icon buttons */
   .icon-btn {
     position: relative;
-    ::ng-deep .mat-icon { color: $text-body; transition: color .2s; }
+
+    ::ng-deep .mat-icon {
+      color: $text-body;
+      transition: color .2s;
+    }
+
     &:hover {
       background-color: $hover-bg;
-      ::ng-deep .mat-icon { color: $primary; }
+
+      ::ng-deep .mat-icon {
+        color: $primary;
+      }
     }
   }
 
@@ -86,10 +219,511 @@ $hover-bg: rgba($primary, .08);
     border-radius: $radius-input;
     color: $text-body;
     transition: background-color .2s;
-    &:hover { background-color: $hover-bg; }
-    .info { text-align: right; margin-right: 8px; }
-    .username { font-weight: 600; color: $text-card-title; }
-    .role      { font-size: 12px; color: #b8b8b8; }
-    mat-icon { font-size: 32px; width: 32px; height: 32px; color: $primary; }
+
+    &:hover {
+      background-color: $hover-bg;
+    }
+
+    .info {
+      text-align: right;
+      margin-right: 8px;
+    }
+
+    .username {
+      font-weight: 600;
+      color: $text-card-title;
+    }
+
+    .role {
+      font-size: 12px;
+      color: #b8b8b8;
+    }
+
+    mat-icon {
+      font-size: 32px;
+      width: 32px;
+      height: 32px;
+      color: $primary;
+    }
+  }
+}
+
+// Additional specific styling to ensure margin-top works for the search box
+::ng-deep {
+  .navbar .search-container {
+    .mat-mdc-form-field {
+      margin-top: 8px !important;
+    }
+
+    .mat-mdc-form-field-wrapper {
+      margin-top: 8px !important;
+    }
+
+    .mat-mdc-text-field-wrapper {
+      margin-top: 8px !important;
+    }
+  }
+}
+
+// Search autocomplete styling - Enhanced Light Theme
+::ng-deep {
+  .search-autocomplete {
+    .mat-mdc-autocomplete-panel {
+      background-color: #ffffff;
+      border-radius: 12px;
+      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12), 0 4px 8px rgba(0, 0, 0, 0.08);
+      border: 1px solid #e8e8e8;
+      max-height: 400px;
+      min-width: 450px !important; // Increased width to prevent content wrapping
+      width: 450px !important; // Fixed width for consistency
+      margin-top: 4px;
+      overflow: hidden;
+      overflow-x: hidden !important; // Explicitly remove horizontal scrollbar
+      overflow-y: auto !important; // Keep vertical scroll if needed
+
+      // Add subtle gradient background
+      background: linear-gradient(135deg, #ffffff 0%, #fafbfc 100%);
+
+      // Custom scrollbar
+      &::-webkit-scrollbar {
+        width: 6px;
+      }
+
+      &::-webkit-scrollbar-track {
+        background: #f1f3f4;
+        border-radius: 3px;
+      }
+
+      &::-webkit-scrollbar-thumb {
+        background: #c1c8cd;
+        border-radius: 3px;
+
+        &:hover {
+          background: #a8b1b8;
+        }
+      }
+    }
+
+    .search-option {
+      padding: 14px 18px;
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      min-height: 56px;
+      transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+      border-bottom: 1px solid #f5f5f5;
+      position: relative;
+      overflow: hidden !important; // Prevent content overflow
+      white-space: nowrap; // Prevent text wrapping that could cause overflow
+
+      &:last-child {
+        border-bottom: none;
+      }
+
+      // Add subtle left border accent
+      &::before {
+        content: '';
+        position: absolute;
+        left: 0;
+        top: 0;
+        bottom: 0;
+        width: 3px;
+        background-color: transparent;
+        transition: background-color 0.2s ease;
+      }
+
+      .option-icon {
+        color: #7367f0;
+        font-size: 22px;
+        width: 22px;
+        height: 22px;
+        flex-shrink: 0;
+        transition: all 0.2s ease;
+
+        // Add subtle background circle
+        background: rgba(115, 103, 240, 0.08);
+        border-radius: 50%;
+        padding: 8px;
+        width: 38px;
+        height: 38px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+      }
+
+      .option-text {
+        flex: 1;
+        font-weight: 500;
+        color: #2d3748;
+        font-size: 15px;
+        line-height: 1.4;
+        transition: color 0.2s ease;
+      }
+
+      .option-category {
+        font-size: 11px;
+        color: #7367f0;
+        background: linear-gradient(135deg, rgba(115, 103, 240, 0.1) 0%, rgba(115, 103, 240, 0.15) 100%);
+        padding: 4px 10px;
+        border-radius: 16px;
+        flex-shrink: 0;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        border: 1px solid rgba(115, 103, 240, 0.2);
+        transition: all 0.2s ease;
+      }
+
+      &:hover {
+        background: linear-gradient(135deg, rgba(115, 103, 240, 0.06) 0%, rgba(115, 103, 240, 0.08) 100%);
+        transform: translateX(2px);
+
+        &::before {
+          background-color: #7367f0;
+        }
+
+        .option-icon {
+          background: rgba(115, 103, 240, 0.15);
+          color: #7367f0;
+          transform: scale(1.05);
+        }
+
+        .option-text {
+          color: #1a202c;
+        }
+
+        .option-category {
+          background: linear-gradient(135deg, rgba(115, 103, 240, 0.15) 0%, rgba(115, 103, 240, 0.2) 100%);
+          border-color: rgba(115, 103, 240, 0.3);
+          transform: scale(1.02);
+        }
+      }
+
+      &.mat-mdc-option-active {
+        background: linear-gradient(135deg, rgba(115, 103, 240, 0.08) 0%, rgba(115, 103, 240, 0.12) 100%);
+
+        &::before {
+          background-color: #7367f0;
+        }
+
+        .option-icon {
+          background: rgba(115, 103, 240, 0.2);
+          color: #7367f0;
+        }
+
+        .option-text {
+          color: #1a202c;
+          font-weight: 600;
+        }
+
+        .option-category {
+          background: linear-gradient(135deg, rgba(115, 103, 240, 0.2) 0%, rgba(115, 103, 240, 0.25) 100%);
+          border-color: rgba(115, 103, 240, 0.4);
+        }
+      }
+    }
+
+    .no-results {
+      color: #718096;
+      font-style: italic;
+      padding: 24px 18px;
+      text-align: center;
+      font-size: 14px;
+      background: linear-gradient(135deg, #f7fafc 0%, #edf2f7 100%);
+      border-radius: 8px;
+      margin: 8px;
+      border: 1px dashed #e2e8f0;
+
+      // Add icon for empty state
+      &::before {
+        content: '🔍';
+        display: block;
+        font-size: 24px;
+        margin-bottom: 8px;
+        opacity: 0.6;
+      }
+    }
+
+    // Add header for better organization when there are results
+    .search-results-header {
+      padding: 12px 18px 8px;
+      background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+      border-bottom: 1px solid #e9ecef;
+      font-size: 12px;
+      font-weight: 600;
+      color: #6c757d;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      position: sticky;
+      top: 0;
+      z-index: 1;
+    }
+  }
+
+  // Global overrides for Material autocomplete components to ensure light theme
+  .mat-mdc-autocomplete-panel {
+    background-color: #ffffff !important;
+
+    .mat-mdc-option {
+      background-color: #ffffff !important;
+      color: #2d3748 !important;
+
+      &:hover {
+        background-color: rgba(115, 103, 240, 0.06) !important;
+      }
+
+      &.mat-mdc-option-active {
+        background-color: rgba(115, 103, 240, 0.08) !important;
+      }
+
+      .mdc-list-item__primary-text {
+        background-color: transparent !important;
+        color: #2d3748 !important;
+      }
+
+      .mat-ripple,
+      .mat-mdc-option-ripple {
+        background-color: transparent !important;
+
+        .mat-ripple-element {
+          background-color: rgba(115, 103, 240, 0.2) !important;
+        }
+      }
+
+      .mat-mdc-focus-indicator {
+        background-color: transparent !important;
+      }
+    }
+  }
+
+  // Target specific Material classes that might have dark backgrounds
+  .mdc-list-item {
+    background-color: #ffffff !important;
+
+    &:hover {
+      background-color: rgba(115, 103, 240, 0.06) !important;
+    }
+
+    .mdc-list-item__primary-text {
+      background-color: transparent !important;
+      color: #2d3748 !important;
+    }
+  }
+
+  // Override any ng-tns classes that might have dark styling
+  .ng-tns-c3964489799-2 {
+    background-color: #ffffff !important;
+  }
+
+  // Ensure search options specifically have white backgrounds
+  .search-option {
+    background-color: #ffffff !important;
+
+    &.mat-mdc-option {
+      background-color: #ffffff !important;
+
+      &:hover {
+        background: linear-gradient(135deg, rgba(115, 103, 240, 0.06) 0%, rgba(115, 103, 240, 0.08) 100%) !important;
+      }
+
+      &.mat-mdc-option-active {
+        background: linear-gradient(135deg, rgba(115, 103, 240, 0.08) 0%, rgba(115, 103, 240, 0.12) 100%) !important;
+      }
+    }
+
+    &.mdc-list-item {
+      background-color: #ffffff !important;
+    }
+  }
+
+  // Light theme for notification menu
+  .notification-menu {
+    .mat-mdc-menu-panel {
+      background-color: #ffffff !important;
+      border-radius: 8px;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+      border: 1px solid #e0e0e0;
+      min-width: 280px;
+      margin-top: 8px;
+
+      // Remove any dark borders/backgrounds
+      &::before,
+      &::after {
+        display: none !important;
+      }
+    }
+
+    .notif-placeholder {
+      padding: 20px;
+      color: #6c757d;
+      text-align: center;
+      font-size: 14px;
+      background-color: #ffffff;
+      border-radius: 8px;
+      font-weight: 500;
+
+      // Add subtle styling to make it more visible
+      border: 1px dashed #e0e0e0;
+      margin: 8px;
+      background: linear-gradient(135deg, #f8f9fa 0%, #ffffff 100%);
+    }
+  }
+
+  // Light theme for user menu - Enhanced with complete dark theme removal
+  .user-menu {
+    .mat-mdc-menu-panel {
+      background-color: #ffffff !important;
+      border-radius: 8px;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+      border: 1px solid #e0e0e0;
+      min-width: 200px;
+      margin-top: 8px;
+      padding: 8px 0;
+      overflow-x: hidden !important; // Remove horizontal scrollbar
+      overflow-y: auto !important; // Keep vertical scroll if needed
+
+      // Remove any dark borders/backgrounds completely
+      &::before,
+      &::after {
+        display: none !important;
+      }
+
+      // Override any Material theme dark styling
+      .mat-mdc-menu-content {
+        background-color: #ffffff !important;
+        padding: 0;
+        overflow-x: hidden !important; // Remove horizontal scrollbar from content
+      }
+    }
+
+    .mat-mdc-menu-item {
+      background-color: #ffffff !important;
+      color: $text-card-title !important;
+      height: 48px;
+      padding: 0 16px;
+      margin: 2px 8px;
+      border-radius: 6px;
+      transition: all 0.2s ease;
+      overflow: hidden !important; // Prevent content overflow
+
+      mat-icon {
+        color: #7367f0 !important;
+        margin-right: 12px;
+        font-size: 20px;
+        width: 20px;
+        height: 20px;
+        transition: color 0.2s ease;
+      }
+
+      span {
+        font-weight: 500;
+        color: $text-card-title !important;
+        transition: color 0.2s ease;
+      }
+
+      // Target the specific Material classes
+      .mat-mdc-menu-item-text {
+        color: $text-card-title !important;
+        background-color: transparent !important;
+      }
+
+      &:hover {
+        background-color: #7367f0 !important;
+        color: #ffffff !important;
+        transform: translateY(-1px);
+        box-shadow: 0 2px 8px rgba(115, 103, 240, 0.3);
+
+        mat-icon {
+          color: #ffffff !important;
+        }
+
+        span {
+          color: #ffffff !important;
+        }
+
+        .mat-mdc-menu-item-text {
+          color: #ffffff !important;
+        }
+      }
+
+      &:active {
+        transform: translateY(0);
+      }
+
+      // Remove ripple dark backgrounds
+      .mat-ripple,
+      .mat-mdc-menu-ripple {
+        background-color: transparent !important;
+
+        .mat-ripple-element {
+          background-color: rgba(255, 255, 255, 0.2) !important;
+        }
+      }
+    }
+
+    .mat-mdc-menu-item-submenu-trigger {
+      background-color: #ffffff !important;
+
+      &:hover {
+        background-color: #7367f0 !important;
+      }
+    }
+
+    mat-divider,
+    .mat-divider {
+      border-top-color: #e0e0e0 !important;
+      border-color: #e0e0e0 !important;
+      background-color: #e0e0e0 !important;
+      margin: 8px 16px;
+      opacity: 0.6;
+    }
+
+    // Override any Material dark theme remnants
+    .mat-mdc-menu-item-text {
+      color: $text-card-title !important;
+      background-color: transparent !important;
+    }
+
+    // Ensure no dark backgrounds leak through
+    .mat-mdc-menu-item-ripple {
+      background-color: transparent !important;
+    }
+
+    // Remove any focus indicators that might be dark
+    .mat-mdc-focus-indicator {
+      background-color: transparent !important;
+
+      &:focus {
+        background-color: rgba(115, 103, 240, 0.1) !important;
+      }
+    }
+
+    // Override any ng-tns classes that might have dark styling
+    .ng-tns-c1923052698-4 {
+      background-color: #ffffff !important;
+    }
+  }
+
+  // Global overrides for Material menu components to ensure light theme
+  .mat-mdc-menu-panel {
+    background-color: #ffffff !important;
+    overflow-x: hidden !important;
+
+    .mat-mdc-menu-content {
+      background-color: #ffffff !important;
+      overflow-x: hidden !important;
+    }
+
+    .mat-mdc-menu-item {
+      background-color: #ffffff !important;
+
+      .mat-mdc-menu-item-text {
+        background-color: transparent !important;
+      }
+
+      .mat-ripple {
+        background-color: transparent !important;
+      }
+    }
   }
 }

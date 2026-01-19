@@ -1,0 +1,144 @@
+/**
+ * Network Status Component Styles
+ */
+
+.network-status {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+
+    .status-button {
+        position: relative;
+
+        .online-icon {
+            color: #4CAF50; // Green for online
+        }
+
+        .offline-icon {
+            color: #F44336; // Red for offline
+        }
+
+        .sync-spinner {
+            color: #FF9800; // Orange for syncing
+        }
+
+        .badge-container {
+            position: absolute;
+            top: 0;
+            right: 0;
+        }
+    }
+
+    .status-text {
+        font-size: 12px;
+        font-weight: 500;
+        white-space: nowrap;
+    }
+
+    // Status-specific styling
+    &.online {
+        .status-text {
+            color: #4CAF50;
+        }
+    }
+
+    &.offline {
+        .status-text {
+            color: #F44336;
+        }
+    }
+
+    &.syncing {
+        .status-text {
+            color: #FF9800;
+        }
+    }
+
+    &.pending {
+        .status-text {
+            color: #FF9800;
+        }
+
+        .status-button {
+            animation: pulse 2s infinite;
+        }
+    }
+
+    &.unknown {
+        .status-text {
+            color: #9E9E9E;
+        }
+    }
+}
+
+// Pulse animation for pending operations
+@keyframes pulse {
+    0% {
+        opacity: 1;
+    }
+
+    50% {
+        opacity: 0.7;
+    }
+
+    100% {
+        opacity: 1;
+    }
+}
+
+// Responsive design
+@media (max-width: 768px) {
+    .network-status {
+        .status-text {
+            display: none;
+        }
+    }
+}
+
+// High contrast mode support
+@media (prefers-contrast: high) {
+    .network-status {
+        .status-button {
+            .online-icon {
+                color: #000;
+            }
+
+            .offline-icon {
+                color: #000;
+            }
+        }
+
+        &.online .status-text {
+            color: #000;
+        }
+
+        &.offline .status-text {
+            color: #000;
+        }
+
+        &.syncing .status-text {
+            color: #000;
+        }
+
+        &.pending .status-text {
+            color: #000;
+        }
+    }
+}
+
+// Reduced motion support
+@media (prefers-reduced-motion: reduce) {
+    .network-status {
+        &.pending .status-button {
+            animation: none;
+        }
+    }
+
+    @keyframes pulse {
+
+        0%,
+        100% {
+            opacity: 1;
+        }
+    }
+}

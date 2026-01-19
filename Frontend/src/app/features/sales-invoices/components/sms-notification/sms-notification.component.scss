@@ -1,0 +1,412 @@
+/**
+ * SMS Notification Component Styles
+ * Following Vuexy theme patterns and Material Design principles
+ */
+
+.sms-notification-dialog {
+    width: 100%;
+    max-width: 800px;
+    max-height: 90vh;
+    display: flex;
+    flex-direction: column;
+}
+
+/* Dialog Header */
+.dialog-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 20px 24px 0;
+    border-bottom: 1px solid var(--mat-divider);
+    margin-bottom: 0;
+
+    h2 {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        margin: 0;
+        font-size: 24px;
+        font-weight: 600;
+        color: var(--mat-primary-500);
+
+        mat-icon {
+            font-size: 28px;
+            width: 28px;
+            height: 28px;
+        }
+    }
+}
+
+/* Dialog Content */
+.dialog-content {
+    padding: 24px;
+    flex: 1;
+    overflow-y: auto;
+}
+
+.sms-form {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+
+/* Invoice Information Card */
+.invoice-info-card {
+    background: var(--mat-primary-50);
+    border: 1px solid var(--mat-primary-100);
+    border-radius: 12px;
+
+    .mat-mdc-card-content {
+        padding: 16px;
+    }
+}
+
+.invoice-details {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 12px;
+
+    .detail-item {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 8px 0;
+
+        .label {
+            font-weight: 500;
+            color: var(--mat-text-secondary);
+        }
+
+        .value {
+            font-weight: 600;
+            color: var(--mat-text-primary);
+        }
+    }
+}
+
+/* SMS Tabs */
+.sms-tabs {
+    .mat-mdc-tab-group {
+        border-radius: 12px;
+        overflow: hidden;
+    }
+
+    .mat-mdc-tab-header {
+        background: var(--mat-surface);
+        border-bottom: 1px solid var(--mat-divider);
+    }
+
+    .tab-content {
+        padding: 24px;
+        min-height: 400px;
+    }
+}
+
+/* Form Fields */
+.full-width {
+    width: 100%;
+}
+
+.message-field {
+    .mat-mdc-form-field-wrapper {
+        .mat-mdc-form-field-flex {
+            align-items: flex-start;
+        }
+    }
+
+    textarea {
+        resize: vertical;
+        min-height: 120px;
+    }
+}
+
+.schedule-field,
+.template-name-field {
+    margin-top: 12px;
+    width: 100%;
+}
+
+/* Variables Section */
+.variables-section {
+    margin: 16px 0;
+
+    .variables-label {
+        display: block;
+        font-size: 14px;
+        font-weight: 500;
+        color: var(--mat-text-secondary);
+        margin-bottom: 8px;
+    }
+
+    .variables-chips {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+
+        .variable-chip {
+            cursor: pointer;
+            transition: all 0.2s ease;
+            background-color: var(--mat-primary-100);
+            color: var(--mat-primary-700);
+
+            &:hover {
+                background-color: var(--mat-primary-200);
+                transform: translateY(-1px);
+            }
+        }
+    }
+}
+
+/* Options Section */
+.options-section {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    margin-top: 20px;
+
+    .mat-mdc-checkbox {
+        margin-bottom: 8px;
+    }
+}
+
+/* Preview Card */
+.preview-card {
+    border-radius: 12px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+
+    .mat-mdc-card-header {
+        background: var(--mat-surface-variant);
+        border-radius: 12px 12px 0 0;
+    }
+}
+
+.message-preview {
+    display: flex;
+    justify-content: center;
+    margin-bottom: 24px;
+
+    .phone-mockup {
+        width: 280px;
+        background: #000;
+        border-radius: 20px;
+        padding: 20px 16px;
+        color: white;
+        font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+
+        .phone-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 16px;
+            font-size: 12px;
+            opacity: 0.8;
+
+            .sender {
+                font-weight: 600;
+            }
+        }
+
+        .message-bubble {
+            background: #007AFF;
+            border-radius: 18px;
+            padding: 12px 16px;
+            font-size: 14px;
+            line-height: 1.4;
+            word-wrap: break-word;
+            margin-left: auto;
+            margin-right: 0;
+            max-width: 85%;
+            text-align: left;
+        }
+    }
+}
+
+.preview-stats {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+    gap: 16px;
+    padding: 16px;
+    background: var(--mat-surface-variant);
+    border-radius: 8px;
+
+    .stat-item {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+
+        .stat-label {
+            font-size: 14px;
+            color: var(--mat-text-secondary);
+        }
+
+        .stat-value {
+            font-weight: 600;
+            color: var(--mat-text-primary);
+        }
+    }
+}
+
+/* Delivery Status Card */
+.delivery-status-card {
+    border-radius: 12px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+
+    .delivery-info {
+        p {
+            margin-bottom: 12px;
+            color: var(--mat-text-secondary);
+        }
+
+        ul {
+            margin: 16px 0;
+            padding-left: 20px;
+
+            li {
+                margin-bottom: 8px;
+                color: var(--mat-text-secondary);
+            }
+        }
+    }
+}
+
+/* Dialog Actions */
+.dialog-actions {
+    padding: 16px 24px;
+    border-top: 1px solid var(--mat-divider);
+    display: flex;
+    justify-content: flex-end;
+    gap: 12px;
+
+    button {
+        min-width: 100px;
+
+        &.mat-mdc-raised-button {
+            .mat-mdc-button-persistent-ripple {
+                border-radius: 8px;
+            }
+
+            mat-spinner {
+                margin-right: 8px;
+            }
+
+            mat-icon {
+                margin-right: 4px;
+            }
+        }
+    }
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+    .sms-notification-dialog {
+        max-width: 95vw;
+        max-height: 95vh;
+    }
+
+    .dialog-header {
+        padding: 16px 20px 0;
+
+        h2 {
+            font-size: 20px;
+
+            mat-icon {
+                font-size: 24px;
+                width: 24px;
+                height: 24px;
+            }
+        }
+    }
+
+    .dialog-content {
+        padding: 20px;
+    }
+
+    .invoice-details {
+        grid-template-columns: 1fr;
+        gap: 8px;
+
+        .detail-item {
+            flex-direction: column;
+            align-items: flex-start;
+            gap: 4px;
+        }
+    }
+
+    .tab-content {
+        padding: 16px;
+        min-height: 300px;
+    }
+
+    .variables-chips {
+        .variable-chip {
+            font-size: 12px;
+        }
+    }
+
+    .phone-mockup {
+        width: 240px !important;
+        padding: 16px 12px !important;
+
+        .message-bubble {
+            font-size: 13px;
+            padding: 10px 14px;
+        }
+    }
+
+    .preview-stats {
+        grid-template-columns: 1fr;
+        gap: 12px;
+    }
+
+    .dialog-actions {
+        padding: 12px 20px;
+        flex-direction: column-reverse;
+
+        button {
+            width: 100%;
+        }
+    }
+}
+
+/* Material Form Field Customization */
+.mat-mdc-form-field {
+    .mat-mdc-text-field-wrapper {
+        border-radius: 8px;
+    }
+
+    &.mat-form-field-appearance-outline {
+        .mat-mdc-form-field-outline {
+            border-radius: 8px;
+        }
+    }
+}
+
+/* Snackbar Styles */
+::ng-deep {
+    .success-snackbar {
+        background-color: var(--mat-success-500) !important;
+        color: white !important;
+    }
+
+    .error-snackbar {
+        background-color: var(--mat-error-500) !important;
+        color: white !important;
+    }
+}
+
+/* Tab Content Animation */
+.tab-content {
+    animation: fadeIn 0.3s ease-in-out;
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(10px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}

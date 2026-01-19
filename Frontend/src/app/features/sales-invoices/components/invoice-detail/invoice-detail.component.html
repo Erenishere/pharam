@@ -1,0 +1,892 @@
+<div class="invoice-detail-container" *ngIf="invoice$ | async as invoice">
+  <!-- Header Section -->
+  <div class="detail-header">
+    <div class="header-content">
+      <div class="title-section">
+        <button mat-icon-button (click)="goBack()" class="back-button">
+          <mat-icon>arrow_back</mat-icon>
+        </button>
+        <div class="title-info">
+          <h2 class="invoice-title">Invoice {{ invoice.invoiceNumber }}</h2>
+          <div class="status-chips">
+            <mat-chip-set>
+              <mat-chip [color]="getStatusColor(invoice.status)" selected>
+                <mat-icon matChipAvatar>{{ invoice.status === InvoiceStatus.CONFIRMED ? 'check_circle' : 
+                  invoice.status === InvoiceStatus.CANCELLED ? 'cancel' : 'edit' }}</mat-icon>
+                {{ invoice.status | titlecase }}
+              </mat-chip>
+              <mat-chip [color]="getPaymentStatusColor(invoice.payment.paymentStatus)" selected>
+                <mat-icon matChipAvatar>{{ invoice.payment.paymentStatus === PaymentStatus.PAID ? 'paid' : 
+                  invoice.payment.paymentStatus === PaymentStatus.PARTIAL ? 'schedule' : 'pending' }}</mat-icon>
+                {{ invoice.payment.paymentStatus | titlecase }}
+              </mat-chip>
+            </mat-chip-set>
+          </div>
+        </div>
+      </div>
+
+      <!-- Action Buttons -->
+      <div class="header-actions">
+        <!-- Primary Actions -->
+        <div class="primary-actions">
+          <button mat-raised-button 
+                  color="primary" 
+                  (click)="editInvoice()" 
+                  [disabled]="!canEditInvoice() || actionLoading"
+                  *ngIf="canEditInvoice()">
+            <mat-icon>edit</mat-icon>
+            Edit Invoice
+          </button>
+
+          <button mat-raised-button 
+                  color="primary" 
+                  (click)="confirmInvoice()" 
+                  [disabled]="!canConfirmInvoice() || actionLoading"
+                  *ngIf="canConfirmInvoice()">
+            <mat-icon>check_circle</mat-icon>
+            Confirm Invoice
+          </button>
+
+          <button mat-raised-button 
+                  color="accent" 
+                  (click)="managePayment()" 
+                  [disabled]="!canManageInvoicePayments() || actionLoading"
+                  *ngIf="canManageInvoicePayments()">
+            <mat-icon>payment</mat-icon>
+            Record Payment
+          </button>
+        </div>
+
+        <!-- Secondary Actions -->
+        <div class="secondary-actions">
+          <button mat-button (click)="refreshData()" [disabled]="loading || actionLoading">
+            <mat-icon>refresh</mat-icon>
+            Refresh
+          </button>
+
+          <!-- Print & Export Menu -->
+          <button mat-button [matMenuTriggerFor]="printMenu" [disabled]="!canPrint && !canExport">
+            <mat-icon>print</mat-icon>
+            Print/Export
+          </button>
+          <mat-menu #printMenu="matMenu">
+            <button mat-menu-item (click)="printInvoice()" [disabled]="!canPrint || actionLoading">
+              <mat-icon>print</mat-icon>
+              Print Invoice
+            </button>
+            <button mat-menu-item (click)="exportInvoicePDF()" [disabled]="!canExport || actionLoading">
+              <mat-icon>picture_as_pdf</mat-icon>
+              Export PDF
+            </button>
+          </mat-menu>
+
+          <!-- More Actions Menu -->
+          <button mat-button [matMenuTriggerFor]="moreActionsMenu">
+            <mat-icon>more_vert</mat-icon>
+            More
+          </button>
+          <mat-menu #moreActionsMenu="matMenu">
+            <button mat-menu-item 
+                    (click)="cancelInvoice()" 
+                    [disabled]="!canCancelInvoice() || actionLoading"
+                    *ngIf="canCancelInvoice()">
+              <mat-icon>cancel</mat-icon>
+              Cancel Invoice
+            </button>
+            <mat-divider *ngIf="canCancelInvoice()"></mat-divider>
+            <button mat-menu-item 
+                    (click)="sendSMSNotification()" 
+                    [disabled]="!invoice.customer?.phone || actionLoading">
+              <mat-icon>sms</mat-icon>
+              Send SMS Notification
+            </button>
+            <button mat-menu-item 
+                    (click)="viewRelatedDocuments()" 
+                    [disabled]="actionLoading">
+              <mat-icon>folder_open</mat-icon>
+              Related Documents
+            </button>
+          </mat-menu>
+        </div>
+      </div>
+    </div>
+
+    <!-- Loading Indicator -->
+    <mat-progress-spinner *ngIf="actionLoading" diameter="24" mode="indeterminate" class="action-spinner"></mat-progress-spinner>
+  </div>
+
+  <!-- Main Content with Tabs -->
+  <mat-tab-group class="invoice-tabs" animationDuration="300ms">
+    
+    <!-- Details Tab -->
+    <mat-tab label="Details">
+      <ng-template matTabContent>
+        <div class="tab-content">
+          <div class="details-grid">
+            
+            <!-- Invoice Information Card -->
+            <mat-card class="info-card">
+              <mat-card-header>
+                <mat-card-title>
+                  <mat-icon>receipt_long</mat-icon>
+                  Invoice Information
+                </mat-card-title>
+              </mat-card-header>
+              <mat-card-content>
+                <div class="info-grid">
+                  <div class="info-item">
+                    <label>Invoice Number:</label>
+                    <span class="value">{{ invoice.invoiceNumber }}</span>
+                  </div>
+                  <div class="info-item">
+                    <label>Invoice Date:</label>
+                    <span class="value">{{ formatDate(invoice.invoiceDate) }}</span>
+                  </div>
+                  <div class="info-item">
+                    <label>Due Date:</label>
+                    <span class="value">{{ formatDate(invoice.dueDate) }}</span>
+                  </div>
+                  <div class="info-item">
+                    <label>Status:</label>
+                    <mat-chip [color]="getStatusColor(invoice.status)" selected>
+                      {{ invoice.status | titlecase }}
+                    </mat-chip>
+                  </div>
+                  <div class="info-item">
+                    <label>Created By:</label>
+                    <span class="value">{{ invoice.createdBy }}</span>
+                  </div>
+                  <div class="info-item">
+                    <label>Created At:</label>
+                    <span class="value">{{ formatDateTime(invoice.createdAt) }}</span>
+                  </div>
+                </div>
+              </mat-card-content>
+            </mat-card>
+
+            <!-- Customer Information Card -->
+            <mat-card class="info-card" *ngIf="invoice.customer">
+              <mat-card-header>
+                <mat-card-title>
+                  <mat-icon>business</mat-icon>
+                  Customer Information
+                </mat-card-title>
+              </mat-card-header>
+              <mat-card-content>
+                <div class="info-grid">
+                  <div class="info-item">
+                    <label>Customer Name:</label>
+                    <span class="value">{{ invoice.customer.name }}</span>
+                  </div>
+                  <div class="info-item">
+                    <label>Customer Code:</label>
+                    <span class="value">{{ invoice.customer.code }}</span>
+                  </div>
+                  <div class="info-item" *ngIf="invoice.customer.email">
+                    <label>Email:</label>
+                    <span class="value">{{ invoice.customer.email }}</span>
+                  </div>
+                  <div class="info-item" *ngIf="invoice.customer.phone">
+                    <label>Phone:</label>
+                    <span class="value">{{ invoice.customer.phone }}</span>
+                  </div>
+                  <div class="info-item" *ngIf="invoice.customer.address">
+                    <label>Address:</label>
+                    <span class="value">{{ invoice.customer.address }}</span>
+                  </div>
+                  <div class="info-item">
+                    <label>Credit Limit:</label>
+                    <span class="value">{{ formatCurrency(invoice.customer.creditLimit || 0) }}</span>
+                  </div>
+                </div>
+              </mat-card-content>
+            </mat-card>
+
+            <!-- Warehouse & Salesman Information Card -->
+            <mat-card class="info-card">
+              <mat-card-header>
+                <mat-card-title>
+                  <mat-icon>store</mat-icon>
+                  Warehouse & Sales Information
+                </mat-card-title>
+              </mat-card-header>
+              <mat-card-content>
+                <div class="info-grid">
+                  <div class="info-item" *ngIf="invoice.warehouse">
+                    <label>Warehouse:</label>
+                    <span class="value">{{ invoice.warehouse.name }} ({{ invoice.warehouse.code }})</span>
+                  </div>
+                  <div class="info-item" *ngIf="invoice.salesman">
+                    <label>Salesman:</label>
+                    <span class="value">{{ invoice.salesman.name }} ({{ invoice.salesman.code }})</span>
+                  </div>
+                  <div class="info-item" *ngIf="invoice.notes">
+                    <label>Notes:</label>
+                    <span class="value">{{ invoice.notes }}</span>
+                  </div>
+                </div>
+              </mat-card-content>
+            </mat-card>
+
+            <!-- Payment Information Card -->
+            <mat-card class="info-card">
+              <mat-card-header>
+                <mat-card-title>
+                  <mat-icon>payment</mat-icon>
+                  Payment Information
+                </mat-card-title>
+              </mat-card-header>
+              <mat-card-content>
+                <div class="info-grid">
+                  <div class="info-item">
+                    <label>Payment Status:</label>
+                    <mat-chip [color]="getPaymentStatusColor(invoice.payment.paymentStatus)" selected>
+                      {{ invoice.payment.paymentStatus | titlecase }}
+                    </mat-chip>
+                  </div>
+                  <div class="info-item">
+                    <label>Paid Amount:</label>
+                    <span class="value">{{ formatCurrency(invoice.payment.paidAmount) }}</span>
+                  </div>
+                  <div class="info-item">
+                    <label>Remaining Amount:</label>
+                    <span class="value">{{ formatCurrency(invoice.payment.remainingAmount) }}</span>
+                  </div>
+                  <div class="info-item">
+                    <label>Previous Balance:</label>
+                    <span class="value">{{ formatCurrency(invoice.previousBalance) }}</span>
+                  </div>
+                  <div class="info-item">
+                    <label>Total Balance:</label>
+                    <span class="value total-balance">{{ formatCurrency(invoice.totalBalance) }}</span>
+                  </div>
+                  <div class="info-item" *ngIf="invoice.creditLimitExceeded">
+                    <label>Credit Status:</label>
+                    <mat-chip color="warn" selected>
+                      <mat-icon matChipAvatar>warning</mat-icon>
+                      Credit Limit Exceeded
+                    </mat-chip>
+                  </div>
+                </div>
+              </mat-card-content>
+            </mat-card>
+
+            <!-- Totals Card -->
+            <mat-card class="totals-card">
+              <mat-card-header>
+                <mat-card-title>
+                  <mat-icon>calculate</mat-icon>
+                  Invoice Totals
+                </mat-card-title>
+              </mat-card-header>
+              <mat-card-content>
+                <div class="totals-grid">
+                  <div class="total-item">
+                    <label>Subtotal:</label>
+                    <span class="value">{{ formatCurrency(invoice.totals.subtotal) }}</span>
+                  </div>
+                  <div class="total-item">
+                    <label>Discount:</label>
+                    <span class="value">{{ formatCurrency(invoice.totals.discountAmount) }}</span>
+                  </div>
+                  <div class="total-item">
+                    <label>Taxable Amount:</label>
+                    <span class="value">{{ formatCurrency(invoice.totals.taxableAmount) }}</span>
+                  </div>
+                  <div class="total-item">
+                    <label>GST Amount:</label>
+                    <span class="value">{{ formatCurrency(invoice.totals.gstAmount) }}</span>
+                  </div>
+                  <div class="total-item">
+                    <label>WHT Amount:</label>
+                    <span class="value">{{ formatCurrency(invoice.totals.whtAmount) }}</span>
+                  </div>
+                  <mat-divider></mat-divider>
+                  <div class="total-item grand-total">
+                    <label>Grand Total:</label>
+                    <span class="value">{{ formatCurrency(invoice.totals.grandTotal) }}</span>
+                  </div>
+                </div>
+              </mat-card-content>
+            </mat-card>
+          </div>
+        </div>
+      </ng-template>
+    </mat-tab>
+
+    <!-- Items Tab -->
+    <mat-tab>
+      <ng-template mat-tab-label>
+        <span>Items ({{ invoice.items.length }})</span>
+      </ng-template>
+      <ng-template matTabContent>
+        <div class="tab-content">
+          <mat-card class="items-card">
+            <mat-card-header>
+              <mat-card-title>
+                <mat-icon>inventory</mat-icon>
+                Invoice Items ({{ invoice.items.length }})
+              </mat-card-title>
+            </mat-card-header>
+            <mat-card-content>
+              <div class="table-container">
+                <table mat-table [dataSource]="invoice.items" class="items-table">
+                  
+                  <!-- Item Column -->
+                  <ng-container matColumnDef="item">
+                    <th mat-header-cell *matHeaderCellDef>Item</th>
+                    <td mat-cell *matCellDef="let item">
+                      <div class="item-info">
+                        <div class="item-name">{{ item.item?.name || 'Unknown Item' }}</div>
+                        <div class="item-code">{{ item.item?.code }}</div>
+                        <div class="item-batch" *ngIf="item.batchInfo">
+                          Batch: {{ item.batchInfo.batchNumber }}
+                          <span *ngIf="item.batchInfo.expiryDate"> | Exp: {{ formatDate(item.batchInfo.expiryDate) }}</span>
+                        </div>
+                      </div>
+                    </td>
+                  </ng-container>
+
+                  <!-- Quantity Column -->
+                  <ng-container matColumnDef="quantity">
+                    <th mat-header-cell *matHeaderCellDef>Quantity</th>
+                    <td mat-cell *matCellDef="let item">
+                      <div class="quantity-info">
+                        <span class="quantity">{{ item.quantity }}</span>
+                        <span class="unit">{{ item.item?.unit }}</span>
+                      </div>
+                    </td>
+                  </ng-container>
+
+                  <!-- Unit Price Column -->
+                  <ng-container matColumnDef="unitPrice">
+                    <th mat-header-cell *matHeaderCellDef>Unit Price</th>
+                    <td mat-cell *matCellDef="let item">
+                      {{ formatCurrency(item.unitPrice) }}
+                    </td>
+                  </ng-container>
+
+                  <!-- Discount Column -->
+                  <ng-container matColumnDef="discount">
+                    <th mat-header-cell *matHeaderCellDef>Discount</th>
+                    <td mat-cell *matCellDef="let item">
+                      <div class="discount-info" *ngIf="item.discount > 0">
+                        <span class="discount-value">{{ item.discount }}</span>
+                        <span class="discount-type">{{ item.discountType === 'percentage' ? '%' : 'PKR' }}</span>
+                      </div>
+                      <span *ngIf="item.discount === 0">-</span>
+                    </td>
+                  </ng-container>
+
+                  <!-- Tax Amount Column -->
+                  <ng-container matColumnDef="taxAmount">
+                    <th mat-header-cell *matHeaderCellDef>Tax</th>
+                    <td mat-cell *matCellDef="let item">
+                      {{ formatCurrency(item.taxAmount) }}
+                    </td>
+                  </ng-container>
+
+                  <!-- Total Amount Column -->
+                  <ng-container matColumnDef="totalAmount">
+                    <th mat-header-cell *matHeaderCellDef>Total</th>
+                    <td mat-cell *matCellDef="let item" class="total-cell">
+                      {{ formatCurrency(item.totalAmount) }}
+                    </td>
+                  </ng-container>
+
+                  <tr mat-header-row *matHeaderRowDef="itemColumns"></tr>
+                  <tr mat-row *matRowDef="let row; columns: itemColumns;"></tr>
+                </table>
+              </div>
+            </mat-card-content>
+          </mat-card>
+        </div>
+      </ng-template>
+    </mat-tab>
+
+    <!-- History Tab -->
+    <mat-tab>
+      <ng-template mat-tab-label>
+        <span>History & Audit Trail ({{ auditTrail.length }})</span>
+      </ng-template>
+      <ng-template matTabContent>
+        <div class="tab-content">
+          
+          <!-- Comprehensive Audit Trail -->
+          <mat-card class="audit-trail-card">
+            <mat-card-header>
+              <mat-card-title>
+                <mat-icon>timeline</mat-icon>
+                Complete Audit Trail
+              </mat-card-title>
+              <mat-card-subtitle>
+                Comprehensive history of all invoice activities and changes
+              </mat-card-subtitle>
+            </mat-card-header>
+            <mat-card-content>
+              <div class="audit-timeline" *ngIf="auditTrail.length > 0; else noAuditTrail">
+                <div class="audit-entry" *ngFor="let audit of auditTrail; trackBy: trackAuditItem">
+                  <div class="audit-icon">
+                    <mat-icon [color]="getAuditEventColor(audit.eventType)">
+                      {{ getAuditEventIcon(audit.eventType) }}
+                    </mat-icon>
+                  </div>
+                  <div class="audit-content">
+                    <div class="audit-header">
+                      <div class="audit-event">
+                        <span class="event-name">{{ audit.event }}</span>
+                        <mat-chip [color]="getAuditEventColor(audit.eventType)" selected size="small">
+                          {{ audit.eventType.replace('_', ' ') | titlecase }}
+                        </mat-chip>
+                      </div>
+                      <div class="audit-timestamp">
+                        {{ formatDateTime(audit.timestamp) }}
+                      </div>
+                    </div>
+                    <div class="audit-details">
+                      <div class="audit-user">
+                        <mat-icon>person</mat-icon>
+                        <span>{{ audit.user }}</span>
+                      </div>
+                      <div class="audit-changes" *ngIf="audit.changes">
+                        <div class="change-item" *ngIf="audit.changes.status">
+                          <mat-icon>swap_horiz</mat-icon>
+                          <span>Status: 
+                            <span class="status-from" *ngIf="audit.changes.status.from">{{ audit.changes.status.from | titlecase }}</span>
+                            <mat-icon *ngIf="audit.changes.status.from">arrow_forward</mat-icon>
+                            <span class="status-to">{{ audit.changes.status.to | titlecase }}</span>
+                          </span>
+                        </div>
+                        <div class="change-item" *ngIf="audit.changes.payment">
+                          <mat-icon>payment</mat-icon>
+                          <span>Payment: {{ formatCurrency(audit.changes.payment.amount) }} via {{ audit.changes.payment.method | titlecase }}</span>
+                          <span *ngIf="audit.changes.payment.reference" class="reference">
+                            (Ref: {{ audit.changes.payment.reference }})
+                          </span>
+                        </div>
+                        <div class="change-item" *ngIf="audit.changes.stock">
+                          <mat-icon>inventory_2</mat-icon>
+                          <span>Stock: {{ audit.changes.stock.quantity }} {{ audit.changes.stock.item }} from {{ audit.changes.stock.warehouse }}</span>
+                          <span *ngIf="audit.changes.stock.batch" class="batch-info">
+                            (Batch: {{ audit.changes.stock.batch }})
+                          </span>
+                        </div>
+                      </div>
+                      <div class="audit-impact">
+                        <mat-icon>info</mat-icon>
+                        <span>{{ audit.impact }}</span>
+                      </div>
+                      <div class="audit-reason" *ngIf="audit.reason">
+                        <mat-icon>comment</mat-icon>
+                        <span><strong>Reason:</strong> {{ audit.reason }}</span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <ng-template #noAuditTrail>
+                <div class="no-data">
+                  <mat-icon>timeline</mat-icon>
+                  <p>No audit trail available</p>
+                </div>
+              </ng-template>
+            </mat-card-content>
+          </mat-card>
+
+          <!-- Related Documents -->
+          <mat-card class="related-documents-card" *ngIf="relatedDocuments.length > 0">
+            <mat-card-header>
+              <mat-card-title>
+                <mat-icon>folder_open</mat-icon>
+                Related Documents ({{ relatedDocuments.length }})
+              </mat-card-title>
+              <mat-card-subtitle>
+                Documents associated with this invoice
+              </mat-card-subtitle>
+            </mat-card-header>
+            <mat-card-content>
+              <div class="table-container">
+                <table mat-table [dataSource]="relatedDocuments" class="documents-table">
+                  
+                  <!-- Type Column -->
+                  <ng-container matColumnDef="type">
+                    <th mat-header-cell *matHeaderCellDef>Document Type</th>
+                    <td mat-cell *matCellDef="let document">
+                      <div class="document-type">
+                        <mat-icon>{{ getDocumentIcon(document.type) }}</mat-icon>
+                        <span>{{ document.type }}</span>
+                      </div>
+                    </td>
+                  </ng-container>
+
+                  <!-- Reference Column -->
+                  <ng-container matColumnDef="reference">
+                    <th mat-header-cell *matHeaderCellDef>Reference</th>
+                    <td mat-cell *matCellDef="let document">
+                      <div class="document-reference">
+                        <span class="reference-number">{{ document.reference }}</span>
+                        <div class="document-description">{{ document.description }}</div>
+                      </div>
+                    </td>
+                  </ng-container>
+
+                  <!-- Date Column -->
+                  <ng-container matColumnDef="date">
+                    <th mat-header-cell *matHeaderCellDef>Date</th>
+                    <td mat-cell *matCellDef="let document">
+                      {{ formatDate(document.date) }}
+                    </td>
+                  </ng-container>
+
+                  <!-- Status Column -->
+                  <ng-container matColumnDef="status">
+                    <th mat-header-cell *matHeaderCellDef>Status</th>
+                    <td mat-cell *matCellDef="let document">
+                      <mat-chip [color]="getDocumentStatusColor(document.status)" selected>
+                        {{ document.status | titlecase }}
+                      </mat-chip>
+                    </td>
+                  </ng-container>
+
+                  <!-- Actions Column -->
+                  <ng-container matColumnDef="actions">
+                    <th mat-header-cell *matHeaderCellDef>Actions</th>
+                    <td mat-cell *matCellDef="let document">
+                      <div class="document-actions">
+                        <button mat-icon-button 
+                                (click)="viewRelatedDocument(document)"
+                                [disabled]="!document.canView || actionLoading"
+                                matTooltip="View Document">
+                          <mat-icon>visibility</mat-icon>
+                        </button>
+                        <button mat-icon-button 
+                                (click)="downloadRelatedDocument(document)"
+                                [disabled]="!document.canDownload || actionLoading"
+                                matTooltip="Download Document">
+                          <mat-icon>download</mat-icon>
+                        </button>
+                      </div>
+                    </td>
+                  </ng-container>
+
+                  <tr mat-header-row *matHeaderRowDef="relatedDocColumns"></tr>
+                  <tr mat-row *matRowDef="let row; columns: relatedDocColumns;"></tr>
+                </table>
+              </div>
+            </mat-card-content>
+          </mat-card>
+
+          <!-- Legacy History Table (for backward compatibility) -->
+          <mat-card class="history-card" *ngIf="invoice.history && invoice.history.length > 0">
+            <mat-card-header>
+              <mat-card-title>
+                <mat-icon>history</mat-icon>
+                Status Change History
+              </mat-card-title>
+              <mat-card-subtitle>
+                Traditional status change log
+              </mat-card-subtitle>
+            </mat-card-header>
+            <mat-card-content>
+              <div class="table-container">
+                <table mat-table [dataSource]="invoice.history" class="history-table">
+                  
+                  <!-- Date Column -->
+                  <ng-container matColumnDef="date">
+                    <th mat-header-cell *matHeaderCellDef>Date & Time</th>
+                    <td mat-cell *matCellDef="let history">
+                      {{ formatDateTime(history.performedAt) }}
+                    </td>
+                  </ng-container>
+
+                  <!-- Action Column -->
+                  <ng-container matColumnDef="action">
+                    <th mat-header-cell *matHeaderCellDef>Action</th>
+                    <td mat-cell *matCellDef="let history">
+                      <div class="action-info">
+                        <mat-chip color="primary" selected>{{ history.action }}</mat-chip>
+                        <div class="status-change" *ngIf="history.previousStatus && history.newStatus">
+                          {{ history.previousStatus | titlecase }} → {{ history.newStatus | titlecase }}
+                        </div>
+                      </div>
+                    </td>
+                  </ng-container>
+
+                  <!-- User Column -->
+                  <ng-container matColumnDef="user">
+                    <th mat-header-cell *matHeaderCellDef>Performed By</th>
+                    <td mat-cell *matCellDef="let history">
+                      {{ history.performedBy }}
+                    </td>
+                  </ng-container>
+
+                  <!-- Details Column -->
+                  <ng-container matColumnDef="details">
+                    <th mat-header-cell *matHeaderCellDef>Details</th>
+                    <td mat-cell *matCellDef="let history">
+                      <div class="details-info">
+                        <div *ngIf="history.reason" class="reason">
+                          <strong>Reason:</strong> {{ history.reason }}
+                        </div>
+                        <div *ngIf="history.details" class="additional-details">
+                          {{ history.details }}
+                        </div>
+                      </div>
+                    </td>
+                  </ng-container>
+
+                  <tr mat-header-row *matHeaderRowDef="historyColumns"></tr>
+                  <tr mat-row *matRowDef="let row; columns: historyColumns;"></tr>
+                </table>
+              </div>
+            </mat-card-content>
+          </mat-card>
+
+          <!-- Payment History Card -->
+          <mat-card class="payment-history-card" *ngIf="invoice.payment.paymentHistory && invoice.payment.paymentHistory.length > 0">
+            <mat-card-header>
+              <mat-card-title>
+                <mat-icon>payment</mat-icon>
+                Payment History & Balance Tracking
+              </mat-card-title>
+              <mat-card-subtitle>
+                Detailed payment records and remaining balance information
+              </mat-card-subtitle>
+            </mat-card-header>
+            <mat-card-content>
+              <!-- Payment Summary -->
+              <div class="payment-summary">
+                <div class="summary-item">
+                  <label>Total Invoice Amount:</label>
+                  <span class="value">{{ formatCurrency(invoice.totals.grandTotal) }}</span>
+                </div>
+                <div class="summary-item">
+                  <label>Total Paid:</label>
+                  <span class="value paid">{{ formatCurrency(invoice.payment.paidAmount) }}</span>
+                </div>
+                <div class="summary-item">
+                  <label>Remaining Balance:</label>
+                  <span class="value remaining">{{ formatCurrency(invoice.payment.remainingAmount) }}</span>
+                </div>
+                <div class="summary-item">
+                  <label>Payment Status:</label>
+                  <mat-chip [color]="getPaymentStatusColor(invoice.payment.paymentStatus)" selected>
+                    {{ invoice.payment.paymentStatus | titlecase }}
+                  </mat-chip>
+                </div>
+              </div>
+
+              <mat-divider></mat-divider>
+
+              <!-- Payment Records Table -->
+              <div class="table-container">
+                <table mat-table [dataSource]="invoice.payment.paymentHistory" class="payment-table">
+                  
+                  <!-- Date Column -->
+                  <ng-container matColumnDef="date">
+                    <th mat-header-cell *matHeaderCellDef>Payment Date</th>
+                    <td mat-cell *matCellDef="let payment">
+                      {{ formatDate(payment.paymentDate) }}
+                    </td>
+                  </ng-container>
+
+                  <!-- Amount Column -->
+                  <ng-container matColumnDef="amount">
+                    <th mat-header-cell *matHeaderCellDef>Amount</th>
+                    <td mat-cell *matCellDef="let payment" class="amount-cell">
+                      {{ formatCurrency(payment.amount) }}
+                    </td>
+                  </ng-container>
+
+                  <!-- Method Column -->
+                  <ng-container matColumnDef="method">
+                    <th mat-header-cell *matHeaderCellDef>Method</th>
+                    <td mat-cell *matCellDef="let payment">
+                      <mat-chip color="accent" selected>{{ payment.paymentMethod | titlecase }}</mat-chip>
+                    </td>
+                  </ng-container>
+
+                  <!-- Reference Column -->
+                  <ng-container matColumnDef="reference">
+                    <th mat-header-cell *matHeaderCellDef>Reference</th>
+                    <td mat-cell *matCellDef="let payment">
+                      {{ payment.reference || '-' }}
+                    </td>
+                  </ng-container>
+
+                  <!-- User Column -->
+                  <ng-container matColumnDef="user">
+                    <th mat-header-cell *matHeaderCellDef>Recorded By</th>
+                    <td mat-cell *matCellDef="let payment">
+                      {{ payment.createdBy }}
+                    </td>
+                  </ng-container>
+
+                  <tr mat-header-row *matHeaderRowDef="paymentColumns"></tr>
+                  <tr mat-row *matRowDef="let row; columns: paymentColumns;"></tr>
+                </table>
+              </div>
+            </mat-card-content>
+          </mat-card>
+        </div>
+      </ng-template>
+    </mat-tab>
+
+    <!-- Stock Movements Tab -->
+    <mat-tab [disabled]="invoice.status !== InvoiceStatus.CONFIRMED">
+      <ng-template mat-tab-label>
+        <span>Stock Movements ({{ stockMovements.length }})</span>
+      </ng-template>
+      <ng-template matTabContent>
+        <div class="tab-content">
+          <mat-card class="stock-movements-card">
+            <mat-card-header>
+              <mat-card-title>
+                <mat-icon>inventory_2</mat-icon>
+                Stock Movements
+              </mat-card-title>
+            </mat-card-header>
+            <mat-card-content>
+              <div class="table-container" *ngIf="stockMovements.length > 0; else noStockMovements">
+                <table mat-table [dataSource]="stockMovements" class="stock-table">
+                  
+                  <!-- Item Column -->
+                  <ng-container matColumnDef="item">
+                    <th mat-header-cell *matHeaderCellDef>Item</th>
+                    <td mat-cell *matCellDef="let movement">
+                      <div class="item-info">
+                        <div class="item-name">{{ movement.item?.name }}</div>
+                        <div class="item-code">{{ movement.item?.code }}</div>
+                      </div>
+                    </td>
+                  </ng-container>
+
+                  <!-- Quantity Column -->
+                  <ng-container matColumnDef="quantity">
+                    <th mat-header-cell *matHeaderCellDef>Quantity</th>
+                    <td mat-cell *matCellDef="let movement">
+                      <span class="quantity-out">-{{ movement.quantity }}</span>
+                      <span class="unit">{{ movement.item?.unit }}</span>
+                    </td>
+                  </ng-container>
+
+                  <!-- Warehouse Column -->
+                  <ng-container matColumnDef="warehouse">
+                    <th mat-header-cell *matHeaderCellDef>Warehouse</th>
+                    <td mat-cell *matCellDef="let movement">
+                      {{ movement.warehouse?.name }}
+                    </td>
+                  </ng-container>
+
+                  <!-- Batch Column -->
+                  <ng-container matColumnDef="batch">
+                    <th mat-header-cell *matHeaderCellDef>Batch</th>
+                    <td mat-cell *matCellDef="let movement">
+                      <div *ngIf="movement.batchInfo; else noBatch">
+                        <div>{{ movement.batchInfo.batchNumber }}</div>
+                        <div class="expiry-date">Exp: {{ formatDate(movement.batchInfo.expiryDate) }}</div>
+                      </div>
+                      <ng-template #noBatch>-</ng-template>
+                    </td>
+                  </ng-container>
+
+                  <!-- Date Column -->
+                  <ng-container matColumnDef="date">
+                    <th mat-header-cell *matHeaderCellDef>Movement Date</th>
+                    <td mat-cell *matCellDef="let movement">
+                      {{ formatDateTime(movement.createdAt) }}
+                    </td>
+                  </ng-container>
+
+                  <tr mat-header-row *matHeaderRowDef="stockMovementColumns"></tr>
+                  <tr mat-row *matRowDef="let row; columns: stockMovementColumns;"></tr>
+                </table>
+              </div>
+
+              <ng-template #noStockMovements>
+                <div class="no-data">
+                  <mat-icon>inventory_2</mat-icon>
+                  <p>No stock movements recorded</p>
+                  <small *ngIf="invoice.status !== InvoiceStatus.CONFIRMED">
+                    Stock movements are only available for confirmed invoices
+                  </small>
+                </div>
+              </ng-template>
+            </mat-card-content>
+          </mat-card>
+
+          <!-- Warranty Information Card -->
+          <mat-card class="warranty-card" *ngIf="warrantyInfo.length > 0">
+            <mat-card-header>
+              <mat-card-title>
+                <mat-icon>verified</mat-icon>
+                Warranty Information ({{ warrantyInfo.length }} items)
+              </mat-card-title>
+              <mat-card-subtitle>
+                Items with active warranty coverage
+              </mat-card-subtitle>
+            </mat-card-header>
+            <mat-card-content>
+              <div class="warranty-list">
+                <div class="warranty-item" *ngFor="let warranty of warrantyInfo; trackBy: trackWarrantyItem">
+                  <div class="warranty-header">
+                    <div class="item-info">
+                      <div class="item-name">{{ warranty.item?.name }}</div>
+                      <div class="item-code">{{ warranty.item?.code }}</div>
+                    </div>
+                    <mat-chip [color]="warranty.isActive ? 'primary' : 'warn'" selected>
+                      <mat-icon matChipAvatar>{{ warranty.isActive ? 'verified' : 'warning' }}</mat-icon>
+                      {{ warranty.isActive ? 'Active' : 'Expired' }}
+                    </mat-chip>
+                  </div>
+                  <div class="warranty-details">
+                    <div class="warranty-period">
+                      <mat-icon>schedule</mat-icon>
+                      <span>{{ warranty.warrantyPeriod }} months warranty period</span>
+                    </div>
+                    <div class="warranty-dates">
+                      <mat-icon>date_range</mat-icon>
+                      <span>{{ formatDate(warranty.warrantyStartDate) }} - {{ formatDate(warranty.warrantyEndDate) }}</span>
+                    </div>
+                    <div class="warranty-terms" *ngIf="warranty.warrantyTerms">
+                      <mat-icon>description</mat-icon>
+                      <span>{{ warranty.warrantyTerms }}</span>
+                    </div>
+                    <div class="warranty-actions" *ngIf="warranty.isActive">
+                      <button mat-stroked-button color="primary" size="small" (click)="viewWarrantyDetails(warranty)">
+                        <mat-icon>info</mat-icon>
+                        View Details
+                      </button>
+                      <button mat-stroked-button color="accent" size="small" (click)="createWarrantyClaim(warranty)">
+                        <mat-icon>support</mat-icon>
+                        Create Claim
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </mat-card-content>
+          </mat-card>
+        </div>
+      </ng-template>
+    </mat-tab>
+  </mat-tab-group>
+</div>
+
+<!-- Loading State -->
+<div class="loading-container" *ngIf="loading && !(invoice$ | async)">
+  <mat-spinner diameter="50"></mat-spinner>
+  <p>Loading invoice details...</p>
+</div>
+
+<!-- Error State -->
+<div class="error-container" *ngIf="!loading && !(invoice$ | async)">
+  <mat-icon>error_outline</mat-icon>
+  <h3>Invoice Not Found</h3>
+  <p>The requested invoice could not be found or you don't have permission to view it.</p>
+  <button mat-raised-button color="primary" (click)="goBack()">
+    <mat-icon>arrow_back</mat-icon>
+    Back to Invoice List
+  </button>
+</div>

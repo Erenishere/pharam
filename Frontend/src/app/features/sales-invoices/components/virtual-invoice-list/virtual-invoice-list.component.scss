@@ -1,0 +1,206 @@
+/**
+ * Virtual Invoice List Component Styles
+ */
+
+.virtual-scroll-viewport {
+    height: 600px; // Fixed height for virtual scrolling
+    width: 100%;
+
+    .invoice-card {
+        padding: 8px;
+
+        .invoice-card-content {
+            cursor: pointer;
+            transition: all 0.2s ease-in-out;
+
+            &:hover {
+                box-shadow: 0 4px 8px rgba(0, 0, 0, 0.12);
+                transform: translateY(-1px);
+            }
+
+            .card-header {
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+                margin-bottom: 8px;
+
+                .invoice-number {
+                    .invoice-link {
+                        color: #7367F0;
+                        text-decoration: none;
+                        font-weight: 500;
+
+                        &:hover {
+                            text-decoration: underline;
+                        }
+                    }
+                }
+
+                .status-chips {
+                    display: flex;
+                    gap: 4px;
+
+                    .status-chip,
+                    .payment-chip {
+                        font-size: 11px;
+                        min-height: 20px;
+
+                        &.status-draft {
+                            background-color: #FFA726;
+                            color: white;
+                        }
+
+                        &.status-confirmed {
+                            background-color: #66BB6A;
+                            color: white;
+                        }
+
+                        &.status-cancelled {
+                            background-color: #EF5350;
+                            color: white;
+                        }
+
+                        &.payment-pending {
+                            background-color: #FF7043;
+                            color: white;
+                        }
+
+                        &.payment-partial {
+                            background-color: #FFCA28;
+                            color: white;
+                        }
+
+                        &.payment-paid {
+                            background-color: #66BB6A;
+                            color: white;
+                        }
+                    }
+                }
+            }
+
+            .card-details {
+                .detail-row {
+                    display: flex;
+                    justify-content: space-between;
+                    margin-bottom: 4px;
+                    font-size: 14px;
+
+                    .label {
+                        color: #666;
+                        font-weight: 500;
+                    }
+
+                    .value {
+                        color: #333;
+
+                        &.amount {
+                            font-weight: 600;
+                            color: #7367F0;
+                        }
+
+                        &.overdue {
+                            color: #EF5350;
+                            font-weight: 500;
+                        }
+
+                        &.due-soon {
+                            color: #FF7043;
+                            font-weight: 500;
+                        }
+
+                        &.due-warning {
+                            color: #FFCA28;
+                            font-weight: 500;
+                        }
+
+                        &.normal {
+                            color: #333;
+                        }
+                    }
+                }
+            }
+
+            mat-card-actions {
+                padding: 8px 16px;
+                display: flex;
+                gap: 8px;
+
+                button {
+                    min-width: auto;
+                    padding: 0 8px;
+
+                    mat-icon {
+                        margin-right: 4px;
+                    }
+                }
+            }
+        }
+    }
+}
+
+// Responsive design
+@media (max-width: 768px) {
+    .virtual-scroll-viewport {
+        height: 500px;
+
+        .invoice-card {
+            padding: 4px;
+
+            .invoice-card-content {
+                .card-header {
+                    flex-direction: column;
+                    align-items: flex-start;
+                    gap: 8px;
+
+                    .status-chips {
+                        align-self: flex-end;
+                    }
+                }
+
+                .card-details {
+                    .detail-row {
+                        font-size: 13px;
+                    }
+                }
+
+                mat-card-actions {
+                    padding: 4px 8px;
+
+                    button {
+                        padding: 0 4px;
+                        font-size: 12px;
+
+                        mat-icon {
+                            font-size: 16px;
+                            width: 16px;
+                            height: 16px;
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
+
+// Performance optimizations
+.invoice-card-content {
+    // Use transform instead of changing layout properties
+    will-change: transform;
+
+    // Optimize repaints
+    backface-visibility: hidden;
+
+    // Use hardware acceleration for smooth animations
+    transform: translateZ(0);
+}
+
+// Reduce motion for users who prefer it
+@media (prefers-reduced-motion: reduce) {
+    .invoice-card-content {
+        transition: none;
+
+        &:hover {
+            transform: none;
+        }
+    }
+}

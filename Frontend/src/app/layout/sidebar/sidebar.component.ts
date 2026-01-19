@@ -87,10 +87,37 @@ import { takeUntil, filter } from 'rxjs/operators';
 
       <mat-divider></mat-divider>
 
-      <a mat-list-item routerLink="/sales-invoices" routerLinkActive="active">
-        <mat-icon matListItemIcon>receipt</mat-icon>
-        <span matListItemTitle>Sales Invoices</span>
-      </a>
+      <!-- Sales Invoices with Dropdown -->
+      <div class="sales-dropdown-container" [class.active]="isSalesRouteActive">
+        <div class="sales-main-item" (click)="toggleSalesDropdown()" 
+             [class.expanded]="isSalesDropdownOpen" [class.active]="isSalesRouteActive">
+          <mat-icon class="sales-icon">receipt</mat-icon>
+          <span class="sales-title">Sales Invoices</span>
+          <mat-icon class="dropdown-arrow" [class.rotated]="isSalesDropdownOpen">keyboard_arrow_right</mat-icon>
+        </div>
+        
+        <div class="sales-submenu" [class.open]="isSalesDropdownOpen">
+          <a mat-list-item routerLink="/sales-invoices/list" routerLinkActive="active" class="submenu-item">
+            <mat-icon matListItemIcon>list</mat-icon>
+            <span matListItemTitle>All Invoices</span>
+          </a>
+          
+          <a mat-list-item routerLink="/sales-invoices/create" routerLinkActive="active" class="submenu-item">
+            <mat-icon matListItemIcon>add</mat-icon>
+            <span matListItemTitle>Create Invoice</span>
+          </a>
+          
+          <a mat-list-item routerLink="/sales-invoices/statistics" routerLinkActive="active" class="submenu-item">
+            <mat-icon matListItemIcon>analytics</mat-icon>
+            <span matListItemTitle>Statistics</span>
+          </a>
+          
+          <a mat-list-item routerLink="/sales-invoices/estimates" routerLinkActive="active" class="submenu-item">
+            <mat-icon matListItemIcon>transform</mat-icon>
+            <span matListItemTitle>Convert Estimates</span>
+          </a>
+        </div>
+      </div>
 
       <a mat-list-item routerLink="/purchase-invoices" routerLinkActive="active">
         <mat-icon matListItemIcon>shopping_cart</mat-icon>
@@ -113,6 +140,8 @@ export class SidebarComponent implements OnInit, OnDestroy {
   isBatchSectionExpanded = false;
   isBatchRouteActive = false;
   isBatchDropdownOpen = false;
+  isSalesRouteActive = false;
+  isSalesDropdownOpen = false;
   private destroy$ = new Subject<void>();
 
   constructor(private router: Router) {
@@ -120,18 +149,18 @@ export class SidebarComponent implements OnInit, OnDestroy {
   }
 
   ngOnInit(): void {
-    // Listen to route changes to update batch section state
+    // Listen to route changes to update section states
     this.router.events
       .pipe(
         filter(event => event instanceof NavigationEnd),
         takeUntil(this.destroy$)
       )
       .subscribe((event: NavigationEnd) => {
-        this.updateBatchSectionState(event.url);
+        this.updateSectionStates(event.url);
       });
 
     // Initial check
-    this.updateBatchSectionState(this.router.url);
+    this.updateSectionStates(this.router.url);
   }
 
   ngOnDestroy(): void {
@@ -143,8 +172,17 @@ export class SidebarComponent implements OnInit, OnDestroy {
     this.isBatchDropdownOpen = !this.isBatchDropdownOpen;
   }
 
-  private updateBatchSectionState(url: string): void {
+  toggleSalesDropdown(): void {
+    this.isSalesDropdownOpen = !this.isSalesDropdownOpen;
+  }
+
+  private updateSectionStates(url: string): void {
+    // Update batch section state
     this.isBatchRouteActive = url.includes('/batches');
     this.isBatchDropdownOpen = this.isBatchRouteActive;
+
+    // Update sales section state
+    this.isSalesRouteActive = url.includes('/sales-invoices');
+    this.isSalesDropdownOpen = this.isSalesRouteActive;
   }
 }

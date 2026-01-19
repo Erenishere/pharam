@@ -1,0 +1,212 @@
+<!-- Estimate Conversion Component Template -->
+<div class="estimate-conversion-container">
+  <!-- Header Section -->
+  <div class="header-section">
+    <div class="title-section">
+      <h2 class="page-title">
+        <mat-icon>receipt_long</mat-icon>
+        Convert Estimates to Invoices
+      </h2>
+      <p class="page-subtitle">
+        Convert pending estimates to sales invoices. Expired estimates cannot be converted.
+      </p>
+    </div>
+    
+    <div class="action-buttons">
+      <button mat-stroked-button (click)="refresh()" [disabled]="isLoading">
+        <mat-icon>refresh</mat-icon>
+        Refresh
+      </button>
+    </div>
+  </div>
+
+  <!-- Filters Section -->
+  <mat-card class="filters-card">
+    <mat-card-content>
+      <form [formGroup]="filterForm" class="filters-form">
+        <div class="filter-row">
+          <!-- Search Filter -->
+          <mat-form-field appearance="outline" class="search-field">
+            <mat-label>Search estimates</mat-label>
+            <input matInput 
+                   formControlName="search" 
+                   placeholder="Search by estimate number or customer">
+            <mat-icon matSuffix>search</mat-icon>
+          </mat-form-field>
+
+          <!-- Status Filter -->
+          <mat-form-field appearance="outline">
+            <mat-label>Status</mat-label>
+            <mat-select formControlName="status">
+              <mat-option value="">All Statuses</mat-option>
+              <mat-option value="pending">Pending</mat-option>
+              <mat-option value="accepted">Accepted</mat-option>
+              <mat-option value="expired">Expired</mat-option>
+            </mat-select>
+          </mat-form-field>
+
+          <!-- Date From Filter -->
+          <mat-form-field appearance="outline">
+            <mat-label>Date From</mat-label>
+            <input matInput 
+                   [matDatepicker]="dateFromPicker" 
+                   formControlName="dateFrom">
+            <mat-datepicker-toggle matSuffix [for]="dateFromPicker"></mat-datepicker-toggle>
+            <mat-datepicker #dateFromPicker></mat-datepicker>
+          </mat-form-field>
+
+          <!-- Date To Filter -->
+          <mat-form-field appearance="outline">
+            <mat-label>Date To</mat-label>
+            <input matInput 
+                   [matDatepicker]="dateToPicker" 
+                   formControlName="dateTo">
+            <mat-datepicker-toggle matSuffix [for]="dateToPicker"></mat-datepicker-toggle>
+            <mat-datepicker #dateToPicker></mat-datepicker>
+          </mat-form-field>
+
+          <!-- Clear Filters Button -->
+          <button mat-stroked-button 
+                  type="button" 
+                  (click)="clearFilters()"
+                  class="clear-filters-btn">
+            <mat-icon>clear</mat-icon>
+            Clear
+          </button>
+        </div>
+      </form>
+    </mat-card-content>
+  </mat-card>
+
+  <!-- Results Section -->
+  <mat-card class="results-card">
+    <mat-card-content>
+      <!-- Loading Spinner -->
+      <div *ngIf="isLoading" class="loading-container">
+        <mat-spinner diameter="50"></mat-spinner>
+        <p>Loading estimates...</p>
+      </div>
+
+      <!-- Estimates Table -->
+      <div *ngIf="!isLoading" class="table-container">
+        <!-- No Data Message -->
+        <div *ngIf="dataSource.data.length === 0" class="no-data-container">
+          <mat-icon class="no-data-icon">receipt_long</mat-icon>
+          <h3>No estimates found</h3>
+          <p>There are no estimates matching your criteria.</p>
+        </div>
+
+        <!-- Data Table -->
+        <table *ngIf="dataSource.data.length > 0" 
+               mat-table 
+               [dataSource]="dataSource" 
+               matSort 
+               class="estimates-table">
+          
+          <!-- Estimate Number Column -->
+          <ng-container matColumnDef="estimateNumber">
+            <th mat-header-cell *matHeaderCellDef mat-sort-header>Estimate Number</th>
+            <td mat-cell *matCellDef="let estimate">
+              <div class="estimate-number">
+                <strong>{{ estimate.estimateNumber }}</strong>
+              </div>
+            </td>
+          </ng-container>
+
+          <!-- Customer Column -->
+          <ng-container matColumnDef="customer">
+            <th mat-header-cell *matHeaderCellDef>Customer</th>
+            <td mat-cell *matCellDef="let estimate">
+              <div class="customer-info">
+                <div class="customer-name">{{ estimate.customer?.name || 'N/A' }}</div>
+                <div class="customer-code">{{ estimate.customer?.code || '' }}</div>
+              </div>
+            </td>
+          </ng-container>
+
+          <!-- Estimate Date Column -->
+          <ng-container matColumnDef="estimateDate">
+            <th mat-header-cell *matHeaderCellDef mat-sort-header>Estimate Date</th>
+            <td mat-cell *matCellDef="let estimate">
+              {{ estimate.estimateDate | date:'dd/MM/yyyy' }}
+            </td>
+          </ng-container>
+
+          <!-- Valid Until Column -->
+          <ng-container matColumnDef="validUntil">
+            <th mat-header-cell *matHeaderCellDef mat-sort-header>Valid Until</th>
+            <td mat-cell *matCellDef="let estimate">
+              <div class="validity-info">
+                <div class="valid-date">{{ estimate.validUntil | date:'dd/MM/yyyy' }}</div>
+                <div class="days-remaining" 
+                     [class.expired]="isEstimateExpired(estimate)"
+                     [class.expiring-soon]="getDaysUntilExpiry(estimate.validUntil) <= 3 && !isEstimateExpired(estimate)">
+                  <ng-container *ngIf="!isEstimateExpired(estimate)">
+                    {{ getDaysUntilExpiry(estimate.validUntil) }} days left
+                  </ng-container>
+                  <ng-container *ngIf="isEstimateExpired(estimate)">
+                    Expired
+                  </ng-container>
+                </div>
+              </div>
+            </td>
+          </ng-container>
+
+          <!-- Total Amount Column -->
+          <ng-container matColumnDef="totalAmount">
+            <th mat-header-cell *matHeaderCellDef mat-sort-header>Total Amount</th>
+            <td mat-cell *matCellDef="let estimate">
+              <div class="amount">
+                {{ estimate.totals.grandTotal | currency:'PKR':'symbol':'1.2-2' }}
+              </div>
+            </td>
+          </ng-container>
+
+          <!-- Status Column -->
+          <ng-container matColumnDef="status">
+            <th mat-header-cell *matHeaderCellDef>Status</th>
+            <td mat-cell *matCellDef="let estimate">
+              <mat-chip [color]="getStatusColor(estimate.status)" selected>
+                {{ estimate.status | titlecase }}
+              </mat-chip>
+            </td>
+          </ng-container>
+
+          <!-- Actions Column -->
+          <ng-container matColumnDef="actions">
+            <th mat-header-cell *matHeaderCellDef>Actions</th>
+            <td mat-cell *matCellDef="let estimate">
+              <div class="action-buttons">
+                <button mat-raised-button 
+                        color="primary"
+                        [disabled]="!canConvert(estimate) || isLoading"
+                        (click)="convertToInvoice(estimate)"
+                        matTooltip="Convert to Invoice">
+                  <mat-icon>transform</mat-icon>
+                  Convert
+                </button>
+                
+                <button mat-icon-button 
+                        matTooltip="View Estimate Details"
+                        [disabled]="isLoading">
+                  <mat-icon>visibility</mat-icon>
+                </button>
+              </div>
+            </td>
+          </ng-container>
+
+          <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
+          <tr mat-row *matRowDef="let row; columns: displayedColumns;"></tr>
+        </table>
+
+        <!-- Paginator -->
+        <mat-paginator *ngIf="dataSource.data.length > 0"
+                       [length]="totalCount"
+                       [pageSize]="pageSize"
+                       [pageSizeOptions]="[5, 10, 25, 50]"
+                       showFirstLastButtons>
+        </mat-paginator>
+      </div>
+    </mat-card-content>
+  </mat-card>
+</div>

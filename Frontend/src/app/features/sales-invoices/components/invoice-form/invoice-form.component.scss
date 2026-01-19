@@ -1,0 +1,833 @@
+/**
+ * Invoice Form Component Styles
+ * Following Vuexy theme patterns and responsive design principles
+ */
+
+// Force white background for the entire component and all child elements
+:host {
+    display: block;
+    background-color: #ffffff !important;
+    min-height: 100vh;
+}
+
+:host * {
+    background-color: inherit !important;
+}
+
+.invoice-form-container {
+    padding: 24px;
+    max-width: 1200px;
+    margin: 0 auto;
+    background-color: #ffffff !important;
+    /* Force white background */
+    min-height: 100vh;
+    color: #5e5873 !important;
+    /* Force dark text */
+
+    @media (max-width: 768px) {
+        padding: 16px;
+    }
+}
+
+// Global white background override
+.invoice-form-container,
+.invoice-form-container *,
+.form-section,
+.form-section *,
+mat-card,
+mat-card *,
+.mat-card,
+.mat-card *,
+mat-card-header,
+mat-card-header *,
+mat-card-content,
+mat-card-content *,
+.mobile-actions,
+.mobile-actions * {
+    background-color: #ffffff !important;
+    color: #5e5873 !important;
+}
+
+// Form Header
+.form-header {
+    margin-bottom: 24px;
+
+    .header-content {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        flex-wrap: wrap;
+        gap: 16px;
+
+        @media (max-width: 768px) {
+            flex-direction: column;
+            align-items: stretch;
+        }
+    }
+
+    .title-section {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+
+        .header-icon {
+            font-size: 32px;
+            width: 32px;
+            height: 32px;
+            color: var(--primary-color, #7367f0);
+        }
+
+        .form-title {
+            margin: 0;
+            font-size: 24px;
+            font-weight: 600;
+            color: var(--text-primary, #5e5873);
+        }
+    }
+
+    .header-actions {
+        display: flex;
+        gap: 12px;
+
+        @media (max-width: 768px) {
+            justify-content: center;
+            width: 100%;
+        }
+    }
+}
+
+// Form Sections
+.form-section {
+    margin-bottom: 24px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    border-radius: 8px;
+    background-color: #ffffff !important;
+    /* Force white background for cards */
+
+    mat-card-header {
+        padding: 20px 24px 16px;
+        border-bottom: 1px solid var(--border-color, #ebe9f1);
+        background-color: #ffffff !important;
+        /* Force white background for headers */
+
+        mat-card-title {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 18px;
+            font-weight: 600;
+            color: var(--text-primary, #5e5873);
+
+            mat-icon {
+                color: var(--primary-color, #7367f0);
+            }
+        }
+
+        .spacer {
+            flex: 1;
+        }
+    }
+
+    mat-card-content {
+        padding: 24px;
+        background-color: #ffffff !important;
+        /* Force white background for content */
+    }
+}
+
+// Form Layout
+.form-row {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 16px;
+    margin-bottom: 16px;
+
+    @media (max-width: 768px) {
+        grid-template-columns: 1fr;
+        gap: 12px;
+    }
+}
+
+.form-field {
+    width: 100%;
+
+    &.full-width {
+        grid-column: 1 / -1;
+    }
+}
+
+// Customer and Item Options
+.customer-option,
+.item-option {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+
+    .customer-name,
+    .item-name {
+        font-weight: 500;
+        color: var(--text-primary, #5e5873);
+    }
+
+    .customer-code,
+    .item-details {
+        font-size: 12px;
+        color: var(--text-secondary, #b9b9c3);
+    }
+}
+
+.warehouse-option,
+.salesman-option {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+
+    .warehouse-code,
+    .salesman-code {
+        color: var(--text-secondary, #b9b9c3);
+        font-size: 12px;
+    }
+}
+
+// Items Section
+.items-container {
+    .items-table-container {
+        overflow-x: auto;
+        margin: -8px;
+        padding: 8px;
+
+        .items-table {
+            width: 100%;
+            min-width: 800px;
+
+            th {
+                background-color: var(--background-alt, #f8f8f8);
+                font-weight: 600;
+                color: var(--text-primary, #5e5873);
+                padding: 12px 8px;
+                border-bottom: 2px solid var(--border-color, #ebe9f1);
+            }
+
+            td {
+                padding: 8px;
+                border-bottom: 1px solid var(--border-color, #ebe9f1);
+                vertical-align: top;
+            }
+        }
+    }
+
+    // Item Table Cells
+    .item-cell {
+        min-width: 250px;
+
+        .item-field {
+            width: 100%;
+            margin-bottom: 8px;
+        }
+
+        .availability-info {
+            margin-bottom: 8px;
+            font-size: 12px;
+
+            .available-quantity {
+                padding: 4px 8px;
+                border-radius: 4px;
+                background-color: var(--success-light, rgba(40, 199, 111, 0.1));
+                color: var(--success-color, #28c76f);
+
+                &.low-stock {
+                    background-color: var(--warning-light, rgba(255, 159, 67, 0.1));
+                    color: var(--warning-color, #ff9f43);
+                }
+
+                &.out-of-stock {
+                    background-color: var(--danger-light, rgba(234, 84, 85, 0.1));
+                    color: var(--danger-color, #ea5455);
+                }
+            }
+        }
+
+        .batch-info {
+            display: flex;
+            gap: 8px;
+
+            .batch-field {
+                flex: 1;
+                min-width: 120px;
+            }
+        }
+    }
+
+    .quantity-cell {
+        min-width: 100px;
+
+        .quantity-field {
+            width: 100%;
+        }
+    }
+
+    .price-cell {
+        min-width: 120px;
+
+        .price-field {
+            width: 100%;
+        }
+    }
+
+    .discount-cell {
+        min-width: 150px;
+
+        .discount-container {
+            display: flex;
+            gap: 4px;
+
+            .discount-field {
+                flex: 2;
+            }
+
+            .discount-type-field {
+                flex: 1;
+                min-width: 60px;
+            }
+        }
+    }
+
+    .total-cell {
+        min-width: 120px;
+
+        .item-total {
+            font-weight: 600;
+            color: var(--success-color, #28c76f);
+            text-align: right;
+            padding: 12px 8px;
+        }
+    }
+
+    .actions-cell {
+        min-width: 120px;
+        text-align: center;
+
+        .item-actions {
+            display: flex;
+            gap: 4px;
+            justify-content: center;
+            flex-wrap: wrap;
+
+            button {
+                min-width: 32px;
+                width: 32px;
+                height: 32px;
+
+                mat-icon {
+                    font-size: 18px;
+                    width: 18px;
+                    height: 18px;
+                }
+            }
+        }
+    }
+
+    // Empty State
+    .empty-items {
+        text-align: center;
+        padding: 48px 24px;
+        color: var(--text-secondary, #b9b9c3);
+
+        .empty-icon {
+            font-size: 64px;
+            width: 64px;
+            height: 64px;
+            margin-bottom: 16px;
+            opacity: 0.5;
+        }
+
+        p {
+            margin-bottom: 24px;
+            font-size: 16px;
+        }
+    }
+}
+
+// Totals Section
+.totals-container {
+    .discount-section {
+        margin-bottom: 24px;
+
+        h4 {
+            margin: 0 0 16px 0;
+            font-size: 16px;
+            font-weight: 600;
+            color: var(--text-primary, #5e5873);
+        }
+
+        .discount-controls {
+            display: flex;
+            gap: 16px;
+            align-items: flex-start;
+
+            @media (max-width: 768px) {
+                flex-direction: column;
+                gap: 12px;
+            }
+
+            .discount-value-field {
+                flex: 2;
+                min-width: 200px;
+            }
+
+            .discount-type-field {
+                flex: 1;
+                min-width: 150px;
+            }
+        }
+    }
+
+    .totals-display {
+        margin-top: 24px;
+
+        .total-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 8px 0;
+
+            &.grand-total {
+                font-size: 18px;
+                font-weight: 600;
+                color: var(--primary-color, #7367f0);
+                border-top: 2px solid var(--border-color, #ebe9f1);
+                padding-top: 16px;
+                margin-top: 8px;
+            }
+
+            &.final-total {
+                font-size: 20px;
+                font-weight: 700;
+                color: var(--success-color, #28c76f);
+                background-color: var(--success-light, rgba(40, 199, 111, 0.1));
+                padding: 12px 16px;
+                margin: 16px -16px 0;
+                border-radius: 8px;
+            }
+
+            .total-label {
+                font-weight: 500;
+                color: var(--text-primary, #5e5873);
+            }
+
+            .total-value {
+                font-weight: 600;
+
+                &.discount {
+                    color: var(--warning-color, #ff9f43);
+                }
+
+                &.wht {
+                    color: var(--info-color, #00cfe8);
+                }
+            }
+        }
+    }
+}
+
+// Mobile Actions
+.mobile-actions {
+    display: none;
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    background: #ffffff !important;
+    /* Force white background */
+    padding: 16px;
+    box-shadow: 0 -2px 8px rgba(0, 0, 0, 0.1);
+    z-index: 100;
+    gap: 12px;
+
+    @media (max-width: 768px) {
+        display: flex;
+        justify-content: space-between;
+
+        button {
+            flex: 1;
+        }
+    }
+}
+
+// Form Field Customizations
+mat-form-field {
+    &.mat-form-field-appearance-outline {
+        .mat-form-field-outline {
+            color: var(--border-color, #ebe9f1);
+        }
+
+        &.mat-focused .mat-form-field-outline-thick {
+            color: var(--primary-color, #7367f0);
+        }
+
+        .mat-form-field-label {
+            color: var(--text-secondary, #b9b9c3);
+        }
+
+        &.mat-focused .mat-form-field-label {
+            color: var(--primary-color, #7367f0);
+        }
+    }
+
+    .mat-error {
+        color: var(--danger-color, #ea5455);
+        font-size: 12px;
+    }
+}
+
+// Button Customizations
+button {
+    &.mat-raised-button {
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+
+        &:hover {
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+        }
+    }
+
+    &.mat-icon-button {
+        &:hover {
+            background-color: rgba(0, 0, 0, 0.04);
+        }
+    }
+}
+
+// Loading States
+mat-spinner {
+    margin-right: 8px;
+}
+
+// Responsive Design
+@media (max-width: 768px) {
+    .invoice-form-container {
+        padding-bottom: 80px; // Space for mobile actions
+    }
+
+    .form-header .header-actions {
+        display: none; // Hide desktop actions on mobile
+    }
+
+    .items-table-container {
+        .items-table {
+            font-size: 14px;
+
+            th,
+            td {
+                padding: 6px 4px;
+            }
+        }
+    }
+
+    .totals-display .total-row {
+        font-size: 14px;
+
+        &.grand-total {
+            font-size: 16px;
+        }
+
+        &.final-total {
+            font-size: 18px;
+        }
+    }
+}
+
+// Print Styles
+@media print {
+
+    .form-header,
+    .mobile-actions,
+    button {
+        display: none !important;
+    }
+
+    .invoice-form-container {
+        padding: 0;
+        max-width: none;
+    }
+
+    .form-section {
+        box-shadow: none;
+        border: 1px solid #ddd;
+        margin-bottom: 16px;
+    }
+}
+
+// Override Dark Mode - Force Light Theme
+.form-section,
+mat-card,
+.mat-card {
+    background-color: #ffffff !important;
+    color: #5e5873 !important;
+}
+
+.mobile-actions {
+    background-color: #ffffff !important;
+    border-top: 1px solid #ebe9f1 !important;
+}
+
+// Ensure all form elements have proper light theme colors
+mat-form-field {
+    .mat-form-field-label {
+        color: #b9b9c3 !important;
+    }
+
+    &.mat-focused .mat-form-field-label {
+        color: #7367f0 !important;
+    }
+
+    .mat-form-field-outline {
+        color: #ebe9f1 !important;
+    }
+
+    &.mat-focused .mat-form-field-outline-thick {
+        color: #7367f0 !important;
+    }
+}
+
+// Override any dark theme that might be applied
+@media (prefers-color-scheme: dark) {
+
+    .invoice-form-container,
+    .form-section,
+    mat-card,
+    .mat-card,
+    mat-card-header,
+    mat-card-content,
+    .mobile-actions {
+        background-color: #ffffff !important;
+        color: #5e5873 !important;
+    }
+}
+
+// Global overrides for Material components to ensure white background
+::ng-deep {
+    .mat-form-field-appearance-outline .mat-form-field-outline {
+        background-color: #ffffff !important;
+    }
+
+    .mat-form-field-wrapper {
+        background-color: #ffffff !important;
+    }
+
+    .mat-form-field-flex {
+        background-color: #ffffff !important;
+    }
+
+    .mat-form-field-infix {
+        background-color: #ffffff !important;
+    }
+
+    .mat-input-element {
+        background-color: #ffffff !important;
+        color: #5e5873 !important;
+    }
+
+    .mat-select-panel {
+        background-color: #ffffff !important;
+    }
+
+    .mat-option {
+        background-color: #ffffff !important;
+        color: #5e5873 !important;
+    }
+
+    .mat-option:hover {
+        background-color: rgba(115, 103, 240, 0.1) !important;
+    }
+
+    .mat-autocomplete-panel {
+        background-color: #ffffff !important;
+    }
+
+    .mat-table {
+        background-color: #ffffff !important;
+    }
+
+    .mat-header-row,
+    .mat-row {
+        background-color: #ffffff !important;
+    }
+
+    .mat-header-cell,
+    .mat-cell {
+        background-color: #ffffff !important;
+        color: #5e5873 !important;
+    }
+
+    // Calendar styling for date pickers
+    .mat-datepicker-popup {
+        background-color: #ffffff !important;
+    }
+
+    .mat-calendar {
+        background-color: #ffffff !important;
+        color: #5e5873 !important;
+    }
+
+    .mat-calendar-header {
+        background-color: #ffffff !important;
+        color: #5e5873 !important;
+    }
+
+    .mat-calendar-table {
+        background-color: #ffffff !important;
+    }
+
+    .mat-calendar-table-header {
+        background-color: #ffffff !important;
+        color: #7367f0 !important;
+    }
+
+    .mat-calendar-table-header th {
+        color: #7367f0 !important;
+        font-weight: 600 !important;
+        opacity: 1 !important;
+        visibility: visible !important;
+    }
+
+    .mat-calendar-body-cell {
+        background-color: #ffffff !important;
+        color: #5e5873 !important;
+    }
+
+    .mat-calendar-body-cell-content {
+        background-color: transparent !important;
+        color: #5e5873 !important;
+        border: none !important;
+        font-weight: 500 !important;
+        width: 32px !important;
+        height: 32px !important;
+        display: flex !important;
+        align-items: center !important;
+        justify-content: center !important;
+        border-radius: 50% !important;
+        line-height: 1 !important;
+        font-size: 14px !important;
+        opacity: 1 !important;
+        visibility: visible !important;
+    }
+
+    .mat-calendar-body-cell:not(.mat-calendar-body-disabled) {
+        .mat-calendar-body-cell-content {
+            color: #5e5873 !important;
+            opacity: 1 !important;
+            visibility: visible !important;
+        }
+    }
+
+    .mat-calendar-body-cell:hover {
+        background-color: rgba(115, 103, 240, 0.1) !important;
+
+        .mat-calendar-body-cell-content {
+            background-color: rgba(115, 103, 240, 0.2) !important;
+            color: #7367f0 !important;
+        }
+    }
+
+    .mat-calendar-body-selected {
+        background-color: #7367f0 !important;
+        color: #ffffff !important;
+
+        .mat-calendar-body-cell-content {
+            background-color: #7367f0 !important;
+            color: #ffffff !important;
+            font-weight: 600 !important;
+        }
+    }
+
+    .mat-calendar-body-today:not(.mat-calendar-body-selected) {
+        .mat-calendar-body-cell-content {
+            border: 2px solid #7367f0 !important;
+            color: #7367f0 !important;
+            font-weight: 600 !important;
+        }
+    }
+
+    .mat-calendar-body-disabled {
+        .mat-calendar-body-cell-content {
+            color: #d8d6de !important;
+            opacity: 0.5 !important;
+        }
+    }
+
+    .mat-calendar-body-cell.mat-calendar-body-active {
+        .mat-calendar-body-cell-content {
+            background-color: #7367f0 !important;
+            color: #ffffff !important;
+        }
+    }
+
+    .mat-calendar-controls {
+        background-color: #ffffff !important;
+    }
+
+    .mat-calendar-period-button,
+    .mat-calendar-previous-button,
+    .mat-calendar-next-button {
+        background-color: #ffffff !important;
+        color: #7367f0 !important;
+        font-weight: 500 !important;
+        opacity: 1 !important;
+        visibility: visible !important;
+    }
+
+    .mat-calendar-period-button:hover,
+    .mat-calendar-previous-button:hover,
+    .mat-calendar-next-button:hover {
+        background-color: rgba(115, 103, 240, 0.1) !important;
+    }
+}
+
+// Animation Classes
+.fade-in {
+    animation: fadeIn 0.3s ease-in-out;
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(10px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+// Accessibility Improvements
+.sr-only {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+    border: 0;
+}
+
+// Focus Styles
+button:focus,
+input:focus,
+select:focus {
+    outline: 2px solid var(--primary-color, #7367f0);
+    outline-offset: 2px;
+}
+
+// Error States
+.mat-form-field.mat-form-field-invalid {
+    .mat-form-field-outline-thick {
+        color: var(--danger-color, #ea5455);
+    }
+
+    .mat-form-field-label {
+        color: var(--danger-color, #ea5455);
+    }
+}

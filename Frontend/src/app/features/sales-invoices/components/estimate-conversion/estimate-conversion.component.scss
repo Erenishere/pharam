@@ -1,0 +1,713 @@
+/**
+ * Estimate Conversion Component Styles
+ * Following Vuexy theme patterns and Material Design principles
+ */
+
+// Force white background for the entire component
+:host {
+    display: block !important;
+    background-color: #ffffff !important;
+    min-height: 100vh !important;
+    color: #5e5873 !important;
+
+    // Smooth transition to prevent flash
+    transition: background-color 0s, color 0s;
+}
+
+// Immediate styling application to prevent flash
+:host-context(.mat-app-background) {
+    background-color: #ffffff !important;
+}
+
+.estimate-conversion-container {
+    padding: 24px;
+    max-width: 1400px;
+    margin: 0 auto;
+    background-color: #ffffff !important;
+    min-height: 100vh;
+    color: #5e5873 !important;
+
+    // Ensure immediate visibility
+    opacity: 1 !important;
+    visibility: visible !important;
+
+    // Smooth transition
+    transition: background-color 0s, color 0s, opacity 0s;
+
+    @media (max-width: 768px) {
+        padding: 16px;
+    }
+}
+
+// Specific white background overrides (more targeted approach)
+.estimate-conversion-container {
+    background-color: #ffffff !important;
+    color: #5e5873 !important;
+}
+
+.filters-card,
+.results-card {
+    background-color: #ffffff !important;
+    color: #5e5873 !important;
+
+    // Prevent styling flash
+    opacity: 1 !important;
+    visibility: visible !important;
+}
+
+mat-card,
+.mat-card {
+    background-color: #ffffff !important;
+    color: #5e5873 !important;
+}
+
+mat-card-header,
+mat-card-content {
+    background-color: #ffffff !important;
+    color: #5e5873 !important;
+}
+
+.table-container {
+    background-color: #ffffff !important;
+    color: #5e5873 !important;
+}
+
+/* Header Section */
+.header-section {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 24px;
+    gap: 16px;
+
+    @media (max-width: 768px) {
+        flex-direction: column;
+        align-items: stretch;
+    }
+}
+
+.title-section {
+    flex: 1;
+
+    .page-title {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        margin: 0 0 8px 0;
+        font-size: 28px;
+        font-weight: 600;
+        color: #7367f0 !important;
+
+        mat-icon {
+            font-size: 32px;
+            width: 32px;
+            height: 32px;
+            color: #7367f0 !important;
+        }
+    }
+
+    .page-subtitle {
+        margin: 0;
+        color: #b9b9c3 !important;
+        font-size: 14px;
+        line-height: 1.5;
+    }
+}
+
+.action-buttons {
+    display: flex;
+    gap: 12px;
+    align-items: center;
+
+    @media (max-width: 768px) {
+        justify-content: flex-end;
+    }
+}
+
+/* Filters Card */
+.filters-card {
+    margin-bottom: 24px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    border-radius: 12px;
+    background-color: #ffffff !important;
+
+    .mat-mdc-card-content {
+        padding: 20px;
+        background-color: #ffffff !important;
+    }
+}
+
+.filters-form {
+    .filter-row {
+        display: grid;
+        grid-template-columns: 2fr 1fr 1fr 1fr auto;
+        gap: 16px;
+        align-items: end;
+
+        @media (max-width: 1024px) {
+            grid-template-columns: 1fr 1fr 1fr;
+
+            .search-field {
+                grid-column: 1 / -1;
+            }
+        }
+
+        @media (max-width: 768px) {
+            grid-template-columns: 1fr;
+            gap: 12px;
+
+            .search-field {
+                grid-column: 1;
+            }
+        }
+    }
+
+    .search-field {
+        min-width: 300px;
+
+        @media (max-width: 768px) {
+            min-width: unset;
+        }
+    }
+
+    .clear-filters-btn {
+        height: 56px;
+        min-width: 100px;
+    }
+}
+
+/* Results Card */
+.results-card {
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    border-radius: 12px;
+    background-color: #ffffff !important;
+
+    .mat-mdc-card-content {
+        padding: 0;
+        background-color: #ffffff !important;
+    }
+}
+
+/* Loading Container */
+.loading-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 60px 20px;
+    gap: 16px;
+    background-color: #ffffff !important;
+
+    p {
+        margin: 0;
+        color: #b9b9c3 !important;
+        font-size: 14px;
+    }
+}
+
+/* No Data Container */
+.no-data-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 60px 20px;
+    text-align: center;
+    background-color: #ffffff !important;
+
+    .no-data-icon {
+        font-size: 64px;
+        width: 64px;
+        height: 64px;
+        color: #d8d6de !important;
+        margin-bottom: 16px;
+    }
+
+    h3 {
+        margin: 0 0 8px 0;
+        color: #5e5873 !important;
+        font-size: 20px;
+        font-weight: 500;
+    }
+
+    p {
+        margin: 0;
+        color: #b9b9c3 !important;
+        font-size: 14px;
+    }
+}
+
+/* Table Container */
+.table-container {
+    background-color: #ffffff !important;
+
+    .estimates-table {
+        width: 100%;
+        background: #ffffff !important;
+
+        .mat-mdc-header-cell {
+            font-weight: 600;
+            color: #5e5873 !important;
+            border-bottom: 2px solid #ebe9f1;
+            background-color: #ffffff !important;
+        }
+
+        .mat-mdc-cell {
+            border-bottom: 1px solid #ebe9f1;
+            padding: 16px 12px;
+            background-color: #ffffff !important;
+            color: #5e5873 !important;
+        }
+
+        .mat-mdc-row {
+            background-color: #ffffff !important;
+
+            &:hover {
+                background-color: rgba(115, 103, 240, 0.05) !important;
+            }
+        }
+
+        .mat-mdc-header-row {
+            background-color: #ffffff !important;
+        }
+    }
+}
+
+/* Table Cell Styles */
+.estimate-number {
+    strong {
+        color: #7367f0 !important;
+        font-weight: 600;
+    }
+}
+
+.customer-info {
+    .customer-name {
+        font-weight: 500;
+        color: #5e5873 !important;
+        margin-bottom: 2px;
+    }
+
+    .customer-code {
+        font-size: 12px;
+        color: #b9b9c3 !important;
+    }
+}
+
+.validity-info {
+    .valid-date {
+        font-weight: 500;
+        margin-bottom: 2px;
+        color: #5e5873 !important;
+    }
+
+    .days-remaining {
+        font-size: 12px;
+        padding: 2px 8px;
+        border-radius: 12px;
+        display: inline-block;
+
+        &.expired {
+            background-color: rgba(234, 84, 85, 0.1) !important;
+            color: #ea5455 !important;
+            font-weight: 500;
+        }
+
+        &.expiring-soon {
+            background-color: rgba(255, 159, 67, 0.1) !important;
+            color: #ff9f43 !important;
+            font-weight: 500;
+        }
+
+        &:not(.expired):not(.expiring-soon) {
+            background-color: rgba(40, 199, 111, 0.1) !important;
+            color: #28c76f !important;
+        }
+    }
+}
+
+.amount {
+    font-weight: 600;
+    color: #5e5873 !important;
+    font-size: 15px;
+}
+
+/* Action Buttons */
+.action-buttons {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+
+    button {
+        &[disabled] {
+            opacity: 0.6;
+        }
+    }
+
+    .mat-mdc-raised-button {
+        font-size: 13px;
+        padding: 0 16px;
+        height: 36px;
+
+        mat-icon {
+            font-size: 18px;
+            width: 18px;
+            height: 18px;
+            margin-right: 4px;
+        }
+    }
+
+    .mat-mdc-icon-button {
+        width: 36px;
+        height: 36px;
+
+        mat-icon {
+            font-size: 20px;
+            width: 20px;
+            height: 20px;
+        }
+    }
+}
+
+/* Status Chips */
+.mat-mdc-chip {
+    font-size: 12px;
+    font-weight: 500;
+    min-height: 24px;
+
+    &.mat-primary {
+        background-color: rgba(115, 103, 240, 0.1) !important;
+        color: #7367f0 !important;
+    }
+
+    &.mat-accent {
+        background-color: rgba(40, 199, 111, 0.1) !important;
+        color: #28c76f !important;
+    }
+
+    &.mat-warn {
+        background-color: rgba(234, 84, 85, 0.1) !important;
+        color: #ea5455 !important;
+    }
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+    .estimates-table {
+
+        .mat-mdc-cell,
+        .mat-mdc-header-cell {
+            padding: 12px 8px;
+            font-size: 13px;
+        }
+    }
+
+    .action-buttons {
+        flex-direction: column;
+        gap: 4px;
+
+        button {
+            width: 100%;
+            font-size: 12px;
+        }
+    }
+
+    .customer-info {
+        .customer-name {
+            font-size: 13px;
+        }
+
+        .customer-code {
+            font-size: 11px;
+        }
+    }
+}
+
+/* Snackbar Styles */
+::ng-deep {
+    .success-snackbar {
+        background-color: var(--mat-success-500) !important;
+        color: white !important;
+    }
+
+    .error-snackbar {
+        background-color: var(--mat-error-500) !important;
+        color: white !important;
+    }
+}
+
+/* Material Form Field Customization */
+.mat-mdc-form-field {
+    .mat-mdc-text-field-wrapper {
+        border-radius: 8px;
+    }
+
+    &.mat-form-field-appearance-outline {
+        .mat-mdc-form-field-outline {
+            border-radius: 8px;
+        }
+    }
+}
+
+/* Paginator Styling */
+.mat-mdc-paginator {
+    border-top: 1px solid #ebe9f1;
+    background: #ffffff !important;
+    border-radius: 0 0 12px 12px;
+    color: #5e5873 !important;
+}
+
+// Global overrides for Material components to ensure white background
+::ng-deep {
+    .mat-form-field-appearance-outline .mat-form-field-outline {
+        background-color: #ffffff !important;
+    }
+
+    .mat-form-field-wrapper {
+        background-color: #ffffff !important;
+    }
+
+    .mat-form-field-flex {
+        background-color: #ffffff !important;
+    }
+
+    .mat-form-field-infix {
+        background-color: #ffffff !important;
+    }
+
+    .mat-input-element {
+        background-color: #ffffff !important;
+        color: #5e5873 !important;
+    }
+
+    .mat-select-panel {
+        background-color: #ffffff !important;
+    }
+
+    .mat-option {
+        background-color: #ffffff !important;
+        color: #5e5873 !important;
+    }
+
+    .mat-option:hover {
+        background-color: rgba(115, 103, 240, 0.1) !important;
+    }
+
+    .mat-autocomplete-panel {
+        background-color: #ffffff !important;
+    }
+
+    .mat-table {
+        background-color: #ffffff !important;
+    }
+
+    .mat-header-row,
+    .mat-row {
+        background-color: #ffffff !important;
+    }
+
+    .mat-header-cell,
+    .mat-cell {
+        background-color: #ffffff !important;
+        color: #5e5873 !important;
+    }
+
+    .mat-paginator {
+        background-color: #ffffff !important;
+        color: #5e5873 !important;
+    }
+
+    .mat-paginator-page-size-select {
+        background-color: #ffffff !important;
+    }
+
+    .mat-card,
+    .mat-mdc-card {
+        background-color: #ffffff !important;
+        color: #5e5873 !important;
+    }
+
+    .mat-card-content,
+    .mat-mdc-card-content {
+        background-color: #ffffff !important;
+        color: #5e5873 !important;
+    }
+
+    .mat-card-header,
+    .mat-mdc-card-header {
+        background-color: #ffffff !important;
+        color: #5e5873 !important;
+    }
+
+    // Calendar styling for date pickers
+    .mat-datepicker-popup {
+        background-color: #ffffff !important;
+    }
+
+    .mat-calendar {
+        background-color: #ffffff !important;
+        color: #5e5873 !important;
+    }
+
+    .mat-calendar-header {
+        background-color: #ffffff !important;
+        color: #5e5873 !important;
+    }
+
+    .mat-calendar-table {
+        background-color: #ffffff !important;
+    }
+
+    .mat-calendar-table-header {
+        background-color: #ffffff !important;
+        color: #7367f0 !important;
+    }
+
+    .mat-calendar-table-header th {
+        color: #7367f0 !important;
+        font-weight: 600 !important;
+        opacity: 1 !important;
+        visibility: visible !important;
+    }
+
+    .mat-calendar-body-cell {
+        background-color: #ffffff !important;
+        color: #5e5873 !important;
+    }
+
+    .mat-calendar-body-cell-content {
+        background-color: transparent !important;
+        color: #5e5873 !important;
+        border: none !important;
+        font-weight: 500 !important;
+        width: 32px !important;
+        height: 32px !important;
+        display: flex !important;
+        align-items: center !important;
+        justify-content: center !important;
+        border-radius: 50% !important;
+        line-height: 1 !important;
+        font-size: 14px !important;
+        opacity: 1 !important;
+        visibility: visible !important;
+    }
+
+    .mat-calendar-body-cell:not(.mat-calendar-body-disabled) {
+        .mat-calendar-body-cell-content {
+            color: #5e5873 !important;
+            opacity: 1 !important;
+            visibility: visible !important;
+        }
+    }
+
+    .mat-calendar-body-cell:hover {
+        background-color: rgba(115, 103, 240, 0.1) !important;
+
+        .mat-calendar-body-cell-content {
+            background-color: rgba(115, 103, 240, 0.2) !important;
+            color: #7367f0 !important;
+        }
+    }
+
+    .mat-calendar-body-selected {
+        background-color: #7367f0 !important;
+        color: #ffffff !important;
+
+        .mat-calendar-body-cell-content {
+            background-color: #7367f0 !important;
+            color: #ffffff !important;
+            font-weight: 600 !important;
+        }
+    }
+
+    .mat-calendar-body-today:not(.mat-calendar-body-selected) {
+        .mat-calendar-body-cell-content {
+            border: 2px solid #7367f0 !important;
+            color: #7367f0 !important;
+            font-weight: 600 !important;
+        }
+    }
+
+    .mat-calendar-body-disabled {
+        .mat-calendar-body-cell-content {
+            color: #d8d6de !important;
+            opacity: 0.5 !important;
+        }
+    }
+
+    .mat-calendar-body-cell.mat-calendar-body-active {
+        .mat-calendar-body-cell-content {
+            background-color: #7367f0 !important;
+            color: #ffffff !important;
+        }
+    }
+
+    .mat-calendar-controls {
+        background-color: #ffffff !important;
+    }
+
+    .mat-calendar-period-button,
+    .mat-calendar-previous-button,
+    .mat-calendar-next-button {
+        background-color: #ffffff !important;
+        color: #7367f0 !important;
+        font-weight: 500 !important;
+        opacity: 1 !important;
+        visibility: visible !important;
+    }
+
+    .mat-calendar-period-button:hover,
+    .mat-calendar-previous-button:hover,
+    .mat-calendar-next-button:hover {
+        background-color: rgba(115, 103, 240, 0.1) !important;
+    }
+
+    // Success snackbar styling
+    .success-snackbar {
+        background-color: #28c76f !important;
+        color: white !important;
+    }
+
+    // Error snackbar styling
+    .error-snackbar {
+        background-color: #ea5455 !important;
+        color: white !important;
+    }
+
+    // Prevent flash of unstyled content
+    app-estimate-conversion {
+        background-color: #ffffff !important;
+        color: #5e5873 !important;
+        display: block !important;
+        opacity: 1 !important;
+        visibility: visible !important;
+    }
+
+    // Force immediate styling for all Material components
+    .mat-card,
+    .mat-mdc-card,
+    .mat-table,
+    .mat-paginator,
+    .mat-form-field {
+        background-color: #ffffff !important;
+        color: #5e5873 !important;
+        opacity: 1 !important;
+        visibility: visible !important;
+    }
+}
+
+// Override any dark theme that might be applied
+@media (prefers-color-scheme: dark) {
+
+    .estimate-conversion-container,
+    .filters-card,
+    .results-card,
+    mat-card,
+    .mat-card,
+    mat-card-header,
+    mat-card-content,
+    .table-container {
+        background-color: #ffffff !important;
+        color: #5e5873 !important;
+    }
+}
