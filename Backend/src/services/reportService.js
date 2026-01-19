@@ -56,9 +56,16 @@ class ReportService {
     const summary = {
       totalInvoices: invoices.length,
       totalAmount: invoices.reduce((sum, inv) => {
-        const grandTotal = inv.totals?.grandTotal ||
-          ((inv.totals?.subtotal || 0) + (inv.totals?.totalTax || 0) - (inv.totals?.totalDiscount || 0));
-        return sum + grandTotal;
+        let grandTotal = inv.totals?.grandTotal;
+        if (!grandTotal && grandTotal !== 0) {
+          // Heuristic 1: Reconstruct from totals
+          grandTotal = (inv.totals?.subtotal || 0) + (inv.totals?.totalTax || 0) - (inv.totals?.totalDiscount || 0);
+          // Heuristic 2: Sum from items (Ultimate fallback)
+          if (!grandTotal && grandTotal !== 0 && inv.items?.length > 0) {
+            grandTotal = inv.items.reduce((s, i) => s + (i.lineTotal || 0), 0) + (inv.totals?.totalTax || 0);
+          }
+        }
+        return sum + (grandTotal || 0);
       }, 0),
       totalDiscount: invoices.reduce((sum, inv) => sum + (inv.totals?.totalDiscount || 0), 0),
       totalTax: invoices.reduce((sum, inv) => sum + (inv.totals?.totalTax || 0), 0),
