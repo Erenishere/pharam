@@ -102,6 +102,8 @@ const batchSchema = new Schema(
 batchSchema.index({ batchNumber: 1, item: 1, warehouse: 1 }, { unique: true });
 batchSchema.index({ warehouse: 1, expiryDate: 1 });
 batchSchema.index({ item: 1, warehouse: 1, status: 1 });
+batchSchema.index({ expiryDate: 1, status: 1, remainingQuantity: 1 });
+batchSchema.index({ item: 1, expiryDate: 1, remainingQuantity: 1 });
 
 // Virtual for checking if batch is about to expire (within 30 days)
 batchSchema.virtual('isExpiringSoon').get(function () {

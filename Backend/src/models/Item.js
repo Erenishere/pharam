@@ -140,9 +140,10 @@ itemSchema.index({ category: 1 });
 itemSchema.index({ isActive: 1 });
 itemSchema.index({ 'inventory.currentStock': 1 });
 itemSchema.index({ 'pricing.salePrice': 1 });
-// Phase 2 indexes
-itemSchema.index({ barcode: 1 }, { unique: true, sparse: true }); // Sparse allows null but enforces uniqueness
+itemSchema.index({ barcode: 1 }, { unique: true, sparse: true });
 itemSchema.index({ packSize: 1 });
+itemSchema.index({ name: 'text', code: 'text', category: 'text', description: 'text' });
+itemSchema.index({ code: 1, name: 1, isActive: 1 });
 
 // Virtual for profit margin
 itemSchema.virtual('profitMargin').get(function () {

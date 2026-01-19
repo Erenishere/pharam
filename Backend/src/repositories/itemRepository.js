@@ -11,7 +11,7 @@ class ItemRepository {
    * @returns {Promise<Object>} Item document
    */
   async findById(id) {
-    return Item.findById(id);
+    return Item.findById(id).lean();
   }
 
   /**
@@ -20,7 +20,7 @@ class ItemRepository {
    * @returns {Promise<Object>} Item document
    */
   async findByCode(code) {
-    return Item.findOne({ code: code.toUpperCase() });
+    return Item.findOne({ code: code.toUpperCase() }).lean();
   }
 
   /**
@@ -32,12 +32,10 @@ class ItemRepository {
   async findAll(filters = {}, options = {}) {
     const query = Item.find(filters);
     
-    // Apply sorting
     if (options.sort) {
       query.sort(options.sort);
     }
     
-    // Apply pagination
     if (options.limit) {
       query.limit(options.limit);
     }
@@ -46,7 +44,7 @@ class ItemRepository {
       query.skip(options.skip);
     }
     
-    return query.exec();
+    return query.lean().exec();
   }
 
   /**
@@ -54,7 +52,7 @@ class ItemRepository {
    * @returns {Promise<Array>} List of active items
    */
   async findAllActive() {
-    return Item.find({ isActive: true }).sort({ name: 1 });
+    return Item.find({ isActive: true }).sort({ name: 1 }).lean();
   }
 
   /**
@@ -135,15 +133,12 @@ class ItemRepository {
 
     const queryBuilder = Item.find(query);
 
-    // Apply sorting
     if (options.sort) {
       queryBuilder.sort(options.sort);
     } else {
-      // Default sorting
       queryBuilder.sort({ name: 1 });
     }
 
-    // Apply pagination
     if (options.limit) {
       queryBuilder.limit(parseInt(options.limit, 10));
     }
@@ -152,7 +147,7 @@ class ItemRepository {
       queryBuilder.skip(parseInt(options.skip, 10));
     }
 
-    return queryBuilder.exec();
+    return queryBuilder.lean().exec();
   }
 
   /**
@@ -239,7 +234,7 @@ class ItemRepository {
    * @returns {Promise<Object>} Item document
    */
   async findByBarcode(barcode) {
-    return Item.findOne({ barcode, isActive: true });
+    return Item.findOne({ barcode, isActive: true }).lean();
   }
 }
 

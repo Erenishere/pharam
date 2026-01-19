@@ -21,7 +21,8 @@ class BatchRepository {
     return Batch.findById(id)
       .populate('item', 'name code')
       .populate('supplier', 'name code')
-      .populate('location', 'name code');
+      .populate('location', 'name code')
+      .lean();
   }
 
   /**
@@ -34,7 +35,8 @@ class BatchRepository {
     return Batch.findOne({ batchNumber, item: itemId })
       .populate('item', 'name code')
       .populate('supplier', 'name code')
-      .populate('location', 'name code');
+      .populate('location', 'name code')
+      .lean();
   }
 
   /**
@@ -65,7 +67,8 @@ class BatchRepository {
       .populate('item', 'name code')
       .populate('supplier', 'name code')
       .populate('location', 'name code')
-      .sort({ expiryDate: 1 });
+      .sort({ expiryDate: 1 })
+      .lean();
   }
 
   /**
@@ -90,7 +93,8 @@ class BatchRepository {
     return Batch.find(query)
       .populate('item', 'name code')
       .populate('location', 'name code')
-      .sort({ expiryDate: 1 });
+      .sort({ expiryDate: 1 })
+      .lean();
   }
 
   /**
@@ -119,7 +123,8 @@ class BatchRepository {
     return Batch.find(query)
       .populate('item', 'name code')
       .populate('supplier', 'name code')
-      .sort({ expiryDate: 1 });
+      .sort({ expiryDate: 1 })
+      .lean();
   }
 
   /**
@@ -146,7 +151,8 @@ class BatchRepository {
       .populate('item', 'name code')
       .populate('supplier', 'name')
       .populate('location', 'name')
-      .sort({ expiryDate: 1 });
+      .sort({ expiryDate: 1 })
+      .lean();
   }
 
   /**
@@ -169,7 +175,8 @@ class BatchRepository {
       .populate('item', 'name code')
       .populate('supplier', 'name')
       .populate('location', 'name')
-      .sort({ expiryDate: 1 });
+      .sort({ expiryDate: 1 })
+      .lean();
   }
 
   /**

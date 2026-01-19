@@ -1,4 +1,4 @@
-import { Component, OnInit, signal, computed, ViewChild, ElementRef, AfterViewInit } from '@angular/core';
+import { Component, OnInit, signal, computed, ViewChild, ElementRef, AfterViewInit, OnDestroy, HostListener } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { MatCardModule } from '@angular/material/card';
 import { MatButtonModule } from '@angular/material/button';
@@ -18,13 +18,20 @@ import { PosService, Customer, Item, PaginatedResponse } from '../../../../core/
 import { SalesmanService, Salesman } from '../../../../core/services/salesman.service';
 import { ToastService } from '../../../../shared/services/toast.service';
 
+interface BatchInfo {
+  batchNumber: string;
+  expiryDate: string;
+  stock: number;
+}
+
 interface CartItem extends Item {
   quantity: number;
   discount: number;
   taxAmount: number;
   lineTotal: number;
-  selectedBatch?: string;     // Batch Number
-  selectedExpiry?: string;    // Expiry Date
+  selectedBatch?: string;
+  selectedExpiry?: string;
+  availableBatches?: BatchInfo[];
 }
 
 @Component({
@@ -49,8 +56,9 @@ interface CartItem extends Item {
   templateUrl: './pos.component.html',
   styleUrl: './pos.component.scss'
 })
-export class PosComponent implements OnInit, AfterViewInit {
+export class PosComponent implements OnInit, AfterViewInit, OnDestroy {
   @ViewChild('productInput') productInput!: ElementRef;
+  @ViewChild('customerInput') customerInput!: ElementRef;
 
   customerControl = new FormControl();
   itemSearchControl = new FormControl();
@@ -81,6 +89,66 @@ export class PosComponent implements OnInit, AfterViewInit {
   isSearchingCustomers = false;
   isSearchingItems = false;
   isSubmitting = false;
+
+  @HostListener('window:keydown', ['$event'])
+  handleKeyboardEvent(event: KeyboardEvent): void {
+    if (event.target instanceof HTMLInputElement || event.target instanceof HTMLTextAreaElement) {
+      if (event.key === 'Escape') {
+        (event.target as HTMLElement).blur();
+        event.preventDefault();
+      }
+      return;
+    }
+
+    switch (event.key) {
+      case 'F2':
+        event.preventDefault();
+        this.focusProductInput();
+        break;
+      case 'F3':
+        event.preventDefault();
+        this.focusCustomerInput();
+        break;
+      case 'F9':
+        event.preventDefault();
+        if (this.cart().length > 0 && this.selectedCustomer && !this.isSubmitting) {
+          this.submitInvoice();
+        }
+        break;
+      case 'F10':
+        event.preventDefault();
+        if (this.cart().length > 0) {
+          this.toggleReceipt();
+        }
+        break;
+      case 'Escape':
+        event.preventDefault();
+        if (this.showReceipt) {
+          this.onReceiptClose();
+        }
+        break;
+      case 'Delete':
+        if (event.ctrlKey) {
+          event.preventDefault();
+          this.clearCart();
+        }
+        break;
+    }
+  }
+
+  private focusProductInput(): void {
+    if (this.productInput?.nativeElement) {
+      this.productInput.nativeElement.focus();
+      this.productInput.nativeElement.select();
+    }
+  }
+
+  private focusCustomerInput(): void {
+    if (this.customerInput?.nativeElement) {
+      this.customerInput.nativeElement.focus();
+      this.customerInput.nativeElement.select();
+    }
+  }
 
   constructor(
     private posService: PosService,
@@ -213,13 +281,11 @@ export class PosComponent implements OnInit, AfterViewInit {
       this.customers = response.data || [];
     });
 
-    // Item Search
+    // Item Search with barcode auto-add
     this.itemSearchControl.valueChanges.pipe(
-      // Remove minimum length check to allow "Browse" behavior on click/empty
       debounceTime(300),
       distinctUntilChanged(),
       switchMap(value => {
-        // If value is null, treat as empty string
         const query = typeof value === 'string' ? value : '';
         this.isSearchingItems = true;
         return this.posService.searchItems(query).pipe(
@@ -228,6 +294,13 @@ export class PosComponent implements OnInit, AfterViewInit {
       })
     ).subscribe(response => {
       this.searchItems = response.data;
+      if (response.data.length === 1) {
+        const query = this.itemSearchControl.value;
+        const item = response.data[0];
+        if (query && (item.barcode === query || item.code === query?.toUpperCase())) {
+          this.addToCart(item);
+        }
+      }
     });
   }
 
@@ -292,34 +365,37 @@ export class PosComponent implements OnInit, AfterViewInit {
       this.cart.set(updatedCart);
       this.saveCartToStorage();
     } else {
-      // Auto-select Batch (FEFO - First Expired First Out)
       let selectedBatch = '';
       let selectedExpiry = '';
+      let availableBatches: BatchInfo[] = [];
 
       if (item.inventory && item.inventory.batches && item.inventory.batches.length > 0) {
-        // Sort by expiry date ascending
-        const sortedBatches = [...item.inventory.batches].sort((a, b) =>
+        availableBatches = item.inventory.batches.map((b: any) => ({
+          batchNumber: b.batchNumber,
+          expiryDate: b.expiryDate,
+          stock: b.stock
+        }));
+        const sortedBatches = [...availableBatches].sort((a, b) =>
           new Date(a.expiryDate).getTime() - new Date(b.expiryDate).getTime()
         );
-        // Pick the first one (nearest expiry) that has stock > 0
         const bestBatch = sortedBatches.find(b => b.stock > 0) || sortedBatches[0];
 
         selectedBatch = bestBatch.batchNumber;
         selectedExpiry = bestBatch.expiryDate;
       }
 
-      // Determine correct sale price (handle nested pricing object from backend)
       const actualSalePrice = item.pricing?.salePrice || item.salePrice || 0;
 
       this.cart.set([...currentCart, {
         ...item,
-        salePrice: actualSalePrice, // Normalize price for cart
+        salePrice: actualSalePrice,
         quantity: 1,
         discount: 0,
         taxAmount: 0,
         lineTotal: actualSalePrice,
         selectedBatch,
-        selectedExpiry
+        selectedExpiry,
+        availableBatches
       }]);
       this.saveCartToStorage();
     }
@@ -328,7 +404,6 @@ export class PosComponent implements OnInit, AfterViewInit {
     this.searchItems = [];
     this.toastService.success(`${item.name} added`);
 
-    // Keep focus on input for rapid entry
     setTimeout(() => this.productInput.nativeElement.focus(), 100);
   }
 
@@ -576,5 +651,48 @@ export class PosComponent implements OnInit, AfterViewInit {
   isExpired(dateStr?: string): boolean {
     if (!dateStr) return false;
     return new Date(dateStr) < new Date();
+  }
+
+  isExpiringSoon(dateStr?: string): boolean {
+    if (!dateStr) return false;
+    const expiry = new Date(dateStr);
+    const now = new Date();
+    const threeMonthsFromNow = new Date();
+    threeMonthsFromNow.setMonth(threeMonthsFromNow.getMonth() + 3);
+    return expiry > now && expiry <= threeMonthsFromNow;
+  }
+
+  getStockStatusClass(item: Item | CartItem): string {
+    if (item.inventory?.batches && item.inventory.batches.length > 0) {
+      const hasExpired = item.inventory.batches.some((b: BatchInfo) => this.isExpired(b.expiryDate));
+      if (hasExpired) return 'stock-expired';
+      const hasExpiringSoon = item.inventory.batches.some((b: BatchInfo) => this.isExpiringSoon(b.expiryDate));
+      if (hasExpiringSoon) return 'stock-expiring';
+    }
+    const stock = item.stock || item.inventory?.currentStock || 0;
+    if (stock <= 0) return 'stock-out';
+    if (stock < 10) return 'stock-low';
+    return 'stock-ok';
+  }
+
+  onBatchChange(itemId: string, batchNumber: string): void {
+    const updatedCart = this.cart().map((item: CartItem) => {
+      if (item._id === itemId && item.availableBatches) {
+        const batch = item.availableBatches.find(b => b.batchNumber === batchNumber);
+        if (batch) {
+          return {
+            ...item,
+            selectedBatch: batch.batchNumber,
+            selectedExpiry: batch.expiryDate
+          };
+        }
+      }
+      return item;
+    });
+    this.cart.set(updatedCart);
+    this.saveCartToStorage();
+  }
+
+  ngOnDestroy(): void {
   }
 }

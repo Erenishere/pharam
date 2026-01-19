@@ -11,6 +11,40 @@ $bg: #f8f8f8;
 $white: #ffffff;
 $shadow: 0 4px 24px 0 rgba(34, 41, 47, 0.1);
 
+.stock-badge {
+    font-size: 0.75rem;
+    padding: 2px 8px;
+    border-radius: 4px;
+    font-weight: 600;
+
+    &.stock-ok {
+        background: rgba($success, 0.15);
+        color: $success;
+    }
+
+    &.stock-low {
+        background: rgba($warning, 0.15);
+        color: darken($warning, 10%);
+    }
+
+    &.stock-out {
+        background: rgba($danger, 0.15);
+        color: $danger;
+    }
+
+    &.stock-expired {
+        background: rgba($danger, 0.2);
+        color: $danger;
+        border: 1px solid rgba($danger, 0.3);
+    }
+
+    &.stock-expiring {
+        background: rgba($warning, 0.2);
+        color: darken($warning, 15%);
+        border: 1px solid rgba($warning, 0.3);
+    }
+}
+
 .pos-workspace {
     display: flex;
     flex-direction: column;
@@ -379,8 +413,59 @@ $shadow: 0 4px 24px 0 rgba(34, 41, 47, 0.1);
 
                         .sub-text {
                             font-size: 0.75rem;
-                            color: #000000; // Force black as requested
-                            opacity: 0.7; // Optional: slight opacity to distinguish, but still black base
+                            color: #000000;
+                            opacity: 0.7;
+                        }
+
+                        .batch-row {
+                            display: flex;
+                            align-items: center;
+                            gap: 8px;
+                            margin-top: 2px;
+
+                            .batch-select {
+                                padding: 2px 6px;
+                                font-size: 0.75rem;
+                                border: 1px solid $border;
+                                border-radius: 4px;
+                                background: #f8f8f8;
+                                color: $text;
+                                cursor: pointer;
+                                max-width: 180px;
+
+                                &:focus {
+                                    outline: none;
+                                    border-color: $primary;
+                                }
+
+                                option.expired {
+                                    color: $danger;
+                                    background: rgba($danger, 0.1);
+                                }
+
+                                option.expiring {
+                                    color: $warning;
+                                    background: rgba($warning, 0.1);
+                                }
+                            }
+
+                            .batch-label {
+                                font-size: 0.75rem;
+                                color: $text-light;
+                                padding: 2px 6px;
+                                background: #f3f2f7;
+                                border-radius: 4px;
+
+                                &.expired {
+                                    color: $danger;
+                                    background: rgba($danger, 0.1);
+                                }
+
+                                &.expiring {
+                                    color: $warning;
+                                    background: rgba($warning, 0.1);
+                                }
+                            }
                         }
                     }
 
@@ -514,6 +599,32 @@ $shadow: 0 4px 24px 0 rgba(34, 41, 47, 0.1);
                     &:disabled {
                         background: #ccc;
                         box-shadow: none;
+                    }
+                }
+
+                .keyboard-hints {
+                    display: flex;
+                    flex-wrap: wrap;
+                    gap: 0.5rem;
+                    justify-content: center;
+                    margin-top: 0.5rem;
+                    padding: 0.75rem;
+                    background: #f8f8f8;
+                    border-radius: 8px;
+                    border: 1px dashed $border;
+
+                    span {
+                        font-size: 0.7rem;
+                        color: $text-light;
+                        padding: 2px 6px;
+                        background: #fff;
+                        border-radius: 4px;
+                        border: 1px solid $border;
+
+                        strong {
+                            color: $primary;
+                            font-weight: 700;
+                        }
                     }
                 }
             }
