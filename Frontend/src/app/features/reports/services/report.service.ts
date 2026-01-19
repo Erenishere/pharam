@@ -22,7 +22,7 @@ import {
 })
 export class ReportService {
   private baseUrl = `${environment.apiUrl}/reports`;
-  private analyticsUrl = `${environment.apiUrl}/analytics`;
+  private analyticsUrl = `${environment.apiUrl}/reports/analytics`;
 
   constructor(private http: HttpClient) {}
 
