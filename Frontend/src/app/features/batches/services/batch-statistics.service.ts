@@ -1,6 +1,6 @@
 import { Injectable } from '@angular/core';
 import { HttpClient, HttpParams } from '@angular/common/http';
-import { Observable } from 'rxjs';
+import { Observable, map } from 'rxjs';
 import { API_CONFIG } from '../../../core/constants/api.constants';
 import {
     BatchStatistics,
@@ -9,6 +9,12 @@ import {
     SupplierDistribution,
     StatisticsFilter
 } from '../models/batch-statistics.model';
+
+interface ApiResponse<T> {
+    success: boolean;
+    data: T;
+    message?: string;
+}
 
 @Injectable({
     providedIn: 'root'
@@ -42,7 +48,9 @@ export class BatchStatisticsService {
             }
         }
 
-        return this.http.get<BatchStatistics>(this.apiUrl, { params });
+        return this.http.get<ApiResponse<BatchStatistics>>(this.apiUrl, { params }).pipe(
+            map(response => response.data)
+        );
     }
 
     /**

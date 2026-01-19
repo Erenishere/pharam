@@ -122,4 +122,32 @@ export class BatchService {
     getNextBatchNumber(itemId: string): Observable<{ batchNumber: string }> {
         return this.http.get<{ batchNumber: string }>(`${API_CONFIG.BASE_URL}/items/${itemId}/next-batch-number`);
     }
+
+    /**
+     * Get batch statistics
+     */
+    getBatchStatistics(filters?: { locationIds?: string[]; supplierIds?: string[]; status?: string }): Observable<any> {
+        let params = new HttpParams();
+        if (filters?.locationIds && filters.locationIds.length > 0) {
+            params = params.set('locationIds', filters.locationIds.join(','));
+        }
+        if (filters?.supplierIds && filters.supplierIds.length > 0) {
+            params = params.set('supplierIds', filters.supplierIds.join(','));
+        }
+        if (filters?.status) {
+            params = params.set('status', filters.status);
+        }
+        return this.http.get<any>(`${this.apiUrl}/statistics`, { params });
+    }
+
+    /**
+     * Get expired batches
+     */
+    getExpiredBatches(locationId?: string): Observable<Batch[]> {
+        let params = new HttpParams();
+        if (locationId) {
+            params = params.set('locationId', locationId);
+        }
+        return this.http.get<Batch[]>(`${this.apiUrl}/expired`, { params });
+    }
 }
