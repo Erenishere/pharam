@@ -55,9 +55,13 @@ class ReportService {
 
     const summary = {
       totalInvoices: invoices.length,
-      totalAmount: invoices.reduce((sum, inv) => sum + inv.totals.grandTotal, 0),
-      totalDiscount: invoices.reduce((sum, inv) => sum + inv.totals.totalDiscount, 0),
-      totalTax: invoices.reduce((sum, inv) => sum + inv.totals.totalTax, 0),
+      totalAmount: invoices.reduce((sum, inv) => {
+        const grandTotal = inv.totals?.grandTotal ||
+          ((inv.totals?.subtotal || 0) + (inv.totals?.totalTax || 0) - (inv.totals?.totalDiscount || 0));
+        return sum + grandTotal;
+      }, 0),
+      totalDiscount: invoices.reduce((sum, inv) => sum + (inv.totals?.totalDiscount || 0), 0),
+      totalTax: invoices.reduce((sum, inv) => sum + (inv.totals?.totalTax || 0), 0),
     };
 
     let groupedData = [];
@@ -109,9 +113,13 @@ class ReportService {
 
     const summary = {
       totalInvoices: invoices.length,
-      totalAmount: invoices.reduce((sum, inv) => sum + inv.totals.grandTotal, 0),
-      totalDiscount: invoices.reduce((sum, inv) => sum + inv.totals.totalDiscount, 0),
-      totalTax: invoices.reduce((sum, inv) => sum + inv.totals.totalTax, 0),
+      totalAmount: invoices.reduce((sum, inv) => {
+        const grandTotal = inv.totals?.grandTotal ||
+          ((inv.totals?.subtotal || 0) + (inv.totals?.totalTax || 0) - (inv.totals?.totalDiscount || 0));
+        return sum + grandTotal;
+      }, 0),
+      totalDiscount: invoices.reduce((sum, inv) => sum + (inv.totals?.totalDiscount || 0), 0),
+      totalTax: invoices.reduce((sum, inv) => sum + (inv.totals?.totalTax || 0), 0),
     };
 
     let groupedData = [];
@@ -198,9 +206,9 @@ class ReportService {
       }
 
       grouped[customerId].invoiceCount++;
-      grouped[customerId].totalAmount += invoice.totals.grandTotal;
-      grouped[customerId].totalDiscount += invoice.totals.totalDiscount;
-      grouped[customerId].totalTax += invoice.totals.totalTax;
+      grouped[customerId].totalAmount += (invoice.totals?.grandTotal || 0);
+      grouped[customerId].totalDiscount += (invoice.totals?.totalDiscount || 0);
+      grouped[customerId].totalTax += (invoice.totals?.totalTax || 0);
     });
 
     return Object.values(grouped);
@@ -226,9 +234,9 @@ class ReportService {
       }
 
       grouped[supplierId].invoiceCount++;
-      grouped[supplierId].totalAmount += invoice.totals.grandTotal;
-      grouped[supplierId].totalDiscount += invoice.totals.totalDiscount;
-      grouped[supplierId].totalTax += invoice.totals.totalTax;
+      grouped[supplierId].totalAmount += (invoice.totals?.grandTotal || 0);
+      grouped[supplierId].totalDiscount += (invoice.totals?.totalDiscount || 0);
+      grouped[supplierId].totalTax += (invoice.totals?.totalTax || 0);
     });
 
     return Object.values(grouped);
@@ -253,8 +261,8 @@ class ReportService {
           };
         }
 
-        grouped[itemId].quantity += item.quantity;
-        grouped[itemId].totalAmount += item.lineTotal;
+        grouped[itemId].quantity += (item.quantity || 0);
+        grouped[itemId].totalAmount += (item.lineTotal || 0);
         grouped[itemId].invoiceCount++;
       });
     });
@@ -282,9 +290,9 @@ class ReportService {
       }
 
       grouped[dateKey].invoiceCount++;
-      grouped[dateKey].totalAmount += invoice.totals.grandTotal;
-      grouped[dateKey].totalDiscount += invoice.totals.totalDiscount;
-      grouped[dateKey].totalTax += invoice.totals.totalTax;
+      grouped[dateKey].totalAmount += (invoice.totals?.grandTotal || 0);
+      grouped[dateKey].totalDiscount += (invoice.totals?.totalDiscount || 0);
+      grouped[dateKey].totalTax += (invoice.totals?.totalTax || 0);
     });
 
     return Object.values(grouped).sort((a, b) => a.date.localeCompare(b.date));
@@ -314,10 +322,10 @@ class ReportService {
       }
 
       grouped[salesmanKey].invoiceCount++;
-      grouped[salesmanKey].totalAmount += invoice.totals.grandTotal;
-      grouped[salesmanKey].totalDiscount += invoice.totals.totalDiscount;
-      grouped[salesmanKey].totalTax += invoice.totals.totalTax;
-      grouped[salesmanKey].totalSubtotal += invoice.totals.subtotal;
+      grouped[salesmanKey].totalAmount += (invoice.totals?.grandTotal || 0);
+      grouped[salesmanKey].totalDiscount += (invoice.totals?.totalDiscount || 0);
+      grouped[salesmanKey].totalTax += (invoice.totals?.totalTax || 0);
+      grouped[salesmanKey].totalSubtotal += (invoice.totals?.subtotal || 0);
     });
 
     return Object.values(grouped);
@@ -961,9 +969,13 @@ class ReportService {
 
         // Check if item is applicable for this scheme
         let isApplicable = true;
-        if (scheme.applicableItems && scheme.applicableItems.length > 0) {
+
+        // Safety check for deleted items
+        if (!item.itemId) {
+          isApplicable = false;
+        } else if (scheme.applicableItems && scheme.applicableItems.length > 0) {
           isApplicable = scheme.applicableItems.some(
-            applicableItem => applicableItem._id.toString() === item.itemId._id.toString()
+            applicableItem => applicableItem && applicableItem._id && applicableItem._id.toString() === item.itemId._id.toString()
           );
         }
 
@@ -1016,7 +1028,7 @@ class ReportService {
             name: invoice.claimAccountId.name,
             accountNumber: invoice.claimAccountId.accountNumber
           } : null,
-          totalAmount: invoice.totals.grandTotal,
+          totalAmount: invoice.totals ? invoice.totals.grandTotal : 0,
           schemeItems: invoiceSchemeItems,
           schemeSummary: {
             scheme1Quantity: invoiceScheme1Qty,
@@ -1191,15 +1203,19 @@ class ReportService {
         discount1Amount: Math.round(invoiceDiscount1 * 100) / 100,
         discount2Amount: Math.round(invoiceDiscount2 * 100) / 100,
         totalDiscount: Math.round((invoiceDiscount1 + invoiceDiscount2) * 100) / 100,
-        grandTotal: invoice.totals.grandTotal
+        grandTotal: invoice.totals ? invoice.totals.grandTotal : 0
       };
 
       // Process Discount 1
       if (hasDiscount1 && (discountType === 'all' || discountType === 'discount1')) {
         breakdown.discount1.invoiceCount++;
         breakdown.discount1.totalAmount += invoiceDiscount1;
-        breakdown.discount1.byInvoiceType[invoice.type].invoiceCount++;
-        breakdown.discount1.byInvoiceType[invoice.type].amount += invoiceDiscount1;
+
+        if (breakdown.discount1.byInvoiceType[invoice.type]) {
+          breakdown.discount1.byInvoiceType[invoice.type].invoiceCount++;
+          breakdown.discount1.byInvoiceType[invoice.type].amount += invoiceDiscount1;
+        }
+
         breakdown.discount1.invoices.push({
           ...invoiceData,
           discountAmount: invoiceData.discount1Amount
@@ -1210,8 +1226,11 @@ class ReportService {
       if (hasDiscount2 && (discountType === 'all' || discountType === 'discount2')) {
         breakdown.discount2.invoiceCount++;
         breakdown.discount2.totalAmount += invoiceDiscount2;
-        breakdown.discount2.byInvoiceType[invoice.type].invoiceCount++;
-        breakdown.discount2.byInvoiceType[invoice.type].amount += invoiceDiscount2;
+
+        if (breakdown.discount2.byInvoiceType[invoice.type]) {
+          breakdown.discount2.byInvoiceType[invoice.type].invoiceCount++;
+          breakdown.discount2.byInvoiceType[invoice.type].amount += invoiceDiscount2;
+        }
 
         // Group by claim account
         if (invoice.claimAccountId) {

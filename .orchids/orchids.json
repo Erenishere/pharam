@@ -4,5 +4,7 @@
   "startupCommands": [
     "npm.cmd run dev --prefix C:\\Users\\DC\\Desktop\\pharam\\Backend",
     "npm.cmd run start --prefix C:\\Users\\DC\\Desktop\\pharam\\frontend"
-  ]
+  ],
+  "vercelProjectId": "prj_BWKimdvrZ0pItxp48a5jDAlEvGWg",
+  "deployedWithUserToken": false
 }

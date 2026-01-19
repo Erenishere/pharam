@@ -221,15 +221,15 @@ class InventoryService {
    */
   async getLowStockItems(options = {}) {
     const { threshold, locationId } = options;
-    
+
     if (locationId) {
       // Get low stock items for a specific location
       const allItems = await inventoryRepository.getStockByLocation(locationId);
-      return allItems.filter(item => 
+      return allItems.filter(item =>
         item.quantity <= (item.minimumStock || threshold || 10)
       );
     }
-    
+
     // Get low stock items across all locations
     return inventoryRepository.getLowStockItems(threshold);
   }
@@ -428,68 +428,132 @@ class InventoryService {
   async getWarehouseStockLevels(warehouseId) {
     const Warehouse = require('../models/Warehouse');
     const Inventory = require('../models/Inventory');
-    const Item = require('../models/Item');
 
-    let warehouse = null;
-    let inventoryRecords = [];
-
+    // If warehouseId is provided, use specific warehouse logic
     if (warehouseId) {
-      warehouse = await Warehouse.findById(warehouseId);
+      // Verify warehouse exists
+      const warehouse = await Warehouse.findById(warehouseId);
       if (!warehouse) {
         throw new Error('Warehouse not found');
       }
-      inventoryRecords = await Inventory.find({ warehouse: warehouseId })
+
+      // Get all inventory records for this warehouse
+      const inventoryRecords = await Inventory.find({ warehouse: warehouseId })
         .populate('item', 'code name unit category pricing inventory isActive')
-        .populate('warehouse', 'code name location')
         .sort({ 'item.name': 1 });
-    } else {
-      inventoryRecords = await Inventory.find({})
-        .populate('item', 'code name unit category pricing inventory isActive')
-        .populate('warehouse', 'code name location')
-        .sort({ 'item.name': 1 });
+
+      // Format the results with low stock indicators
+      const stockLevels = inventoryRecords.map(inv => {
+        const item = inv.item;
+        if (!item) return null; // Skip orphaned records
+
+        const currentStock = inv.quantity || 0;
+        const minStock = item.inventory?.minimumStock || 0;
+        const isLowStock = currentStock <= minStock;
+        const isOutOfStock = currentStock === 0;
+        const stockValue = currentStock * (item.pricing?.costPrice || 0);
+
+        return {
+          itemId: item._id,
+          itemCode: item.code,
+          itemName: item.name,
+          category: item.category,
+          unit: item.unit,
+          quantity: currentStock,
+          availableQuantity: inv.available || 0,
+          allocatedQuantity: inv.allocated || 0,
+          minimumStock: minStock,
+          maximumStock: item.inventory?.maximumStock || 0,
+          reorderPoint: inv.reorderPoint || minStock,
+          stockValue: stockValue,
+          unitCost: item.pricing?.costPrice || 0,
+          isLowStock: isLowStock,
+          isOutOfStock: isOutOfStock,
+          stockStatus: isOutOfStock ? 'out_of_stock' : (isLowStock ? 'low_stock' : 'in_stock'),
+          lastUpdated: inv.lastUpdated || inv.updatedAt,
+          lastCounted: inv.lastCounted
+        };
+      }).filter(item => item !== null);
+
+      return {
+        warehouse: {
+          id: warehouse._id,
+          code: warehouse.code,
+          name: warehouse.name,
+          location: warehouse.location
+        },
+        items: stockLevels,
+        summary: {
+          totalItems: stockLevels.length,
+          totalValue: stockLevels.reduce((sum, item) => sum + item.stockValue, 0),
+          lowStockItems: stockLevels.filter(item => item.isLowStock && !item.isOutOfStock).length,
+          outOfStockItems: stockLevels.filter(item => item.isOutOfStock).length,
+          inStockItems: stockLevels.filter(item => !item.isLowStock && !item.isOutOfStock).length
+        }
+      };
     }
 
+    // Consolidated "All Warehouses" Report
+    // Aggregate by item
+    const inventoryRecords = await Inventory.aggregate([
+      {
+        $group: {
+          _id: '$item',
+          quantity: { $sum: '$quantity' },
+          available: { $sum: '$available' },
+          allocated: { $sum: '$allocated' },
+          lastUpdated: { $max: '$updatedAt' }
+        }
+      },
+      {
+        $lookup: {
+          from: 'items',
+          localField: '_id',
+          foreignField: '_id',
+          as: 'item'
+        }
+      },
+      { $unwind: '$item' },
+      { $sort: { 'item.name': 1 } }
+    ]);
+
+    // Format consolidated results
     const stockLevels = inventoryRecords.map(inv => {
       const item = inv.item;
       const currentStock = inv.quantity || 0;
-      const minStock = item?.inventory?.minimumStock || 0;
+      const minStock = item.inventory?.minimumStock || 0;
       const isLowStock = currentStock <= minStock;
       const isOutOfStock = currentStock === 0;
-      const stockValue = currentStock * (item?.pricing?.costPrice || 0);
+      const stockValue = currentStock * (item.pricing?.costPrice || 0);
 
       return {
-        itemId: item?._id,
-        itemCode: item?.code,
-        itemName: item?.name,
-        category: item?.category,
-        unit: item?.unit,
-        warehouseId: inv.warehouse?._id,
-        warehouseCode: inv.warehouse?.code,
-        warehouseName: inv.warehouse?.name,
+        itemId: item._id,
+        itemCode: item.code,
+        itemName: item.name,
+        category: item.category,
+        unit: item.unit,
         quantity: currentStock,
         availableQuantity: inv.available || 0,
         allocatedQuantity: inv.allocated || 0,
         minimumStock: minStock,
-        maximumStock: item?.inventory?.maximumStock || 0,
-        reorderPoint: inv.reorderPoint || minStock,
+        maximumStock: item.inventory?.maximumStock || 0,
+        reorderPoint: minStock,
         stockValue: stockValue,
-        unitCost: item?.pricing?.costPrice || 0,
+        unitCost: item.pricing?.costPrice || 0,
         isLowStock: isLowStock,
         isOutOfStock: isOutOfStock,
         stockStatus: isOutOfStock ? 'out_of_stock' : (isLowStock ? 'low_stock' : 'in_stock'),
-        lastUpdated: inv.lastUpdated || inv.updatedAt,
-        lastCounted: inv.lastCounted
+        lastUpdated: inv.lastUpdated
       };
     });
 
     return {
-      warehouse: warehouse ? {
-        id: warehouse._id,
-        code: warehouse.code,
-        name: warehouse.name,
-        location: warehouse.location
-      } : null,
-      allWarehouses: !warehouseId,
+      warehouse: {
+        id: 'all',
+        code: 'ALL',
+        name: 'All Warehouses',
+        location: { city: 'Consolidated', country: '' }
+      },
       items: stockLevels,
       summary: {
         totalItems: stockLevels.length,
@@ -540,7 +604,7 @@ class InventoryService {
     // Update item inventory
     const Item = require('../models/Item');
     const itemDoc = await Item.findById(itemId);
-    
+
     if (!itemDoc) {
       throw new Error('Item not found');
     }
@@ -587,7 +651,7 @@ class InventoryService {
     // Get item to retrieve packSize
     const Item = require('../models/Item');
     const item = await Item.findById(itemId);
-    
+
     if (!item) {
       throw new Error('Item not found');
     }
@@ -623,7 +687,7 @@ class InventoryService {
   async getStockBoxUnit(itemId) {
     const Item = require('../models/Item');
     const item = await Item.findById(itemId);
-    
+
     if (!item) {
       throw new Error('Item not found');
     }

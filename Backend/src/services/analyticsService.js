@@ -92,8 +92,8 @@ class AnalyticsService {
       period: { startDate, endDate },
       trends,
       summary: {
-        totalSales: invoices.reduce((sum, inv) => sum + inv.totals.grandTotal, 0),
-        averageSale: invoices.length > 0 ? invoices.reduce((sum, inv) => sum + inv.totals.grandTotal, 0) / invoices.length : 0,
+        totalSales: invoices.reduce((sum, inv) => sum + (inv.totals?.grandTotal || 0), 0),
+        averageSale: invoices.length > 0 ? invoices.reduce((sum, inv) => sum + (inv.totals?.grandTotal || 0), 0) / invoices.length : 0,
         invoiceCount: invoices.length,
       },
     };
