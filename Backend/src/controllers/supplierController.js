@@ -18,6 +18,7 @@ const getAllSuppliers = async (req, res) => {
       sortBy = 'name',
       sortOrder = 'asc',
       keyword,
+      search,
       type,
       city,
       state,
@@ -28,9 +29,11 @@ const getAllSuppliers = async (req, res) => {
       ...otherFilters
     } = req.query;
 
+    const searchKeyword = keyword || search;
+
     // Build filters object
     const filters = {
-      ...(keyword && { keyword }),
+      ...(searchKeyword && { keyword: searchKeyword }),
       ...(type && { type }),
       ...(city && { city }),
       ...(state && { state }),
