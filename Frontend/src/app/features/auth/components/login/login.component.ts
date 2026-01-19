@@ -39,8 +39,14 @@ export class LoginComponent {
                     console.log('[LoginComponent] Login response received:', response);
                     this.isLoading = false;
                     if (response.success) {
-                        console.log('[LoginComponent] Login successful, navigating to dashboard');
-                        this.router.navigate(['/dashboard']);
+                        const userRole = response.data.user.role?.toLowerCase();
+                        console.log('[LoginComponent] Login successful, user role:', userRole);
+                        
+                        if (userRole === 'sales') {
+                            this.router.navigate(['/salesman/dashboard']);
+                        } else {
+                            this.router.navigate(['/dashboard']);
+                        }
                     } else {
                         console.error('[LoginComponent] Login response success=false');
                         this.errorMessage = 'Login failed. Please check your credentials.';

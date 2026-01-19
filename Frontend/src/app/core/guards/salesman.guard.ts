@@ -7,12 +7,12 @@ export const salesmanGuard: CanActivateFn = (route, state) => {
     const router = inject(Router);
 
     const currentUser = authService.currentUserValue;
+    const role = currentUser?.role?.toLowerCase();
 
-    if (currentUser && currentUser.role === 'sales') {
+    if (currentUser && (role === 'sales' || role === 'admin')) {
         return true;
     }
 
-    // Not a salesman, redirect to dashboard
     router.navigate(['/dashboard']);
     return false;
 };

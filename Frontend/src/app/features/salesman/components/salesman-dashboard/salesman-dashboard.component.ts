@@ -52,9 +52,13 @@ export class SalesmanDashboardComponent implements OnInit {
             },
             error: (error) => {
                 console.error('Error loading profile:', error);
-                this.error = 'Failed to load profile';
+                if (error.status === 404) {
+                    this.error = 'Your user account is not linked to a salesman profile. Please contact the administrator to link your account.';
+                } else {
+                    this.error = 'Failed to load profile. Please try again.';
+                }
                 this.loading = false;
-                this.toastService.error('Failed to load salesman profile');
+                this.toastService.error('Failed to load salesman profile. Ensure you are a registered salesman.');
             }
         });
     }
