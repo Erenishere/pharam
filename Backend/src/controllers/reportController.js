@@ -756,14 +756,7 @@ class ReportController {
     try {
       const { warehouseId } = req.query;
 
-      if (!warehouseId) {
-        return res.status(400).json({
-          success: false,
-          message: 'Warehouse ID is required',
-        });
-      }
-
-      const report = await inventoryService.getWarehouseStockLevels(warehouseId);
+      const report = await inventoryService.getWarehouseStockLevels(warehouseId || null);
 
       res.status(200).json({
         success: true,

@@ -421,31 +421,34 @@ class InventoryService {
   }
 
   /**
-   * Get warehouse stock levels for all items in a warehouse
-   * @param {string} warehouseId - Warehouse ID
-   * @returns {Promise<Array>} Array of items with stock levels and low stock indicators
+   * Get warehouse stock levels for all items in a warehouse or all warehouses
+   * @param {string} warehouseId - Warehouse ID (optional - if null, aggregates all warehouses)
+   * @returns {Promise<Object>} Items with stock levels and low stock indicators
    */
   async getWarehouseStockLevels(warehouseId) {
-    if (!warehouseId) {
-      throw new Error('Warehouse ID is required');
-    }
-
     const Warehouse = require('../models/Warehouse');
     const Inventory = require('../models/Inventory');
     const Item = require('../models/Item');
 
-    // Verify warehouse exists
-    const warehouse = await Warehouse.findById(warehouseId);
-    if (!warehouse) {
-      throw new Error('Warehouse not found');
+    let warehouse = null;
+    let inventoryRecords = [];
+
+    if (warehouseId) {
+      warehouse = await Warehouse.findById(warehouseId);
+      if (!warehouse) {
+        throw new Error('Warehouse not found');
+      }
+      inventoryRecords = await Inventory.find({ warehouse: warehouseId })
+        .populate('item', 'code name unit category pricing inventory isActive')
+        .populate('warehouse', 'code name location')
+        .sort({ 'item.name': 1 });
+    } else {
+      inventoryRecords = await Inventory.find({})
+        .populate('item', 'code name unit category pricing inventory isActive')
+        .populate('warehouse', 'code name location')
+        .sort({ 'item.name': 1 });
     }
 
-    // Get all inventory records for this warehouse
-    const inventoryRecords = await Inventory.find({ warehouse: warehouseId })
-      .populate('item', 'code name unit category pricing inventory isActive')
-      .sort({ 'item.name': 1 });
-
-    // Format the results with low stock indicators
     const stockLevels = inventoryRecords.map(inv => {
       const item = inv.item;
       const currentStock = inv.quantity || 0;
@@ -460,6 +463,9 @@ class InventoryService {
         itemName: item?.name,
         category: item?.category,
         unit: item?.unit,
+        warehouseId: inv.warehouse?._id,
+        warehouseCode: inv.warehouse?.code,
+        warehouseName: inv.warehouse?.name,
         quantity: currentStock,
         availableQuantity: inv.available || 0,
         allocatedQuantity: inv.allocated || 0,
@@ -477,12 +483,13 @@ class InventoryService {
     });
 
     return {
-      warehouse: {
+      warehouse: warehouse ? {
         id: warehouse._id,
         code: warehouse.code,
         name: warehouse.name,
         location: warehouse.location
-      },
+      } : null,
+      allWarehouses: !warehouseId,
       items: stockLevels,
       summary: {
         totalItems: stockLevels.length,
