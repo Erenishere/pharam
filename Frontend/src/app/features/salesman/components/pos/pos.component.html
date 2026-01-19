@@ -24,7 +24,8 @@
                 <div class="search-input-container">
                     <mat-icon class="search-icon">search</mat-icon>
                     <input [formControl]="customerControl" [matAutocomplete]="customerAuto"
-                        placeholder="Search by name, code, or phone (F3)..." class="customer-search-input" #customerInput>
+                        placeholder="Search by name, code, or phone (F3)..." class="customer-search-input"
+                        #customerInput>
                     <mat-spinner diameter="18" *ngIf="isSearchingCustomers"></mat-spinner>
                     <button mat-icon-button class="clear-btn" *ngIf="customerControl.value"
                         (click)="clearCustomer(); $event.stopPropagation()">
@@ -92,7 +93,8 @@
                             <div class="prod-meta">
                                 <span class="price">{{ formatCurrency(item.pricing?.salePrice || item.salePrice)
                                     }}</span>
-                                <span class="stock-badge" [ngClass]="getStockStatusClass(item)">{{ item.stock || item.inventory?.currentStock || 0 }} {{ item.unit
+                                <span class="stock-badge" [ngClass]="getStockStatusClass(item)">{{ item.stock ||
+                                    item.inventory?.currentStock || 0 }} {{ item.unit
                                     }}</span>
                             </div>
                         </div>
@@ -122,17 +124,18 @@
                                     <div class="batch-row">
                                         <span class="sub-text">{{ item.manufacturer || 'N/A' }}</span>
                                         <select *ngIf="item.availableBatches && item.availableBatches.length > 1"
-                                            class="batch-select"
-                                            [ngModel]="item.selectedBatch"
+                                            class="batch-select" [ngModel]="item.selectedBatch"
                                             (ngModelChange)="onBatchChange(item._id, $event)">
-                                            <option *ngFor="let batch of item.availableBatches" [value]="batch.batchNumber"
+                                            <option *ngFor="let batch of item.availableBatches"
+                                                [value]="batch.batchNumber"
                                                 [class.expired]="isExpired(batch.expiryDate)"
                                                 [class.expiring]="isExpiringSoon(batch.expiryDate)">
-                                                {{ batch.batchNumber }} ({{ batch.expiryDate | date:'MM/yy' }}) - {{ batch.stock }}
+                                                {{ batch.batchNumber }} ({{ batch.expiryDate | date:'MM/yy' }}) - {{
+                                                batch.stock }}
                                             </option>
                                         </select>
-                                        <span *ngIf="!item.availableBatches || item.availableBatches.length <= 1" class="batch-label"
-                                            [class.expired]="isExpired(item.selectedExpiry)"
+                                        <span *ngIf="!item.availableBatches || item.availableBatches.length <= 1"
+                                            class="batch-label" [class.expired]="isExpired(item.selectedExpiry)"
                                             [class.expiring]="isExpiringSoon(item.selectedExpiry)">
                                             {{ item.selectedBatch || 'No Batch' }}
                                         </span>
@@ -205,9 +208,10 @@
 
             <div class="process-actions">
                 <button mat-flat-button class="process-btn"
-                    [disabled]="isSubmitting || cart().length === 0 || !selectedCustomer" (click)="submitInvoice()"
-                    matTooltip="Press F9 to submit">
-                    <span *ngIf="!isSubmitting">PROCESS INVOICE (F9)</span>
+                    [disabled]="isSubmitting || isSearchingCustomers || cart().length === 0 || !selectedCustomer"
+                    (click)="submitInvoice()" matTooltip="Press F9 to submit">
+                    <span *ngIf="!isSubmitting && !isSearchingCustomers">PROCESS INVOICE (F9)</span>
+                    <span *ngIf="isSearchingCustomers">Loading Customer...</span>
                     <mat-spinner diameter="24" *ngIf="isSubmitting" class="spinner-white"></mat-spinner>
                 </button>
 

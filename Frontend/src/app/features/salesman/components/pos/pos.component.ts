@@ -111,7 +111,7 @@ export class PosComponent implements OnInit, AfterViewInit, OnDestroy {
         break;
       case 'F9':
         event.preventDefault();
-        if (this.cart().length > 0 && this.selectedCustomer && !this.isSubmitting) {
+        if (this.cart().length > 0 && this.selectedCustomer && !this.isSubmitting && !this.isSearchingCustomers) {
           this.submitInvoice();
         }
         break;
@@ -316,12 +316,22 @@ export class PosComponent implements OnInit, AfterViewInit, OnDestroy {
   }
 
   selectWalkIn(): void {
+    this.isSearchingCustomers = true;
     this.posService.getCustomerByCode('CUST-WALKIN').subscribe({
       next: (res) => {
+        this.isSearchingCustomers = false;
         if (res.success && res.data) {
           this.onCustomerSelected(res.data);
           this.customerControl.setValue(res.data.name);
+        } else {
+          this.toastService.error('Walk-In Customer not found. Please contact admin to seed the database.');
+          console.error('Walk-In Customer response was not successful:', res);
         }
+      },
+      error: (err) => {
+        this.isSearchingCustomers = false;
+        this.toastService.error('Failed to load Walk-In Customer. Please try again or select a registered customer.');
+        console.error('Error fetching Walk-In Customer:', err);
       }
     });
   }
@@ -511,20 +521,33 @@ export class PosComponent implements OnInit, AfterViewInit, OnDestroy {
       next: (response) => {
         if (response.success) {
           this.toastService.success('Invoice created successfully');
-
-          // Show receipt (do not auto-print)
           this.showReceipt = true;
           this.hasProcessedInvoice = true;
-
-          // Note: We do NOT clear the cart here anymore. 
-          // The cart will be cleared when the user closes the receipt modal.
         }
         this.isSubmitting = false;
       },
       error: (error) => {
         console.error('Error creating invoice:', error);
-        this.toastService.error('Failed to create invoice');
         this.isSubmitting = false;
+
+        // Specific handling for stale items (Item Not Found)
+        const errorData = error.error?.error;
+        if (errorData?.code === 'ITEM_NOT_FOUND' || (errorData?.message && errorData.message.includes('not found in the database'))) {
+          const itemId = errorData.itemId;
+          const itemName = itemId ? this.cart().find(i => i._id === itemId)?.name : 'An item';
+
+          this.toastService.error(`Stale Item Detected: ${itemName}. Some items in your cart are no longer available in the database. Clearing stale items...`);
+
+          if (itemId) {
+            // Remove just this one
+            this.removeFromCart(itemId);
+          } else {
+            // Fallback: Clear the whole cart if we can't identify which one
+            this.clearCart();
+          }
+        } else {
+          this.toastService.error(errorData?.message || 'Failed to create invoice');
+        }
       }
     });
   }
