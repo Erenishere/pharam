@@ -1,9 +1,13 @@
+@import 'styles/vuexy-vars';
+
+$purple: #867cf0;
+
 .salesman-dashboard {
   padding: 24px;
   max-width: 1400px;
   margin: 0 auto;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-  min-height: 100vh;
+  background-color: $bg-page;
+  min-height: calc(100vh - 64px);
 
   .loading-container,
   .error-container {
@@ -12,13 +16,14 @@
     align-items: center;
     justify-content: center;
     min-height: 400px;
-    color: white;
+    color: $text-body;
 
     mat-icon {
       font-size: 48px;
       width: 48px;
       height: 48px;
       margin-bottom: 16px;
+      color: $purple;
     }
 
     p {
@@ -37,23 +42,26 @@
     align-items: center;
     margin-bottom: 32px;
     padding: 24px;
-    background: rgba(255, 255, 255, 0.1);
-    backdrop-filter: blur(10px);
-    border-radius: 16px;
-    border: 1px solid rgba(255, 255, 255, 0.2);
+    background: $bg-card;
+    border-radius: $radius-card;
+    box-shadow: $shadow-card;
+    border: $border-card;
 
     .welcome-section {
       h1 {
-        color: white;
-        font-size: 32px;
-        font-weight: 700;
+        color: $text-card-title;
+        font-size: 28px;
+        font-weight: 600;
         margin: 0 0 8px 0;
+        border-left: 4px solid $purple;
+        padding-left: 12px;
       }
 
       .subtitle {
-        color: rgba(255, 255, 255, 0.8);
-        font-size: 16px;
+        color: $text-body;
+        font-size: 14px;
         margin: 0;
+        padding-left: 16px;
       }
     }
 
@@ -62,7 +70,17 @@
       padding: 0 32px;
       font-size: 16px;
       font-weight: 600;
-      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+      background: linear-gradient(118deg, $purple, rgba($purple, 0.8));
+      box-shadow: 0 0 10px 1px rgba($purple, 0.4);
+      color: #fff;
+      border: none;
+      border-radius: $radius-btn;
+      transition: all 0.25s ease;
+
+      &:hover {
+        box-shadow: 0 0 14px 2px rgba($purple, 0.6);
+        transform: translateY(-1px);
+      }
 
       mat-icon {
         margin-right: 8px;
@@ -80,14 +98,16 @@
       display: flex;
       align-items: center;
       padding: 24px;
-      border-radius: 16px;
-      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
+      border-radius: $radius-card;
+      box-shadow: $shadow-card;
+      background: $bg-card;
+      border: $border-card;
       transition: transform 0.3s ease, box-shadow 0.3s ease;
       cursor: pointer;
 
       &:hover {
         transform: translateY(-4px);
-        box-shadow: 0 12px 32px rgba(0, 0, 0, 0.2);
+        box-shadow: 0 8px 24px rgba($purple, 0.2);
       }
 
       .stat-icon {
@@ -111,30 +131,30 @@
         flex: 1;
 
         h3 {
-          font-size: 14px;
-          font-weight: 500;
-          color: #666;
+          font-size: 12px;
+          font-weight: 600;
+          color: $text-muted;
           margin: 0 0 8px 0;
           text-transform: uppercase;
           letter-spacing: 0.5px;
         }
 
         .stat-value {
-          font-size: 28px;
+          font-size: 24px;
           font-weight: 700;
           margin: 0 0 4px 0;
-          color: #333;
+          color: $text-card-title;
         }
 
         .stat-label {
           font-size: 12px;
-          color: #999;
+          color: $text-body;
           margin: 0;
         }
       }
 
       &.sales-card .stat-icon {
-        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        background: linear-gradient(135deg, $purple 0%, rgba($purple, 0.7) 100%);
       }
 
       &.invoices-card .stat-icon {
@@ -155,10 +175,12 @@
     margin-bottom: 32px;
 
     h2 {
-      color: white;
-      font-size: 24px;
+      color: $text-card-title;
+      font-size: 20px;
       font-weight: 600;
       margin-bottom: 20px;
+      border-left: 4px solid $purple;
+      padding-left: 12px;
     }
 
     .actions-grid {
@@ -169,34 +191,37 @@
       .action-card {
         padding: 24px;
         text-align: center;
-        border-radius: 12px;
+        border-radius: $radius-card;
         cursor: pointer;
         transition: all 0.3s ease;
-        background: white;
+        background: $bg-card;
+        box-shadow: $shadow-card;
+        border: $border-card;
 
         &:hover {
           transform: translateY(-4px);
-          box-shadow: 0 12px 32px rgba(0, 0, 0, 0.2);
+          box-shadow: 0 8px 24px rgba($purple, 0.25);
+          border-color: $purple;
         }
 
         mat-icon {
           font-size: 48px;
           width: 48px;
           height: 48px;
-          color: #667eea;
+          color: $purple;
           margin-bottom: 12px;
         }
 
         h3 {
-          font-size: 18px;
+          font-size: 16px;
           font-weight: 600;
           margin: 0 0 8px 0;
-          color: #333;
+          color: $text-card-title;
         }
 
         p {
           font-size: 14px;
-          color: #666;
+          color: $text-body;
           margin: 0;
         }
       }
@@ -205,14 +230,18 @@
 
   .performance-summary {
     padding: 24px;
-    border-radius: 16px;
-    background: white;
+    border-radius: $radius-card;
+    background: $bg-card;
+    box-shadow: $shadow-card;
+    border: $border-card;
 
     h2 {
-      font-size: 20px;
+      font-size: 18px;
       font-weight: 600;
       margin: 0 0 20px 0;
-      color: #333;
+      color: $text-card-title;
+      border-left: 4px solid $purple;
+      padding-left: 12px;
     }
 
     .summary-grid {
@@ -224,19 +253,20 @@
         display: flex;
         flex-direction: column;
         padding: 16px;
-        background: #f8f9fa;
-        border-radius: 8px;
+        background: $bg-page;
+        border-radius: $radius-card;
+        border: $border-card;
 
         .label {
-          font-size: 14px;
-          color: #666;
+          font-size: 13px;
+          color: $text-body;
           margin-bottom: 8px;
         }
 
         .value {
-          font-size: 24px;
+          font-size: 22px;
           font-weight: 700;
-          color: #667eea;
+          color: $purple;
         }
       }
     }
