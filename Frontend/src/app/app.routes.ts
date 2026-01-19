@@ -108,6 +108,63 @@ export const routes: Routes = [
                 canActivate: [authGuard, adminGuard],
                 loadComponent: () => import('./features/warehouses/components/warehouse-list/warehouse-list.component').then(m => m.WarehouseListComponent),
                 data: { title: 'Warehouses / Branches' }
+            },
+            {
+                path: 'reports',
+                canActivate: [authGuard, adminGuard],
+                data: { title: 'Reports' },
+                children: [
+                    {
+                        path: '',
+                        loadComponent: () => import('./features/reports/components/reports-dashboard/reports-dashboard.component').then(m => m.ReportsDashboardComponent),
+                        data: { title: 'Reports Dashboard' }
+                    },
+                    {
+                        path: 'sales',
+                        loadComponent: () => import('./features/reports/components/sales-reports/sales-reports.component').then(m => m.SalesReportsComponent),
+                        data: { title: 'Sales Reports' }
+                    },
+                    {
+                        path: 'purchase',
+                        loadComponent: () => import('./features/reports/components/purchase-reports/purchase-reports.component').then(m => m.PurchaseReportsComponent),
+                        data: { title: 'Purchase Reports' }
+                    },
+                    {
+                        path: 'inventory',
+                        loadComponent: () => import('./features/reports/components/inventory-reports/inventory-reports.component').then(m => m.InventoryReportsComponent),
+                        data: { title: 'Inventory Reports' }
+                    },
+                    {
+                        path: 'financial',
+                        loadComponent: () => import('./features/reports/components/financial-reports/financial-reports.component').then(m => m.FinancialReportsComponent),
+                        data: { title: 'Financial Reports' }
+                    },
+                    {
+                        path: 'tax',
+                        loadComponent: () => import('./features/reports/components/tax-reports/tax-reports.component').then(m => m.TaxReportsComponent),
+                        data: { title: 'Tax Reports' }
+                    },
+                    {
+                        path: 'accounts',
+                        loadComponent: () => import('./features/reports/components/accounts-reports/accounts-reports.component').then(m => m.AccountsReportsComponent),
+                        data: { title: 'Accounts Reports' }
+                    },
+                    {
+                        path: 'salesman',
+                        loadComponent: () => import('./features/reports/components/salesman-reports/salesman-reports.component').then(m => m.SalesmanReportsComponent),
+                        data: { title: 'Salesman Reports' }
+                    },
+                    {
+                        path: 'schemes',
+                        loadComponent: () => import('./features/reports/components/scheme-reports/scheme-reports.component').then(m => m.SchemeReportsComponent),
+                        data: { title: 'Scheme & Discount Reports' }
+                    },
+                    {
+                        path: 'warehouse',
+                        loadComponent: () => import('./features/reports/components/warehouse-reports/warehouse-reports.component').then(m => m.WarehouseReportsComponent),
+                        data: { title: 'Warehouse Reports' }
+                    }
+                ]
             }
         ]
     }

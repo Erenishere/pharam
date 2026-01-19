@@ -1,0 +1,230 @@
+<div class="report-container">
+  <div class="report-header">
+    <div class="header-left">
+      <button mat-icon-button class="back-btn" routerLink="/reports">
+        <mat-icon>arrow_back</mat-icon>
+      </button>
+      <h1>Financial Reports</h1>
+    </div>
+    <div class="header-actions">
+      <button mat-stroked-button class="refresh-btn" (click)="loadReport()">
+        <mat-icon>refresh</mat-icon> Refresh
+      </button>
+    </div>
+  </div>
+
+  <div class="filters-card">
+    <div class="filters-row">
+      <mat-form-field class="filter-field" appearance="outline">
+        <mat-label>Start Date</mat-label>
+        <input matInput [matDatepicker]="startPicker" [(ngModel)]="startDate">
+        <mat-datepicker-toggle matIconSuffix [for]="startPicker"></mat-datepicker-toggle>
+        <mat-datepicker #startPicker></mat-datepicker>
+      </mat-form-field>
+
+      <mat-form-field class="filter-field" appearance="outline">
+        <mat-label>End Date</mat-label>
+        <input matInput [matDatepicker]="endPicker" [(ngModel)]="endDate">
+        <mat-datepicker-toggle matIconSuffix [for]="endPicker"></mat-datepicker-toggle>
+        <mat-datepicker #endPicker></mat-datepicker>
+      </mat-form-field>
+
+      <div class="filter-actions">
+        <button mat-raised-button color="primary" (click)="applyFilters()">Apply</button>
+        <button mat-stroked-button (click)="resetFilters()">Reset</button>
+      </div>
+    </div>
+  </div>
+
+  @if (loading) {
+    <div class="loading-container">
+      <mat-spinner diameter="48"></mat-spinner>
+      <p>Loading financial data...</p>
+    </div>
+  } @else {
+    <mat-tab-group [(selectedIndex)]="activeTab" class="report-tabs">
+      <mat-tab label="Profit & Loss">
+        <div class="data-card">
+          <div class="card-header">
+            <h2>Profit & Loss Statement</h2>
+          </div>
+          <div class="card-body">
+            @if (profitLoss) {
+              <div class="financial-statement">
+                <div class="statement-section">
+                  <h3>Revenue</h3>
+                  <div class="line-item">
+                    <span>Total Revenue</span>
+                    <span class="amount positive">{{ formatCurrency(profitLoss.revenue) }}</span>
+                  </div>
+                </div>
+                <div class="statement-section">
+                  <h3>Cost of Goods Sold</h3>
+                  <div class="line-item">
+                    <span>COGS</span>
+                    <span class="amount negative">{{ formatCurrency(profitLoss.costOfGoodsSold) }}</span>
+                  </div>
+                </div>
+                <div class="statement-section highlight">
+                  <div class="line-item total">
+                    <span>Gross Profit</span>
+                    <span class="amount">{{ formatCurrency(profitLoss.grossProfit) }}</span>
+                  </div>
+                  <div class="line-item">
+                    <span>Gross Margin</span>
+                    <span class="percent">{{ formatPercent(profitLoss.grossMargin) }}</span>
+                  </div>
+                </div>
+                <div class="statement-section">
+                  <h3>Operating Expenses</h3>
+                  <div class="line-item">
+                    <span>Total Expenses</span>
+                    <span class="amount negative">{{ formatCurrency(profitLoss.operatingExpenses) }}</span>
+                  </div>
+                </div>
+                <div class="statement-section highlight success">
+                  <div class="line-item total">
+                    <span>Net Profit</span>
+                    <span class="amount" [class.positive]="profitLoss.netProfit >= 0" [class.negative]="profitLoss.netProfit < 0">
+                      {{ formatCurrency(profitLoss.netProfit) }}
+                    </span>
+                  </div>
+                  <div class="line-item">
+                    <span>Net Margin</span>
+                    <span class="percent">{{ formatPercent(profitLoss.netMargin) }}</span>
+                  </div>
+                </div>
+              </div>
+            } @else {
+              <div class="empty-state">
+                <mat-icon>inbox</mat-icon>
+                <p>No profit & loss data available</p>
+              </div>
+            }
+          </div>
+        </div>
+      </mat-tab>
+
+      <mat-tab label="Balance Sheet">
+        <div class="data-card">
+          <div class="card-header">
+            <h2>Balance Sheet</h2>
+          </div>
+          <div class="card-body">
+            @if (balanceSheet) {
+              <div class="balance-sheet-grid">
+                <div class="bs-section">
+                  <h3>Assets</h3>
+                  <div class="line-item">
+                    <span>Cash</span>
+                    <span class="amount">{{ formatCurrency(balanceSheet.assets?.cash) }}</span>
+                  </div>
+                  <div class="line-item">
+                    <span>Receivables</span>
+                    <span class="amount">{{ formatCurrency(balanceSheet.assets?.receivables) }}</span>
+                  </div>
+                  <div class="line-item">
+                    <span>Inventory</span>
+                    <span class="amount">{{ formatCurrency(balanceSheet.assets?.inventory) }}</span>
+                  </div>
+                  <div class="line-item total">
+                    <span>Total Assets</span>
+                    <span class="amount">{{ formatCurrency(balanceSheet.assets?.total) }}</span>
+                  </div>
+                </div>
+                <div class="bs-section">
+                  <h3>Liabilities</h3>
+                  <div class="line-item">
+                    <span>Payables</span>
+                    <span class="amount">{{ formatCurrency(balanceSheet.liabilities?.payables) }}</span>
+                  </div>
+                  <div class="line-item">
+                    <span>Loans</span>
+                    <span class="amount">{{ formatCurrency(balanceSheet.liabilities?.loans) }}</span>
+                  </div>
+                  <div class="line-item total">
+                    <span>Total Liabilities</span>
+                    <span class="amount">{{ formatCurrency(balanceSheet.liabilities?.total) }}</span>
+                  </div>
+                </div>
+                <div class="bs-section">
+                  <h3>Equity</h3>
+                  <div class="line-item">
+                    <span>Capital</span>
+                    <span class="amount">{{ formatCurrency(balanceSheet.equity?.capital) }}</span>
+                  </div>
+                  <div class="line-item">
+                    <span>Retained Earnings</span>
+                    <span class="amount">{{ formatCurrency(balanceSheet.equity?.retainedEarnings) }}</span>
+                  </div>
+                  <div class="line-item total">
+                    <span>Total Equity</span>
+                    <span class="amount">{{ formatCurrency(balanceSheet.equity?.total) }}</span>
+                  </div>
+                </div>
+              </div>
+            } @else {
+              <div class="empty-state">
+                <mat-icon>inbox</mat-icon>
+                <p>No balance sheet data available</p>
+              </div>
+            }
+          </div>
+        </div>
+      </mat-tab>
+
+      <mat-tab label="Cash Flow">
+        <div class="data-card">
+          <div class="card-header">
+            <h2>Cash Flow Statement</h2>
+          </div>
+          <div class="card-body">
+            @if (cashFlow) {
+              <div class="financial-statement">
+                <div class="statement-section">
+                  <div class="line-item">
+                    <span>Opening Balance</span>
+                    <span class="amount">{{ formatCurrency(cashFlow.openingBalance) }}</span>
+                  </div>
+                </div>
+                <div class="statement-section">
+                  <h3>Cash Inflows</h3>
+                  <div class="line-item">
+                    <span>Total Receipts</span>
+                    <span class="amount positive">{{ formatCurrency(cashFlow.receipts) }}</span>
+                  </div>
+                </div>
+                <div class="statement-section">
+                  <h3>Cash Outflows</h3>
+                  <div class="line-item">
+                    <span>Total Payments</span>
+                    <span class="amount negative">{{ formatCurrency(cashFlow.payments) }}</span>
+                  </div>
+                </div>
+                <div class="statement-section highlight">
+                  <div class="line-item total">
+                    <span>Net Cash Flow</span>
+                    <span class="amount" [class.positive]="cashFlow.netCashFlow >= 0" [class.negative]="cashFlow.netCashFlow < 0">
+                      {{ formatCurrency(cashFlow.netCashFlow) }}
+                    </span>
+                  </div>
+                </div>
+                <div class="statement-section highlight success">
+                  <div class="line-item total">
+                    <span>Closing Balance</span>
+                    <span class="amount">{{ formatCurrency(cashFlow.closingBalance) }}</span>
+                  </div>
+                </div>
+              </div>
+            } @else {
+              <div class="empty-state">
+                <mat-icon>inbox</mat-icon>
+                <p>No cash flow data available</p>
+              </div>
+            }
+          </div>
+        </div>
+      </mat-tab>
+    </mat-tab-group>
+  }
+</div>

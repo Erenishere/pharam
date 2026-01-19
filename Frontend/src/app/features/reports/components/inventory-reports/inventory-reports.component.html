@@ -1,0 +1,255 @@
+<div class="report-container">
+  <div class="report-header">
+    <div class="header-left">
+      <button mat-icon-button class="back-btn" routerLink="/reports">
+        <mat-icon>arrow_back</mat-icon>
+      </button>
+      <h1>Inventory Reports</h1>
+    </div>
+    <div class="header-actions">
+      <button mat-stroked-button class="refresh-btn" (click)="loadReport()">
+        <mat-icon>refresh</mat-icon> Refresh
+      </button>
+    </div>
+  </div>
+
+  @if (loading) {
+    <div class="loading-container">
+      <mat-spinner diameter="48"></mat-spinner>
+      <p>Loading inventory data...</p>
+    </div>
+  } @else {
+    <div class="summary-cards">
+      <div class="summary-card">
+        <div class="icon-wrapper purple">
+          <mat-icon>inventory_2</mat-icon>
+        </div>
+        <div class="card-content">
+          <div class="label">Total Items</div>
+          <div class="value">{{ formatNumber(summary?.totalItems) }}</div>
+        </div>
+      </div>
+
+      <div class="summary-card">
+        <div class="icon-wrapper info">
+          <mat-icon>storage</mat-icon>
+        </div>
+        <div class="card-content">
+          <div class="label">Total Stock</div>
+          <div class="value">{{ formatNumber(summary?.totalStock) }}</div>
+        </div>
+      </div>
+
+      <div class="summary-card">
+        <div class="icon-wrapper warning">
+          <mat-icon>warning</mat-icon>
+        </div>
+        <div class="card-content">
+          <div class="label">Low Stock Items</div>
+          <div class="value">{{ formatNumber(summary?.lowStockCount) }}</div>
+        </div>
+      </div>
+
+      <div class="summary-card">
+        <div class="icon-wrapper danger">
+          <mat-icon>error</mat-icon>
+        </div>
+        <div class="card-content">
+          <div class="label">Out of Stock</div>
+          <div class="value">{{ formatNumber(summary?.outOfStockCount) }}</div>
+        </div>
+      </div>
+
+      <div class="summary-card">
+        <div class="icon-wrapper success">
+          <mat-icon>attach_money</mat-icon>
+        </div>
+        <div class="card-content">
+          <div class="label">Total Value</div>
+          <div class="value">{{ formatCurrency(summary?.totalValue) }}</div>
+        </div>
+      </div>
+    </div>
+
+    <mat-tab-group [(selectedIndex)]="activeTab" class="report-tabs">
+      <mat-tab label="By Category">
+        <div class="data-card">
+          <div class="card-header">
+            <h2>Stock by Category</h2>
+          </div>
+          <div class="table-container">
+            @if (stockByCategory.length > 0) {
+              <table>
+                <thead>
+                  <tr>
+                    <th>Category</th>
+                    <th class="text-right">Items</th>
+                    <th class="text-right">Stock</th>
+                    <th class="text-right">Value</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  @for (row of stockByCategory; track row.category) {
+                    <tr>
+                      <td>{{ row.category || 'Uncategorized' }}</td>
+                      <td class="text-right">{{ formatNumber(row.itemCount) }}</td>
+                      <td class="text-right">{{ formatNumber(row.totalStock) }}</td>
+                      <td class="text-right amount">{{ formatCurrency(row.value) }}</td>
+                    </tr>
+                  }
+                </tbody>
+              </table>
+            } @else {
+              <div class="empty-state">
+                <mat-icon>inbox</mat-icon>
+                <p>No category data found</p>
+              </div>
+            }
+          </div>
+        </div>
+      </mat-tab>
+
+      <mat-tab label="By Warehouse">
+        <div class="data-card">
+          <div class="card-header">
+            <h2>Stock by Warehouse</h2>
+          </div>
+          <div class="table-container">
+            @if (stockByWarehouse.length > 0) {
+              <table>
+                <thead>
+                  <tr>
+                    <th>Warehouse</th>
+                    <th class="text-right">Items</th>
+                    <th class="text-right">Stock</th>
+                    <th class="text-right">Value</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  @for (row of stockByWarehouse; track row.warehouse?._id) {
+                    <tr>
+                      <td>{{ row.warehouse?.name || 'Unknown' }}</td>
+                      <td class="text-right">{{ formatNumber(row.itemCount) }}</td>
+                      <td class="text-right">{{ formatNumber(row.totalStock) }}</td>
+                      <td class="text-right amount">{{ formatCurrency(row.value) }}</td>
+                    </tr>
+                  }
+                </tbody>
+              </table>
+            } @else {
+              <div class="empty-state">
+                <mat-icon>inbox</mat-icon>
+                <p>No warehouse data found</p>
+              </div>
+            }
+          </div>
+        </div>
+      </mat-tab>
+
+      <mat-tab label="Low Stock Alert">
+        <div class="data-card">
+          <div class="card-header">
+            <h2>Low Stock Items</h2>
+          </div>
+          <div class="table-container">
+            @if (lowStockItems.length > 0) {
+              <table>
+                <thead>
+                  <tr>
+                    <th>Item</th>
+                    <th class="text-right">Current Stock</th>
+                    <th class="text-right">Min Stock</th>
+                    <th class="text-right">Shortage</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  @for (row of lowStockItems; track row._id) {
+                    <tr>
+                      <td>{{ row.name || 'Unknown' }}</td>
+                      <td class="text-right">{{ formatNumber(row.currentStock) }}</td>
+                      <td class="text-right">{{ formatNumber(row.minStock) }}</td>
+                      <td class="text-right negative">{{ formatNumber((row.minStock || 0) - (row.currentStock || 0)) }}</td>
+                    </tr>
+                  }
+                </tbody>
+              </table>
+            } @else {
+              <div class="empty-state">
+                <mat-icon>check_circle</mat-icon>
+                <p>No low stock items</p>
+              </div>
+            }
+          </div>
+        </div>
+      </mat-tab>
+
+      <mat-tab label="Expiring Batches">
+        <div class="data-card">
+          <div class="card-header">
+            <h2>Expiring Batches</h2>
+          </div>
+          <div class="table-container">
+            @if (expiringBatches.length > 0) {
+              <table>
+                <thead>
+                  <tr>
+                    <th>Item</th>
+                    <th>Batch No</th>
+                    <th class="text-right">Quantity</th>
+                    <th class="text-right">Expiry Date</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  @for (row of expiringBatches; track row._id) {
+                    <tr>
+                      <td>{{ row.item?.name || 'Unknown' }}</td>
+                      <td>{{ row.batchNumber || 'N/A' }}</td>
+                      <td class="text-right">{{ formatNumber(row.quantity) }}</td>
+                      <td class="text-right">{{ row.expiryDate | date:'mediumDate' }}</td>
+                    </tr>
+                  }
+                </tbody>
+              </table>
+            } @else {
+              <div class="empty-state">
+                <mat-icon>check_circle</mat-icon>
+                <p>No expiring batches</p>
+              </div>
+            }
+          </div>
+        </div>
+      </mat-tab>
+
+      <mat-tab label="Turnover">
+        <div class="data-card">
+          <div class="card-header">
+            <h2>Inventory Turnover Analysis</h2>
+          </div>
+          <div class="card-body">
+            @if (inventoryTurnover) {
+              <div class="turnover-summary">
+                <div class="turnover-item">
+                  <span class="label">Turnover Ratio:</span>
+                  <span class="value">{{ inventoryTurnover.turnoverRatio?.toFixed(2) || '0.00' }}</span>
+                </div>
+                <div class="turnover-item">
+                  <span class="label">Days in Inventory:</span>
+                  <span class="value">{{ inventoryTurnover.daysInInventory?.toFixed(0) || '0' }} days</span>
+                </div>
+                <div class="turnover-item">
+                  <span class="label">Average Inventory:</span>
+                  <span class="value">{{ formatCurrency(inventoryTurnover.averageInventory) }}</span>
+                </div>
+              </div>
+            } @else {
+              <div class="empty-state">
+                <mat-icon>inbox</mat-icon>
+                <p>No turnover data available</p>
+              </div>
+            }
+          </div>
+        </div>
+      </mat-tab>
+    </mat-tab-group>
+  }
+</div>
