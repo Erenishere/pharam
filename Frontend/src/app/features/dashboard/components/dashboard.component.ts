@@ -13,7 +13,7 @@ import { RouterModule } from '@angular/router';
   template: `
     <div class="dashboard-container">
       <h1>Dashboard</h1>
-      <p class="welcome-text">Welcome to Pharma Management System</p>
+      <p class="welcome-text">Welcome to Industraders</p>
       
       <div class="cards-grid">
         <mat-card class="dashboard-card" routerLink="/users">

@@ -27,7 +27,8 @@ export const batchAccessGuard: CanActivateFn = (route, state) => {
         console.log('[BatchAccessGuard] User role:', user.role);
 
         // Allow access for admin and inventory manager roles
-        if (user && (user.role === 'admin' || user.role === 'inventory_manager')) {
+        const role = user?.role?.toLowerCase();
+        if (role === 'admin' || role === 'inventory') {
             console.log('[BatchAccessGuard] Access granted for batch management');
             return true;
         }

@@ -1,6 +1,7 @@
 import { Injectable } from '@angular/core';
 import { HttpClient, HttpParams } from '@angular/common/http';
 import { Observable } from 'rxjs';
+import { API_CONFIG } from '../../../core/constants/api.constants';
 import {
     BatchStatistics,
     ExpiryAnalytics,
@@ -13,7 +14,7 @@ import {
     providedIn: 'root'
 })
 export class BatchStatisticsService {
-    private apiUrl = '/api/batches/statistics';
+    private apiUrl = `${API_CONFIG.BASE_URL}/batches/statistics`;
 
     constructor(private http: HttpClient) { }
 

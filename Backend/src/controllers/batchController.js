@@ -293,12 +293,16 @@ const updateBatchQuantity = async (req, res) => {
  */
 const getBatchStatistics = async (req, res) => {
   try {
-    const { itemId, locationId, supplierId, status } = req.query;
+    const { itemId, locationId, locationIds, supplierId, supplierIds, status, startDate, endDate } = req.query;
     const stats = await batchService.getBatchStatistics({
       itemId,
       locationId,
+      locationIds: locationIds ? locationIds.split(',') : (locationId ? [locationId] : undefined),
       supplierId,
-      status
+      supplierIds: supplierIds ? supplierIds.split(',') : (supplierId ? [supplierId] : undefined),
+      status,
+      startDate,
+      endDate
     });
 
     return successResponse(res, stats, 'Batch statistics retrieved successfully');

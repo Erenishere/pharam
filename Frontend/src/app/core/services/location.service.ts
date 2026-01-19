@@ -2,6 +2,7 @@ import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable, of } from 'rxjs';
 import { map } from 'rxjs/operators';
+import { API_CONFIG } from '../constants/api.constants';
 import { Location, LocationOption } from '../models/location.model';
 
 interface ApiResponse<T> {
@@ -14,7 +15,7 @@ interface ApiResponse<T> {
     providedIn: 'root'
 })
 export class LocationService {
-    private apiUrl = '/api/locations';
+    private apiUrl = `${API_CONFIG.BASE_URL}/warehouses`;
 
     constructor(private http: HttpClient) { }
 

@@ -1,3 +1,4 @@
+const mongoose = require('mongoose');
 const Batch = require('../models/Batch');
 
 class BatchRepository {
@@ -263,10 +264,10 @@ class BatchRepository {
       $unwind: '$item'
     });
 
-    // Lookup locations
+    // Lookup locations (warehouses)
     aggregationPipeline.push({
       $lookup: {
-        from: 'locations',
+        from: 'warehouses',
         localField: 'location',
         foreignField: '_id',
         as: 'location'
@@ -395,116 +396,294 @@ class BatchRepository {
     const matchStage = {};
 
     if (filters.itemId) {
-      matchStage.item = filters.itemId;
+      matchStage.item = new mongoose.Types.ObjectId(filters.itemId);
     }
 
-    if (filters.locationId) {
-      matchStage.location = filters.locationId;
+    if (filters.locationIds && filters.locationIds.length > 0) {
+      matchStage.location = { $in: filters.locationIds.map(id => new mongoose.Types.ObjectId(id)) };
+    } else if (filters.locationId) {
+      matchStage.location = new mongoose.Types.ObjectId(filters.locationId);
     }
 
-    if (filters.supplierId) {
-      matchStage.supplier = filters.supplierId;
+    if (filters.supplierIds && filters.supplierIds.length > 0) {
+      matchStage.supplier = { $in: filters.supplierIds.map(id => new mongoose.Types.ObjectId(id)) };
+    } else if (filters.supplierId) {
+      matchStage.supplier = new mongoose.Types.ObjectId(filters.supplierId);
     }
 
     if (filters.status) {
       matchStage.status = filters.status;
     }
 
+    if (filters.startDate || filters.endDate) {
+      matchStage.createdAt = {};
+      if (filters.startDate) {
+        matchStage.createdAt.$gte = new Date(filters.startDate);
+      }
+      if (filters.endDate) {
+        matchStage.createdAt.$lte = new Date(filters.endDate);
+      }
+    }
+
     const now = new Date();
+    const sevenDaysFromNow = new Date();
+    sevenDaysFromNow.setDate(now.getDate() + 7);
     const thirtyDaysFromNow = new Date();
     thirtyDaysFromNow.setDate(now.getDate() + 30);
+    const ninetyDaysFromNow = new Date();
+    ninetyDaysFromNow.setDate(now.getDate() + 90);
 
-    const result = await Batch.aggregate([
-      { $match: matchStage },
-      {
-        $group: {
-          _id: null,
-          totalBatches: { $sum: 1 },
-          totalQuantity: { $sum: '$quantity' },
-          totalRemaining: { $sum: '$remainingQuantity' },
-          totalCost: { $sum: { $multiply: ['$quantity', '$unitCost'] } },
-          totalValue: { $sum: { $multiply: ['$remainingQuantity', '$unitCost'] } },
-          expiringSoon: {
-            $sum: {
-              $cond: [
-                {
-                  $and: [
-                    { $lte: ['$expiryDate', thirtyDaysFromNow] },
-                    { $gt: ['$expiryDate', now] },
-                    { $gt: ['$remainingQuantity', 0] }
-                  ]
-                },
-                1,
-                0
-              ]
+    const [mainStats, statusDist, locationDist, supplierDist, expiryTrend, expiryAlerts, lowStockStats, ageStats] = await Promise.all([
+      Batch.aggregate([
+        { $match: matchStage },
+        {
+          $group: {
+            _id: null,
+            totalBatches: { $sum: 1 },
+            totalQuantity: { $sum: '$quantity' },
+            totalRemaining: { $sum: '$remainingQuantity' },
+            totalCost: { $sum: { $multiply: ['$quantity', '$unitCost'] } },
+            totalValue: { $sum: { $multiply: ['$remainingQuantity', '$unitCost'] } },
+            expiredBatches: {
+              $sum: {
+                $cond: [{ $lte: ['$expiryDate', now] }, 1, 0]
+              }
             }
-          },
-          expired: {
-            $sum: {
-              $cond: [
-                {
-                  $and: [
-                    { $lte: ['$expiryDate', now] },
-                    { $gt: ['$remainingQuantity', 0] }
-                  ]
-                },
-                1,
-                0
-              ]
+          }
+        },
+        {
+          $project: {
+            _id: 0,
+            totalBatches: 1,
+            totalQuantity: 1,
+            totalRemaining: 1,
+            totalCost: { $round: ['$totalCost', 2] },
+            totalValue: { $round: ['$totalValue', 2] },
+            expiredBatches: 1
+          }
+        }
+      ]),
+      Batch.aggregate([
+        { $match: matchStage },
+        {
+          $group: {
+            _id: '$status',
+            count: { $sum: 1 },
+            value: { $sum: { $multiply: ['$remainingQuantity', '$unitCost'] } }
+          }
+        },
+        {
+          $project: {
+            _id: 0,
+            status: '$_id',
+            count: 1,
+            value: { $round: ['$value', 2] }
+          }
+        }
+      ]),
+      Batch.aggregate([
+        { $match: matchStage },
+        {
+          $lookup: {
+            from: 'warehouses',
+            localField: 'location',
+            foreignField: '_id',
+            as: 'locationInfo'
+          }
+        },
+        { $unwind: { path: '$locationInfo', preserveNullAndEmptyArrays: true } },
+        {
+          $group: {
+            _id: '$location',
+            locationName: { $first: { $ifNull: ['$locationInfo.name', 'Unassigned'] } },
+            batchCount: { $sum: 1 },
+            totalQuantity: { $sum: '$remainingQuantity' },
+            totalValue: { $sum: { $multiply: ['$remainingQuantity', '$unitCost'] } }
+          }
+        },
+        {
+          $project: {
+            _id: 0,
+            locationId: '$_id',
+            locationName: 1,
+            batchCount: 1,
+            totalQuantity: 1,
+            totalValue: { $round: ['$totalValue', 2] }
+          }
+        }
+      ]),
+      Batch.aggregate([
+        { $match: matchStage },
+        {
+          $lookup: {
+            from: 'suppliers',
+            localField: 'supplier',
+            foreignField: '_id',
+            as: 'supplierInfo'
+          }
+        },
+        { $unwind: { path: '$supplierInfo', preserveNullAndEmptyArrays: true } },
+        {
+          $group: {
+            _id: '$supplier',
+            supplierName: { $first: { $ifNull: ['$supplierInfo.name', 'Unassigned'] } },
+            batchCount: { $sum: 1 },
+            totalValue: { $sum: { $multiply: ['$remainingQuantity', '$unitCost'] } }
+          }
+        },
+        {
+          $project: {
+            _id: 0,
+            supplierId: '$_id',
+            supplierName: 1,
+            batchCount: 1,
+            totalValue: { $round: ['$totalValue', 2] }
+          }
+        }
+      ]),
+      Batch.aggregate([
+        {
+          $match: {
+            ...matchStage,
+            expiryDate: { $lte: new Date(new Date().setFullYear(now.getFullYear() + 1)) }
+          }
+        },
+        {
+          $group: {
+            _id: {
+              $dateToString: { format: '%Y-%m', date: '$expiryDate' }
+            },
+            expiringCount: {
+              $sum: { $cond: [{ $and: [{ $gt: ['$expiryDate', now] }, { $gt: ['$remainingQuantity', 0] }] }, 1, 0] }
+            },
+            expiredCount: {
+              $sum: { $cond: [{ $and: [{ $lte: ['$expiryDate', now] }, { $gt: ['$remainingQuantity', 0] }] }, 1, 0] }
             }
-          },
-          active: {
-            $sum: {
-              $cond: [
-                {
-                  $and: [
-                    { $gt: ['$expiryDate', now] },
-                    { $gt: ['$remainingQuantity', 0] }
-                  ]
-                },
-                1,
-                0
-              ]
-            }
-          },
-          depleted: {
-            $sum: {
-              $cond: [
-                { $lte: ['$remainingQuantity', 0] },
-                1,
-                0
-              ]
+          }
+        },
+        { $sort: { '_id': 1 } },
+        {
+          $project: {
+            _id: 0,
+            date: '$_id',
+            expiringCount: 1,
+            expiredCount: 1
+          }
+        }
+      ]),
+      Batch.aggregate([
+        { $match: { ...matchStage, remainingQuantity: { $gt: 0 } } },
+        {
+          $group: {
+            _id: null,
+            in7Days: {
+              $sum: { $cond: [{ $and: [{ $lte: ['$expiryDate', sevenDaysFromNow] }, { $gt: ['$expiryDate', now] }] }, 1, 0] }
+            },
+            in30Days: {
+              $sum: { $cond: [{ $and: [{ $lte: ['$expiryDate', thirtyDaysFromNow] }, { $gt: ['$expiryDate', now] }] }, 1, 0] }
+            },
+            in90Days: {
+              $sum: { $cond: [{ $and: [{ $lte: ['$expiryDate', ninetyDaysFromNow] }, { $gt: ['$expiryDate', now] }] }, 1, 0] }
             }
           }
         }
-      },
-      {
-        $project: {
-          _id: 0,
-          totalBatches: 1,
-          totalQuantity: 1,
-          totalRemaining: 1,
-          totalCost: { $round: ['$totalCost', 2] },
-          totalValue: { $round: ['$totalValue', 2] },
-          expiringSoon: 1,
-          expired: 1,
-          active: 1,
-          depleted: 1
+      ]),
+      Batch.aggregate([
+        { $match: matchStage },
+        {
+          $group: {
+            _id: '$item',
+            totalRemaining: { $sum: '$remainingQuantity' }
+          }
+        },
+        {
+          $lookup: {
+            from: 'items',
+            localField: '_id',
+            foreignField: '_id',
+            as: 'itemInfo'
+          }
+        },
+        { $unwind: '$itemInfo' },
+        {
+          $match: {
+            $expr: { $lt: ['$totalRemaining', { $ifNull: ['$itemInfo.inventory.minimumStock', 0] }] }
+          }
+        },
+        { $count: 'lowStockCount' }
+      ]),
+      Batch.aggregate([
+        { $match: { ...matchStage, manufacturingDate: { $ne: null } } },
+        {
+          $group: {
+            _id: null,
+            avgAge: {
+              $avg: {
+                $divide: [
+                  { $subtract: [now, '$manufacturingDate'] },
+                  1000 * 60 * 60 * 24
+                ]
+              }
+            }
+          }
         }
-      }
+      ])
     ]);
 
-    return result[0] || {
+    const stats = mainStats[0] || {
       totalBatches: 0,
       totalQuantity: 0,
       totalRemaining: 0,
       totalCost: 0,
       totalValue: 0,
-      expiringSoon: 0,
-      expired: 0,
-      active: 0,
-      depleted: 0
+      expiredBatches: 0
     };
+
+    const finalStats = {
+      ...stats,
+      lowStockAlerts: lowStockStats[0]?.lowStockCount || 0,
+      averageBatchAge: Math.round(ageStats[0]?.avgAge || 0),
+      batchesByStatus: statusDist,
+      batchesByLocation: locationDist,
+      valueBySupplier: supplierDist,
+      expiryAnalytics: {
+        expiringIn7Days: expiryAlerts[0]?.in7Days || 0,
+        expiringIn30Days: expiryAlerts[0]?.in30Days || 0,
+        expiringIn90Days: expiryAlerts[0]?.in90Days || 0,
+        expiredBatches: stats.expiredBatches,
+        expiryTrend: expiryTrend
+      },
+      fifoCompliance: {
+        overallCompliance: 100, // Placeholder
+        itemCategories: [],
+        oldestBatches: []
+      }
+    };
+
+    return this._roundObjectAmounts(finalStats);
+  }
+
+  /**
+   * Recursively round all numbers in an object to 2 decimal places
+   * @param {Object} obj - Object to round
+   * @returns {Object} Object with rounded numbers
+   * @private
+   */
+  _roundObjectAmounts(obj) {
+    if (obj === null || obj === undefined) return obj;
+    if (typeof obj === 'number') return Math.round(obj * 100) / 100;
+    if (typeof obj !== 'object') return obj;
+    if (obj instanceof Date) return obj;
+
+    if (Array.isArray(obj)) {
+      return obj.map(item => this._roundObjectAmounts(item));
+    }
+
+    const roundedObj = {};
+    Object.keys(obj).forEach(key => {
+      roundedObj[key] = this._roundObjectAmounts(obj[key]);
+    });
+    return roundedObj;
   }
 
   /**

@@ -3,6 +3,8 @@ import { LoginComponent } from './features/auth/components/login/login.component
 import { authGuard } from './core/guards/auth.guard';
 import { adminGuard } from './core/guards/admin.guard';
 import { batchAccessGuard } from './core/guards/batch-access.guard';
+import { salesmanGuard } from './core/guards/salesman.guard';
+import { dashboardGuard } from './core/guards/dashboard.guard';
 
 export const routes: Routes = [
     { path: '', redirectTo: '/dashboard', pathMatch: 'full' },
@@ -14,28 +16,42 @@ export const routes: Routes = [
         children: [
             {
                 path: 'dashboard',
+                canActivate: [authGuard, dashboardGuard],
                 loadComponent: () => import('./features/dashboard/components/dashboard.component').then(m => m.DashboardComponent)
             },
             {
                 path: 'users',
-                canActivate: [adminGuard],
+                canActivate: [authGuard, adminGuard],
                 loadComponent: () => import('./features/users/components/user-list/user-list.component').then(m => m.UserListComponent)
             },
             {
                 path: 'customers',
+                canActivate: [authGuard, dashboardGuard],
                 loadComponent: () => import('./features/customers/components/customer-list/customer-list.component').then(m => m.CustomerListComponent)
             },
             {
                 path: 'items',
+                canActivate: [authGuard],
                 loadComponent: () => import('./features/items/components/item-list/item-list.component').then(m => m.ItemListComponent)
             },
             {
                 path: 'suppliers',
+                canActivate: [authGuard, dashboardGuard],
                 loadComponent: () => import('./features/suppliers/suppliers.component').then(m => m.SuppliersComponent)
             },
             {
+                path: 'pos',
+                canActivate: [authGuard, salesmanGuard],
+                loadComponent: () => import('./features/salesman/components/pos/pos.component').then(m => m.PosComponent)
+            },
+            {
+                path: 'salesman/dashboard',
+                canActivate: [authGuard, salesmanGuard],
+                loadComponent: () => import('./features/salesman/components/salesman-dashboard/salesman-dashboard.component').then(m => m.SalesmanDashboardComponent)
+            },
+            {
                 path: 'batches',
-                canActivate: [batchAccessGuard],
+                canActivate: [authGuard, batchAccessGuard],
                 data: { title: 'Batch Management' },
                 children: [
                     {

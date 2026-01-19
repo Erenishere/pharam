@@ -1,6 +1,6 @@
 const express = require('express');
 const reportController = require('../controllers/reportController');
-const { authenticate } = require('../middleware/auth');
+const { authenticate, requireRoles, requireAdmin } = require('../middleware/auth');
 
 const router = express.Router();
 
@@ -13,7 +13,7 @@ router.use(authenticate);
  * @access  Private
  * @query   startDate, endDate, customerId (optional), groupBy (optional), format (optional)
  */
-router.get('/sales', reportController.getSalesReport);
+router.get('/sales', requireRoles(['admin', 'sales', 'accountant']), reportController.getSalesReport);
 
 /**
  * @route   GET /api/v1/reports/purchase
@@ -21,7 +21,7 @@ router.get('/sales', reportController.getSalesReport);
  * @access  Private
  * @query   startDate, endDate, supplierId (optional), groupBy (optional), format (optional)
  */
-router.get('/purchase', reportController.getPurchaseReport);
+router.get('/purchase', requireRoles(['admin', 'purchase', 'accountant']), reportController.getPurchaseReport);
 
 /**
  * @route   GET /api/v1/reports/inventory
@@ -29,7 +29,7 @@ router.get('/purchase', reportController.getPurchaseReport);
  * @access  Private
  * @query   category (optional), lowStockOnly (optional), includeInactive (optional), format (optional)
  */
-router.get('/inventory', reportController.getInventoryReport);
+router.get('/inventory', requireRoles(['admin', 'inventory', 'sales', 'purchase', 'accountant']), reportController.getInventoryReport);
 
 /**
  * @route   GET /api/v1/reports/financial/profit-loss
@@ -37,7 +37,7 @@ router.get('/inventory', reportController.getInventoryReport);
  * @access  Private
  * @query   startDate, endDate, format (optional)
  */
-router.get('/financial/profit-loss', reportController.getProfitLossStatement);
+router.get('/financial/profit-loss', requireRoles(['admin', 'accountant']), reportController.getProfitLossStatement);
 
 /**
  * @route   GET /api/v1/reports/financial/balance-sheet
@@ -45,7 +45,7 @@ router.get('/financial/profit-loss', reportController.getProfitLossStatement);
  * @access  Private
  * @query   asOfDate, format (optional)
  */
-router.get('/financial/balance-sheet', reportController.getBalanceSheet);
+router.get('/financial/balance-sheet', requireRoles(['admin', 'accountant']), reportController.getBalanceSheet);
 
 /**
  * @route   GET /api/v1/reports/financial/cash-flow
@@ -53,7 +53,7 @@ router.get('/financial/balance-sheet', reportController.getBalanceSheet);
  * @access  Private
  * @query   startDate, endDate, format (optional)
  */
-router.get('/financial/cash-flow', reportController.getCashFlowStatement);
+router.get('/financial/cash-flow', requireRoles(['admin', 'accountant']), reportController.getCashFlowStatement);
 
 /**
  * @route   GET /api/v1/reports/financial/tax-compliance
@@ -61,7 +61,7 @@ router.get('/financial/cash-flow', reportController.getCashFlowStatement);
  * @access  Private
  * @query   startDate, endDate, format (optional)
  */
-router.get('/financial/tax-compliance', reportController.getTaxComplianceReport);
+router.get('/financial/tax-compliance', requireRoles(['admin', 'accountant']), reportController.getTaxComplianceReport);
 
 /**
  * @route   GET /api/v1/reports/financial/summary
@@ -69,14 +69,14 @@ router.get('/financial/tax-compliance', reportController.getTaxComplianceReport)
  * @access  Private
  * @query   startDate, endDate, format (optional)
  */
-router.get('/financial/summary', reportController.getFinancialSummary);
+router.get('/financial/summary', requireRoles(['admin', 'accountant']), reportController.getFinancialSummary);
 
 /**
  * @route   GET /api/v1/reports/analytics/dashboard
  * @desc    Get dashboard summary
  * @access  Private
  */
-router.get('/analytics/dashboard', reportController.getDashboardSummary);
+router.get('/analytics/dashboard', requireAdmin, reportController.getDashboardSummary);
 
 /**
  * @route   GET /api/v1/reports/analytics/sales-trends
@@ -84,7 +84,7 @@ router.get('/analytics/dashboard', reportController.getDashboardSummary);
  * @access  Private
  * @query   startDate, endDate, interval (optional: daily, weekly, monthly)
  */
-router.get('/analytics/sales-trends', reportController.getSalesTrends);
+router.get('/analytics/sales-trends', requireRoles(['admin', 'accountant']), reportController.getSalesTrends);
 
 /**
  * @route   GET /api/v1/reports/analytics/top-customers
@@ -92,7 +92,7 @@ router.get('/analytics/sales-trends', reportController.getSalesTrends);
  * @access  Private
  * @query   startDate, endDate, limit (optional, default: 10)
  */
-router.get('/analytics/top-customers', reportController.getTopCustomers);
+router.get('/analytics/top-customers', requireRoles(['admin', 'accountant']), reportController.getTopCustomers);
 
 /**
  * @route   GET /api/v1/reports/analytics/top-items
@@ -100,7 +100,7 @@ router.get('/analytics/top-customers', reportController.getTopCustomers);
  * @access  Private
  * @query   startDate, endDate, limit (optional, default: 10)
  */
-router.get('/analytics/top-items', reportController.getTopSellingItems);
+router.get('/analytics/top-items', requireRoles(['admin', 'accountant']), reportController.getTopSellingItems);
 
 /**
  * @route   GET /api/v1/reports/analytics/revenue-by-category
@@ -108,7 +108,7 @@ router.get('/analytics/top-items', reportController.getTopSellingItems);
  * @access  Private
  * @query   startDate, endDate
  */
-router.get('/analytics/revenue-by-category', reportController.getRevenueByCategory);
+router.get('/analytics/revenue-by-category', requireRoles(['admin', 'accountant']), reportController.getRevenueByCategory);
 
 /**
  * @route   GET /api/v1/reports/analytics/profit-margins
@@ -116,7 +116,7 @@ router.get('/analytics/revenue-by-category', reportController.getRevenueByCatego
  * @access  Private
  * @query   startDate, endDate
  */
-router.get('/analytics/profit-margins', reportController.getProfitMargins);
+router.get('/analytics/profit-margins', requireRoles(['admin', 'accountant']), reportController.getProfitMargins);
 
 /**
  * @route   GET /api/v1/reports/analytics/collection-efficiency
@@ -124,7 +124,7 @@ router.get('/analytics/profit-margins', reportController.getProfitMargins);
  * @access  Private
  * @query   asOfDate (optional, defaults to today)
  */
-router.get('/analytics/collection-efficiency', reportController.getPaymentCollectionEfficiency);
+router.get('/analytics/collection-efficiency', requireRoles(['admin', 'accountant']), reportController.getPaymentCollectionEfficiency);
 
 /**
  * @route   GET /api/v1/reports/analytics/inventory-turnover
@@ -132,14 +132,14 @@ router.get('/analytics/collection-efficiency', reportController.getPaymentCollec
  * @access  Private
  * @query   startDate, endDate
  */
-router.get('/analytics/inventory-turnover', reportController.getInventoryTurnover);
+router.get('/analytics/inventory-turnover', requireRoles(['admin', 'accountant']), reportController.getInventoryTurnover);
 
 /**
  * @route   GET /api/v1/reports/analytics/kpis
  * @desc    Get real-time KPIs
  * @access  Private
  */
-router.get('/analytics/kpis', reportController.getRealTimeKPIs);
+router.get('/analytics/kpis', requireAdmin, reportController.getRealTimeKPIs);
 
 /**
  * @route   GET /api/v1/reports/purchase-gst-breakdown
@@ -147,7 +147,7 @@ router.get('/analytics/kpis', reportController.getRealTimeKPIs);
  * @access  Private
  * @query   startDate, endDate, supplierId (optional), format (optional)
  */
-router.get('/purchase-gst-breakdown', reportController.getPurchaseGSTBreakdown);
+router.get('/purchase-gst-breakdown', requireRoles(['admin', 'accountant']), reportController.getPurchaseGSTBreakdown);
 
 /**
  * @route   GET /api/v1/reports/purchase-summary-gst
@@ -155,7 +155,7 @@ router.get('/purchase-gst-breakdown', reportController.getPurchaseGSTBreakdown);
  * @access  Private
  * @query   startDate, endDate, supplierId (optional), format (optional)
  */
-router.get('/purchase-summary-gst', reportController.getPurchaseSummaryWithGST);
+router.get('/purchase-summary-gst', requireRoles(['admin', 'accountant']), reportController.getPurchaseSummaryWithGST);
 
 /**
  * @route   GET /api/v1/reports/supplier-wise-gst
@@ -163,7 +163,7 @@ router.get('/purchase-summary-gst', reportController.getPurchaseSummaryWithGST);
  * @access  Private
  * @query   startDate, endDate, format (optional)
  */
-router.get('/supplier-wise-gst', reportController.getSupplierWiseGSTReport);
+router.get('/supplier-wise-gst', requireRoles(['admin', 'accountant']), reportController.getSupplierWiseGSTReport);
 
 /**
  * @route   GET /api/reports/warehouse-stock
@@ -171,7 +171,7 @@ router.get('/supplier-wise-gst', reportController.getSupplierWiseGSTReport);
  * @access  Private
  * @query   warehouseId (required)
  */
-router.get('/warehouse-stock', reportController.getWarehouseStockReport);
+router.get('/warehouse-stock', requireRoles(['admin', 'inventory', 'accountant']), reportController.getWarehouseStockReport);
 
 /**
  * @route   GET /api/reports/warehouse-comparison/:itemId
@@ -179,7 +179,7 @@ router.get('/warehouse-stock', reportController.getWarehouseStockReport);
  * @access  Private
  * @param   itemId - Item ID
  */
-router.get('/warehouse-comparison/:itemId', reportController.getWarehouseComparisonReport);
+router.get('/warehouse-comparison/:itemId', requireRoles(['admin', 'inventory', 'accountant']), reportController.getWarehouseComparisonReport);
 
 /**
  * @route   GET /api/reports/discount-breakdown
@@ -188,7 +188,7 @@ router.get('/warehouse-comparison/:itemId', reportController.getWarehouseCompari
  * @query   startDate (required), endDate (required), invoiceType (optional: sales, purchase, all), 
  *          discountType (optional: discount1, discount2, all), claimAccountId (optional), format (optional)
  */
-router.get('/discount-breakdown', reportController.getDiscountBreakdown);
+router.get('/discount-breakdown', requireRoles(['admin', 'accountant']), reportController.getDiscountBreakdown);
 
 /**
  * @route   GET /api/reports/tax-summary
@@ -199,7 +199,7 @@ router.get('/discount-breakdown', reportController.getDiscountBreakdown);
  * @query   startDate (required), endDate (required), invoiceType (optional: sales, purchase, all),
  *          customerId (optional), supplierId (optional), format (optional)
  */
-router.get('/tax-summary', reportController.getTaxSummary);
+router.get('/tax-summary', requireRoles(['admin', 'accountant']), reportController.getTaxSummary);
 
 /**
  * @route   GET /api/reports/scheme-analysis
@@ -208,7 +208,7 @@ router.get('/tax-summary', reportController.getTaxSummary);
  * @query   startDate (required), endDate (required), customerId (optional), supplierId (optional),
  *          invoiceType (optional: sales, purchase), format (optional)
  */
-router.get('/scheme-analysis', reportController.getSchemeAnalysis);
+router.get('/scheme-analysis', requireRoles(['admin', 'accountant']), reportController.getSchemeAnalysis);
 
 /**
  * @route   GET /api/reports/scheme-invoices/:schemeId
@@ -217,7 +217,7 @@ router.get('/scheme-analysis', reportController.getSchemeAnalysis);
  * @param   schemeId - Scheme ID
  * @query   startDate (required), endDate (required), invoiceType (optional: sales, purchase), format (optional)
  */
-router.get('/scheme-invoices/:schemeId', reportController.getSchemeInvoices);
+router.get('/scheme-invoices/:schemeId', requireRoles(['admin', 'accountant']), reportController.getSchemeInvoices);
 
 /**
  * Phase 2: Post-Dated Cheque Reports (Requirement 7.5)
@@ -226,7 +226,7 @@ router.get('/scheme-invoices/:schemeId', reportController.getSchemeInvoices);
  * @access  Private
  * @query   dueDate (optional - filter by cheques due on or before this date), format (optional)
  */
-router.get('/pending-cheques', reportController.getPendingChequesReport);
+router.get('/pending-cheques', requireRoles(['admin', 'accountant']), reportController.getPendingChequesReport);
 
 /**
  * Phase 2: Aging Report (Requirement 8.5)
@@ -235,7 +235,7 @@ router.get('/pending-cheques', reportController.getPendingChequesReport);
  * @access  Private
  * @query   accountId (optional - filter by specific customer), format (optional)
  */
-router.get('/aging', reportController.getAgingReport);
+router.get('/aging', requireRoles(['admin', 'accountant', 'sales']), reportController.getAgingReport);
 
 /**
  * Phase 2: Salesman Reports (Requirement 9.3, 9.4)
@@ -244,7 +244,7 @@ router.get('/aging', reportController.getAgingReport);
  * @access  Private
  * @query   salesmanId (optional), startDate (required), endDate (required), format (optional)
  */
-router.get('/salesman-sales', reportController.getSalesmanSalesReport);
+router.get('/salesman-sales', requireRoles(['admin', 'sales', 'accountant']), reportController.getSalesmanSalesReport);
 
 /**
  * @route   GET /api/reports/salesman-collections
@@ -252,7 +252,7 @@ router.get('/salesman-sales', reportController.getSalesmanSalesReport);
  * @access  Private
  * @query   salesmanId (optional), startDate (required), endDate (required), format (optional)
  */
-router.get('/salesman-collections', reportController.getSalesmanCollectionsReport);
+router.get('/salesman-collections', requireRoles(['admin', 'sales', 'accountant']), reportController.getSalesmanCollectionsReport);
 
 /**
  * @route   GET /api/reports/salesman-performance
@@ -260,7 +260,7 @@ router.get('/salesman-collections', reportController.getSalesmanCollectionsRepor
  * @access  Private
  * @query   salesmanId (required), startDate (required), endDate (required), format (optional)
  */
-router.get('/salesman-performance', reportController.getSalesmanPerformanceReport);
+router.get('/salesman-performance', requireRoles(['admin', 'sales', 'accountant']), reportController.getSalesmanPerformanceReport);
 
 /**
  * Phase 2: Salesman Commission Report (Requirement 9.5 - Task 40.2)
@@ -274,7 +274,7 @@ router.get('/salesman-performance', reportController.getSalesmanPerformanceRepor
  *          collectionsCommissionRate (optional - override collections commission rate),
  *          format (optional)
  */
-router.get('/salesman-commission', reportController.getSalesmanCommissionReport);
+router.get('/salesman-commission', requireRoles(['admin', 'accountant']), reportController.getSalesmanCommissionReport);
 
 /**
  * Phase 2: Dimension Reporting (Task 68 - Requirement 24)
@@ -286,7 +286,7 @@ router.get('/salesman-commission', reportController.getSalesmanCommissionReport)
  * @access  Private
  * @query   startDate (required), endDate (required), format (optional)
  */
-router.get('/dimension-expenses', reportController.getDimensionExpenses);
+router.get('/dimension-expenses', requireRoles(['admin', 'accountant']), reportController.getDimensionExpenses);
 
 /**
  * @route   GET /api/reports/dimension-budget/:dimension
@@ -295,7 +295,7 @@ router.get('/dimension-expenses', reportController.getDimensionExpenses);
  * @param   dimension - Dimension value
  * @query   startDate (required), endDate (required), format (optional)
  */
-router.get('/dimension-budget/:dimension', reportController.getDimensionBudgetComparison);
+router.get('/dimension-budget/:dimension', requireRoles(['admin', 'accountant']), reportController.getDimensionBudgetComparison);
 
 /**
  * @route   GET /api/reports/dimension/:dimension
@@ -304,6 +304,6 @@ router.get('/dimension-budget/:dimension', reportController.getDimensionBudgetCo
  * @param   dimension - Dimension value
  * @query   startDate (required), endDate (required), format (optional)
  */
-router.get('/dimension/:dimension', reportController.getDimensionReport);
+router.get('/dimension/:dimension', requireRoles(['admin', 'accountant']), reportController.getDimensionReport);
 
 module.exports = router;

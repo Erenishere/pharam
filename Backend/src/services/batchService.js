@@ -42,6 +42,7 @@ class BatchService {
       unitCost,
       totalCost: quantity * unitCost,
       location: locationId,
+      warehouse: locationId,
       status: 'active'
     });
 

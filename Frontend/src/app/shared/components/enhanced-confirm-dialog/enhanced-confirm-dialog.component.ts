@@ -7,23 +7,23 @@ import { MatCheckboxModule } from '@angular/material/checkbox';
 import { FormsModule } from '@angular/forms';
 
 export interface EnhancedConfirmDialogData {
-    title: string;
-    message: string;
-    confirmText?: string;
-    cancelText?: string;
-    confirmColor?: 'primary' | 'accent' | 'warn';
-    icon?: string;
-    type?: 'info' | 'warning' | 'error' | 'success';
-    showCheckbox?: boolean;
-    checkboxText?: string;
-    checkboxRequired?: boolean;
-    details?: string[];
-    htmlContent?: string;
+  title: string;
+  message: string;
+  confirmText?: string;
+  cancelText?: string;
+  confirmColor?: 'primary' | 'accent' | 'warn';
+  icon?: string;
+  type?: 'info' | 'warning' | 'error' | 'success';
+  showCheckbox?: boolean;
+  checkboxText?: string;
+  checkboxRequired?: boolean;
+  details?: string[];
+  htmlContent?: string;
 }
 
 export interface EnhancedConfirmDialogResult {
-    confirmed: boolean;
-    checkboxValue?: boolean;
+  confirmed: boolean;
+  checkboxValue?: boolean;
 }
 
 /**
@@ -37,17 +37,17 @@ export interface EnhancedConfirmDialogResult {
  * - Flexible button configuration
  */
 @Component({
-    selector: 'app-enhanced-confirm-dialog',
-    standalone: true,
-    imports: [
-        CommonModule,
-        MatDialogModule,
-        MatButtonModule,
-        MatIconModule,
-        MatCheckboxModule,
-        FormsModule
-    ],
-    template: `
+  selector: 'app-enhanced-confirm-dialog',
+  standalone: true,
+  imports: [
+    CommonModule,
+    MatDialogModule,
+    MatButtonModule,
+    MatIconModule,
+    MatCheckboxModule,
+    FormsModule
+  ],
+  template: `
     <div class="enhanced-confirm-dialog" [ngClass]="'dialog-' + (data.type || 'info')">
       <h2 mat-dialog-title>
         <mat-icon class="dialog-icon" [ngClass]="getIconClass()">
@@ -71,7 +71,7 @@ export interface EnhancedConfirmDialogResult {
         <div class="dialog-checkbox" *ngIf="data.showCheckbox">
           <mat-checkbox 
             [(ngModel)]="checkboxValue"
-            [required]="data.checkboxRequired">
+            [required]="!!data.checkboxRequired">
             {{ data.checkboxText || 'I understand the consequences' }}
           </mat-checkbox>
         </div>
@@ -93,7 +93,7 @@ export interface EnhancedConfirmDialogResult {
       </mat-dialog-actions>
     </div>
   `,
-    styles: [`
+  styles: [`
     .enhanced-confirm-dialog {
       min-width: 350px;
       max-width: 500px;
@@ -199,65 +199,65 @@ export interface EnhancedConfirmDialogResult {
   `]
 })
 export class EnhancedConfirmDialogComponent {
-    checkboxValue = false;
+  checkboxValue = false;
 
-    constructor(
-        public dialogRef: MatDialogRef<EnhancedConfirmDialogComponent>,
-        @Inject(MAT_DIALOG_DATA) public data: EnhancedConfirmDialogData
-    ) { }
+  constructor(
+    public dialogRef: MatDialogRef<EnhancedConfirmDialogComponent>,
+    @Inject(MAT_DIALOG_DATA) public data: EnhancedConfirmDialogData
+  ) { }
 
-    onConfirm(): void {
-        const result: EnhancedConfirmDialogResult = {
-            confirmed: true,
-            checkboxValue: this.data.showCheckbox ? this.checkboxValue : undefined
-        };
-        this.dialogRef.close(result);
+  onConfirm(): void {
+    const result: EnhancedConfirmDialogResult = {
+      confirmed: true,
+      checkboxValue: this.data.showCheckbox ? this.checkboxValue : undefined
+    };
+    this.dialogRef.close(result);
+  }
+
+  onCancel(): void {
+    const result: EnhancedConfirmDialogResult = {
+      confirmed: false,
+      checkboxValue: false
+    };
+    this.dialogRef.close(result);
+  }
+
+  getIcon(): string {
+    if (this.data.icon) {
+      return this.data.icon;
     }
 
-    onCancel(): void {
-        const result: EnhancedConfirmDialogResult = {
-            confirmed: false,
-            checkboxValue: false
-        };
-        this.dialogRef.close(result);
+    switch (this.data.type) {
+      case 'warning':
+        return 'warning';
+      case 'error':
+        return 'error';
+      case 'success':
+        return 'check_circle';
+      case 'info':
+      default:
+        return 'info';
     }
+  }
 
-    getIcon(): string {
-        if (this.data.icon) {
-            return this.data.icon;
-        }
+  getIconClass(): string {
+    return this.data.type || 'info';
+  }
 
-        switch (this.data.type) {
-            case 'warning':
-                return 'warning';
-            case 'error':
-                return 'error';
-            case 'success':
-                return 'check_circle';
-            case 'info':
-            default:
-                return 'info';
-        }
+  getDefaultConfirmColor(): 'primary' | 'accent' | 'warn' {
+    switch (this.data.type) {
+      case 'warning':
+      case 'error':
+        return 'warn';
+      default:
+        return 'primary';
     }
+  }
 
-    getIconClass(): string {
-        return this.data.type || 'info';
+  isConfirmDisabled(): boolean {
+    if (this.data.showCheckbox && this.data.checkboxRequired) {
+      return !this.checkboxValue;
     }
-
-    getDefaultConfirmColor(): 'primary' | 'accent' | 'warn' {
-        switch (this.data.type) {
-            case 'warning':
-            case 'error':
-                return 'warn';
-            default:
-                return 'primary';
-        }
-    }
-
-    isConfirmDisabled(): boolean {
-        if (this.data.showCheckbox && this.data.checkboxRequired) {
-            return !this.checkboxValue;
-        }
-        return false;
-    }
+    return false;
+  }
 }

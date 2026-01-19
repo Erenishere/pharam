@@ -14,8 +14,8 @@ import { MatSliderModule } from '@angular/material/slider';
 import { MatCheckboxModule } from '@angular/material/checkbox';
 import { MatCardModule } from '@angular/material/card';
 import { MatExpansionModule } from '@angular/material/expansion';
-import { Subject, takeUntil, debounceTime, distinctUntilChanged, startWith, combineLatest, Observable } from 'rxjs';
-import { map } from 'rxjs/operators';
+import { Subject, takeUntil, debounceTime, distinctUntilChanged, startWith, combineLatest, Observable, of } from 'rxjs';
+import { map, switchMap } from 'rxjs/operators';
 
 import { BatchFilter, BatchFilterForm, LocationOption, SupplierOption } from '../../models/batch-filter.model';
 import { BatchStatus } from '../../models/batch.model';
@@ -126,7 +126,7 @@ export class BatchFiltersComponent implements OnInit, OnDestroy, OnChanges {
       startWith(''),
       debounceTime(300),
       distinctUntilChanged(),
-      map(value => {
+      switchMap(value => {
         const searchTerm = typeof value === 'string' ? value : (value?.name || '');
         return this.filterItems(searchTerm);
       })
@@ -144,14 +144,14 @@ export class BatchFiltersComponent implements OnInit, OnDestroy, OnChanges {
     });
   }
 
-  private filterItems(searchTerm: string): any[] {
+  private filterItems(searchTerm: string): Observable<any[]> {
     if (!searchTerm || searchTerm.length < 2) {
-      return [];
+      return of([]);
     }
 
-    // This would normally call the item service to search items
-    // For now, return empty array - will be implemented when item search API is available
-    return [];
+    return this.itemService.getItems({ search: searchTerm }).pipe(
+      map(response => response.success ? response.data : [])
+    );
   }
 
   displayItemFn(item: any): string {

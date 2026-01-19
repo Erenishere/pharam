@@ -1,0 +1,8 @@
+{
+  "projectId": "026fdac7-60a1-497b-b56b-7c4f44240ed0",
+  "createdAt": 1737280576000,
+  "startupCommands": [
+    "npm.cmd run dev --prefix C:\\Users\\DC\\Desktop\\pharam\\Backend",
+    "npm.cmd run start --prefix C:\\Users\\DC\\Desktop\\pharam\\frontend"
+  ]
+}

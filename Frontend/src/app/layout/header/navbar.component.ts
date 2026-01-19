@@ -55,7 +55,7 @@ import { User } from '../../core/models/user.model';
         <button mat-button class="user-menu-btn" [matMenuTriggerFor]="userMenu">
           <div class="info">
             <div class="username">{{ currentUser?.username || 'John Doe' }}</div>
-            <div class="role">Admin</div>
+            <div class="role">{{ (currentUser?.role || 'Guest') | titlecase }}</div>
           </div>
           <mat-icon>account_circle</mat-icon>
         </button>
@@ -92,7 +92,7 @@ export class NavbarComponent implements OnInit {
   constructor(
     private authService: AuthService,
     private router: Router
-  ) {}
+  ) { }
 
   ngOnInit(): void {
     this.authService.currentUser$.subscribe(user => this.currentUser = user);

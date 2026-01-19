@@ -2,6 +2,7 @@ import { Injectable } from '@angular/core';
 import { NotificationService } from '../../../shared/services/notification.service';
 import { DialogService } from '../../../shared/services/dialog.service';
 import { Batch } from '../models/batch.model';
+import { firstValueFrom } from 'rxjs';
 
 @Injectable({
     providedIn: 'root'
@@ -77,11 +78,11 @@ export class BatchNotificationService {
             warnings.push('This is an active batch');
         }
 
-        const result = await this.dialogService.confirmDelete(
+        const result = await firstValueFrom(this.dialogService.confirmDelete(
             batch.batchNumber,
             'batch',
             warnings
-        );
+        ));
 
         return result.confirmed;
     }
@@ -102,35 +103,35 @@ export class BatchNotificationService {
             `New quantity: ${newQuantity}`
         ];
 
-        const result = await this.dialogService.confirmEnhanced({
+        const result = await firstValueFrom(this.dialogService.confirmEnhanced({
             title: 'Confirm Quantity Adjustment',
             message,
             confirmText: 'Adjust Quantity',
             cancelText: 'Cancel',
             type: isReduction ? 'warning' : 'info',
             details
-        });
+        }));
 
         return result.confirmed;
     }
 
     async confirmUnsavedChanges(): Promise<boolean> {
-        const result = await this.dialogService.confirmDataLoss(
+        const result = await firstValueFrom(this.dialogService.confirmDataLoss(
             'leave this page',
             ['All unsaved batch information will be lost']
-        );
+        ));
 
         return result.confirmed;
     }
 
     async confirmBatchFormReset(): Promise<boolean> {
-        const result = await this.dialogService.confirmEnhanced({
+        const result = await firstValueFrom(this.dialogService.confirmEnhanced({
             title: 'Reset Form',
             message: 'Are you sure you want to reset the form? All entered data will be lost.',
             confirmText: 'Reset',
             cancelText: 'Cancel',
             type: 'warning'
-        });
+        }));
 
         return result.confirmed;
     }

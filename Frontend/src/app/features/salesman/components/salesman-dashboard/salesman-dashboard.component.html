@@ -36,7 +36,7 @@
         </div>
         <div class="stat-content">
           <h3>Total Sales</h3>
-          <p class="stat-value">{{ formatCurrency(performance?.stats.totalSales || 0) }}</p>
+          <p class="stat-value">{{ formatCurrency(performance?.stats?.totalSales || 0) }}</p>
           <p class="stat-label">This Month</p>
         </div>
       </mat-card>
@@ -47,8 +47,8 @@
         </div>
         <div class="stat-content">
           <h3>Invoices</h3>
-          <p class="stat-value">{{ performance?.stats.totalInvoices || 0 }}</p>
-          <p class="stat-label">{{ performance?.stats.confirmedInvoices || 0 }} Confirmed</p>
+          <p class="stat-value">{{ performance?.stats?.totalInvoices || 0 }}</p>
+          <p class="stat-label">{{ performance?.stats?.confirmedInvoices || 0 }} Confirmed</p>
         </div>
       </mat-card>
 
@@ -58,7 +58,8 @@
         </div>
         <div class="stat-content">
           <h3>Est. Commission</h3>
-          <p class="stat-value">{{ formatCurrency((performance?.stats.totalSales || 0) * (salesman?.commissionRate || 0) / 100) }}</p>
+          <p class="stat-value">{{ formatCurrency((performance?.stats?.totalSales || 0) * (salesman?.commissionRate ||
+            0) / 100) }}</p>
           <p class="stat-label">Based on {{ salesman?.commissionRate }}%</p>
         </div>
       </mat-card>
@@ -69,8 +70,8 @@
         </div>
         <div class="stat-content">
           <h3>Pending Amount</h3>
-          <p class="stat-value">{{ formatCurrency(performance?.stats.pendingAmount || 0) }}</p>
-          <p class="stat-label">{{ performance?.stats.paidInvoices || 0 }} Paid</p>
+          <p class="stat-value">{{ formatCurrency(performance?.stats?.pendingAmount || 0) }}</p>
+          <p class="stat-label">{{ performance?.stats?.paidInvoices || 0 }} Paid</p>
         </div>
       </mat-card>
     </div>
@@ -111,15 +112,16 @@
       <div class="summary-grid">
         <div class="summary-item">
           <span class="label">Average Invoice Value</span>
-          <span class="value">{{ formatCurrency(performance.stats.averageInvoiceValue) }}</span>
+          <span class="value">{{ formatCurrency(performance.stats.averageInvoiceValue || 0) }}</span>
         </div>
         <div class="summary-item">
           <span class="label">Confirmed Invoices</span>
-          <span class="value">{{ performance.stats.confirmedInvoices }}</span>
+          <span class="value">{{ performance.stats.confirmedInvoices || 0 }}</span>
         </div>
         <div class="summary-item">
           <span class="label">Payment Success Rate</span>
-          <span class="value">{{ performance.stats.totalInvoices > 0 ? ((performance.stats.paidInvoices / performance.stats.totalInvoices) * 100).toFixed(1) : 0 }}%</span>
+          <span class="value">{{ performance.stats.totalInvoices > 0 ? ((performance.stats.paidInvoices /
+            performance.stats.totalInvoices) * 100).toFixed(1) : '0.0' }}%</span>
         </div>
       </div>
     </mat-card>

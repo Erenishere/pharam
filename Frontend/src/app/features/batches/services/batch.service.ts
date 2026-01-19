@@ -1,6 +1,7 @@
 import { Injectable } from '@angular/core';
 import { HttpClient, HttpParams } from '@angular/common/http';
 import { Observable } from 'rxjs';
+import { API_CONFIG } from '../../../core/constants/api.constants';
 import {
     Batch,
     BatchResponse,
@@ -15,7 +16,7 @@ import { BatchFilter } from '../models/batch-filter.model';
     providedIn: 'root'
 })
 export class BatchService {
-    private apiUrl = '/api/batches';
+    private apiUrl = `${API_CONFIG.BASE_URL}/batches`;
 
     constructor(private http: HttpClient) { }
 
@@ -119,6 +120,6 @@ export class BatchService {
      * Get next batch number for an item
      */
     getNextBatchNumber(itemId: string): Observable<{ batchNumber: string }> {
-        return this.http.get<{ batchNumber: string }>(`/api/items/${itemId}/next-batch-number`);
+        return this.http.get<{ batchNumber: string }>(`${API_CONFIG.BASE_URL}/items/${itemId}/next-batch-number`);
     }
 }
