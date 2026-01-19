@@ -4,6 +4,8 @@ const userSeeder = require('./userSeeder');
 const customerSeeder = require('./customerSeeder');
 const supplierSeeder = require('./supplierSeeder');
 const itemSeeder = require('./itemSeeder');
+const warehouseSeeder = require('./warehouseSeeder');
+const batchSeeder = require('./batchSeeder');
 
 class DatabaseSeeder {
   constructor() {
@@ -12,6 +14,8 @@ class DatabaseSeeder {
       { name: 'Customers', seeder: customerSeeder },
       { name: 'Suppliers', seeder: supplierSeeder },
       { name: 'Items', seeder: itemSeeder },
+      { name: 'Warehouses', seeder: warehouseSeeder },
+      { name: 'Batches', seeder: batchSeeder },
     ];
   }
 
