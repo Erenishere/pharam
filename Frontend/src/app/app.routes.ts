@@ -90,6 +90,24 @@ export const routes: Routes = [
                         data: { title: 'Batch Statistics' }
                     }
                 ]
+            },
+            {
+                path: 'sales-invoices',
+                canActivate: [authGuard, adminGuard],
+                loadComponent: () => import('./features/invoices/components/sales-invoice-list/sales-invoice-list.component').then(m => m.SalesInvoiceListComponent),
+                data: { title: 'Sales Invoices' }
+            },
+            {
+                path: 'purchase-invoices',
+                canActivate: [authGuard, adminGuard],
+                loadComponent: () => import('./features/invoices/components/purchase-invoice-list/purchase-invoice-list.component').then(m => m.PurchaseInvoiceListComponent),
+                data: { title: 'Purchase Invoices' }
+            },
+            {
+                path: 'warehouses',
+                canActivate: [authGuard, adminGuard],
+                loadComponent: () => import('./features/warehouses/components/warehouse-list/warehouse-list.component').then(m => m.WarehouseListComponent),
+                data: { title: 'Warehouses / Branches' }
             }
         ]
     }

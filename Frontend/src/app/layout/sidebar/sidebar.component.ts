@@ -106,24 +106,29 @@ import { User } from '../../core/models/user.model';
         <mat-divider></mat-divider>
 
         <!-- Only admins can manage invoices and reports -->
-        <ng-container *ngIf="userRole?.toLowerCase() === 'admin'">
-          <a mat-list-item routerLink="/sales-invoices" routerLinkActive="active">
-            <mat-icon matListItemIcon>receipt</mat-icon>
-            <span matListItemTitle>Sales Invoices</span>
-          </a>
+          <ng-container *ngIf="userRole?.toLowerCase() === 'admin'">
+            <a mat-list-item routerLink="/sales-invoices" routerLinkActive="active">
+              <mat-icon matListItemIcon>receipt</mat-icon>
+              <span matListItemTitle>Sales Invoices</span>
+            </a>
 
-          <a mat-list-item routerLink="/purchase-invoices" routerLinkActive="active">
-            <mat-icon matListItemIcon>shopping_cart</mat-icon>
-            <span matListItemTitle>Purchase Invoices</span>
-          </a>
+            <a mat-list-item routerLink="/purchase-invoices" routerLinkActive="active">
+              <mat-icon matListItemIcon>shopping_cart</mat-icon>
+              <span matListItemTitle>Purchase Invoices</span>
+            </a>
 
-          <mat-divider></mat-divider>
+            <a mat-list-item routerLink="/warehouses" routerLinkActive="active">
+              <mat-icon matListItemIcon>warehouse</mat-icon>
+              <span matListItemTitle>Warehouses / Branches</span>
+            </a>
 
-          <a mat-list-item routerLink="/reports" routerLinkActive="active">
-            <mat-icon matListItemIcon>assessment</mat-icon>
-            <span matListItemTitle>Reports</span>
-          </a>
-        </ng-container>
+            <mat-divider></mat-divider>
+
+            <a mat-list-item routerLink="/reports" routerLinkActive="active">
+              <mat-icon matListItemIcon>assessment</mat-icon>
+              <span matListItemTitle>Reports</span>
+            </a>
+          </ng-container>
       </ng-container>
     </mat-nav-list>
   `,
