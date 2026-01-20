@@ -31,12 +31,21 @@ const connectToDatabase = async () => {
 const serverConfig = new ServerConfig();
 const app = serverConfig.getApp();
 
+// Connect to database on cold start
+connectToDatabase().catch(err => console.error('Failed to connect on startup:', err));
+
+// Middleware to ensure database connection
 app.use(async (req, res, next) => {
     try {
         await connectToDatabase();
         next();
     } catch (error) {
-        res.status(500).json({ error: 'Database connection failed', message: error.message });
+        console.error('Database connection error:', error);
+        return res.status(500).json({ 
+            success: false,
+            error: 'Database connection failed', 
+            message: error.message 
+        });
     }
 });
 
