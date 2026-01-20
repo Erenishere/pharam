@@ -15,7 +15,6 @@ import { MatSliderModule } from '@angular/material/slider';
 import { MatCheckboxModule } from '@angular/material/checkbox';
 import { MatCardModule } from '@angular/material/card';
 import { MatExpansionModule } from '@angular/material/expansion';
-import { MatTooltipModule } from '@angular/material/tooltip';
 import { Subject, takeUntil, debounceTime, distinctUntilChanged, startWith, combineLatest, Observable, of } from 'rxjs';
 import { map, switchMap } from 'rxjs/operators';
 

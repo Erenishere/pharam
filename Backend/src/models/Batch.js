@@ -339,26 +339,28 @@ batchSchema.statics.updateBatchStatuses = async function () {
     }
   );
 
-  // Update active batches
+  // Update active batches - use aggregation pipeline for dynamic calculation
   const activeResult = await this.updateMany(
     {
       expiryDate: { $gte: now },
       manufacturingDate: { $lte: now },
       status: { $nin: ['active', 'expired'] }
     },
-    {
-      $set: { status: 'active' },
-      $set: {
-        daysUntilExpiry: {
-          $ceil: {
-            $divide: [
-              { $subtract: ['$expiryDate', now] },
-              1000 * 60 * 60 * 24 // Convert ms to days
-            ]
+    [
+      {
+        $set: {
+          status: 'active',
+          daysUntilExpiry: {
+            $ceil: {
+              $divide: [
+                { $subtract: ['$expiryDate', now] },
+                1000 * 60 * 60 * 24
+              ]
+            }
           }
         }
       }
-    }
+    ]
   );
 
   return {

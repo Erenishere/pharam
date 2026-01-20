@@ -161,7 +161,6 @@ class SalesInvoiceService {
       }
 
       // Get item details
-      console.log(`[DEBUG] Processing item with ID: "${itemId}"`);
       let itemDetails;
       try {
         itemDetails = await itemService.getItemById(itemId);
@@ -631,10 +630,6 @@ class SalesInvoiceService {
    * @returns {Promise<Object>} Created ledger entries
    */
   async createLedgerEntriesForSalesInvoice(invoice, userId) {
-    // For sales invoice:
-    // Debit: Customer Account (Accounts Receivable) - increases what customer owes
-    // Credit: Sales Revenue Account - increases revenue
-
     const description = `Sales Invoice ${invoice.invoiceNumber} - ${invoice.notes || 'Sales transaction'}`;
 
     const debitAccount = {
@@ -642,11 +637,9 @@ class SalesInvoiceService {
       accountType: 'Customer'
     };
 
-    // For now, we'll use a system account for sales revenue
-    // In a full implementation, this would be a proper GL account
     const creditAccount = {
-      accountId: invoice.customerId, // Using customer as placeholder for sales account
-      accountType: 'Customer'
+      accountId: 'SALES_REVENUE',
+      accountType: 'Revenue'
     };
 
     const ledgerEntries = await ledgerService.createDoubleEntry(
@@ -659,8 +652,6 @@ class SalesInvoiceService {
       userId
     );
 
-    // Phase 2: Handle Trade Offer (TO) entries (Requirement 20.4)
-    // If TO is applied, we need to record it against the adjustment account
     const toAmount = (invoice.to1Amount || 0) + (invoice.to2Amount || 0);
 
     if (toAmount > 0) {
@@ -670,13 +661,12 @@ class SalesInvoiceService {
 
       const adjustmentDebitAccount = {
         accountId: invoice.adjustmentAccountId,
-        accountType: 'Account'
+        accountType: 'Expense'
       };
 
-      // Credit Sales Revenue (placeholder) to record the discount/expense
       const adjustmentCreditAccount = {
-        accountId: invoice.customerId, // Placeholder for Sales Account
-        accountType: 'Customer'
+        accountId: 'SALES_DISCOUNT',
+        accountType: 'Revenue'
       };
 
       const toEntries = await ledgerService.createDoubleEntry(

@@ -117,7 +117,7 @@ class StockMovementService {
       throw new Error('Item not found');
     }
 
-    const currentStock = item.stock.currentStock;
+    const currentStock = item.inventory?.currentStock || 0;
     const difference = actualStock - currentStock;
 
     if (difference === 0) {
@@ -290,7 +290,7 @@ class StockMovementService {
       throw new Error('Item not found');
     }
 
-    const currentStock = item.stock.currentStock;
+    const currentStock = item.inventory?.currentStock || 0;
     const isAvailable = currentStock >= requiredQuantity;
 
     return {
@@ -365,17 +365,21 @@ class StockMovementService {
       throw new Error('Item not found');
     }
 
+    if (!item.inventory) {
+      item.inventory = { currentStock: 0 };
+    }
+
     if (movementType === 'in') {
-      item.stock.currentStock += quantity;
+      item.inventory.currentStock += quantity;
     } else if (movementType === 'out') {
-      item.stock.currentStock -= quantity;
-      if (item.stock.currentStock < 0) {
-        item.stock.currentStock = 0;
+      item.inventory.currentStock -= quantity;
+      if (item.inventory.currentStock < 0) {
+        item.inventory.currentStock = 0;
       }
     } else if (movementType === 'adjustment') {
-      item.stock.currentStock += quantity;
-      if (item.stock.currentStock < 0) {
-        item.stock.currentStock = 0;
+      item.inventory.currentStock += quantity;
+      if (item.inventory.currentStock < 0) {
+        item.inventory.currentStock = 0;
       }
     }
 

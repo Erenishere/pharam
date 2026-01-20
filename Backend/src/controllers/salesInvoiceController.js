@@ -908,7 +908,7 @@ const advancedSearch = async (req, res) => {
     // Add type filter to ensure only sales invoices are returned
     const salesFilters = [
       ...filters,
-      { field: 'type', operator: 'in', value: ['sale', 'return_sale'] }
+      { field: 'type', operator: 'in', value: ['sales', 'return_sales'] }
     ];
 
     const results = await searchService.searchRecords(Invoice, {

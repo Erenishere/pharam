@@ -494,17 +494,11 @@ class PurchaseInvoiceService {
    * @returns {Promise<Object>} Created ledger entries
    */
   async createLedgerEntriesForPurchaseInvoice(invoice, userId) {
-    // For purchase invoice:
-    // Debit: Inventory/Purchase Account - increases inventory asset
-    // Credit: Supplier Account (Accounts Payable) - increases what we owe supplier
-    
     const description = `Purchase Invoice ${invoice.invoiceNumber} - ${invoice.notes || 'Purchase transaction'}`;
     
-    // For now, we'll use supplier account for both sides
-    // In a full implementation, debit would be to inventory/purchase GL account
     const debitAccount = {
-      accountId: invoice.supplierId,
-      accountType: 'Supplier'
+      accountId: 'INVENTORY_ASSET',
+      accountType: 'Asset'
     };
     
     const creditAccount = {
@@ -533,14 +527,28 @@ class PurchaseInvoiceService {
    */
   async createStockMovementsForInvoice(invoice, userId) {
     const movements = [];
+    const Warehouse = require('../models/Warehouse');
+
+    let defaultWarehouseId = null;
+    const defaultWarehouse = await Warehouse.findOne({ isActive: true }).sort({ createdAt: 1 });
+    if (defaultWarehouse) {
+      defaultWarehouseId = defaultWarehouse._id;
+    }
 
     for (const item of invoice.items) {
+      const warehouseId = item.warehouseId || defaultWarehouseId;
+
+      if (!warehouseId) {
+        throw new Error('No active warehouse found to assign stock movement. Please ensure at least one warehouse exists.');
+      }
+
       const movementData = {
         itemId: item.itemId,
         movementType: 'in',
-        quantity: item.quantity, // Positive quantity for inward movement
+        quantity: item.quantity,
         referenceType: 'purchase_invoice',
         referenceId: invoice._id,
+        warehouse: warehouseId,
         batchInfo: item.batchInfo || {},
         movementDate: invoice.invoiceDate || new Date(),
         notes: `Purchase invoice ${invoice.invoiceNumber} - Supplier: ${invoice.supplierId}`,

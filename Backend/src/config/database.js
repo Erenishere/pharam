@@ -16,8 +16,6 @@ class Database {
       }
 
       const options = {
-        useNewUrlParser: true,
-        useUnifiedTopology: true,
         maxPoolSize: 10,
         serverSelectionTimeoutMS: 30000,
         socketTimeoutMS: 45000,

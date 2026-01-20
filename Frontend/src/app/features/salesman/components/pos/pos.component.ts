@@ -451,6 +451,9 @@ export class PosComponent implements OnInit, AfterViewInit {
     }
 
     formatCurrency(amount: number): string {
+        if (amount === null || amount === undefined || isNaN(amount)) {
+            amount = 0;
+        }
         return new Intl.NumberFormat('en-PK', {
             style: 'currency',
             currency: 'PKR',
