@@ -105,18 +105,17 @@ import { AuthService } from '../../core/services/auth.service';
           <mat-icon matListItemIcon>point_of_sale</mat-icon>
           <span matListItemTitle>Salesman POS</span>
         </a>
-
         <a mat-list-item routerLink="/suppliers" routerLinkActive="active">
           <mat-icon matListItemIcon>local_shipping</mat-icon>
           <span matListItemTitle>Suppliers</span>
         </a>
+
+        <a mat-list-item routerLink="/items" routerLinkActive="active">
+          <mat-icon matListItemIcon>inventory_2</mat-icon>
+          <span matListItemTitle>Items</span>
+        </a>
       </ng-container>
 
-      <!-- Shared Item link -->
-      <a mat-list-item routerLink="/items" routerLinkActive="active">
-        <mat-icon matListItemIcon>inventory_2</mat-icon>
-        <span matListItemTitle>Items</span>
-      </a>
 
       <mat-divider></mat-divider>
 
