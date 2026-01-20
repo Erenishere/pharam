@@ -5,7 +5,8 @@
       <h1>Accounts Reports</h1>
     </div>
     <div class="header-actions">
-      <button mat-stroked-button class="refresh-btn" (click)="loadReport()"><mat-icon>refresh</mat-icon> Refresh</button>
+      <button mat-stroked-button class="refresh-btn" (click)="loadReport()"><mat-icon>refresh</mat-icon>
+        Refresh</button>
     </div>
   </div>
 
@@ -13,13 +14,13 @@
     <div class="filters-row">
       <mat-form-field class="filter-field" appearance="outline">
         <mat-label>Start Date</mat-label>
-        <input matInput [matDatepicker]="startPicker" [(ngModel)]="startDate">
+        <input matInput [matDatepicker]="startPicker" [(ngModel)]="startDate" placeholder="DD/MM/YYYY">
         <mat-datepicker-toggle matIconSuffix [for]="startPicker"></mat-datepicker-toggle>
         <mat-datepicker #startPicker></mat-datepicker>
       </mat-form-field>
       <mat-form-field class="filter-field" appearance="outline">
         <mat-label>End Date</mat-label>
-        <input matInput [matDatepicker]="endPicker" [(ngModel)]="endDate">
+        <input matInput [matDatepicker]="endPicker" [(ngModel)]="endDate" placeholder="DD/MM/YYYY">
         <mat-datepicker-toggle matIconSuffix [for]="endPicker"></mat-datepicker-toggle>
         <mat-datepicker #endPicker></mat-datepicker>
       </mat-form-field>
@@ -31,116 +32,150 @@
   </div>
 
   @if (loading) {
-    <div class="loading-container"><mat-spinner diameter="48"></mat-spinner><p>Loading accounts data...</p></div>
+  <div class="loading-container"><mat-spinner diameter="48"></mat-spinner>
+    <p>Loading accounts data...</p>
+  </div>
   } @else {
-    <div class="summary-cards">
-      <div class="summary-card">
-        <div class="icon-wrapper purple"><mat-icon>account_balance_wallet</mat-icon></div>
-        <div class="card-content">
-          <div class="label">Total Receivables</div>
-          <div class="value">{{ formatCurrency(agingReport?.receivables?.total) }}</div>
-        </div>
-      </div>
-      <div class="summary-card">
-        <div class="icon-wrapper success"><mat-icon>check_circle</mat-icon></div>
-        <div class="card-content">
-          <div class="label">Current (0-30 days)</div>
-          <div class="value">{{ formatCurrency(agingReport?.receivables?.aging?.current) }}</div>
-        </div>
-      </div>
-      <div class="summary-card">
-        <div class="icon-wrapper info"><mat-icon>schedule</mat-icon></div>
-        <div class="card-content">
-          <div class="label">31-60 Days</div>
-          <div class="value">{{ formatCurrency(agingReport?.receivables?.aging?.days30) }}</div>
-        </div>
-      </div>
-      <div class="summary-card">
-        <div class="icon-wrapper warning"><mat-icon>warning</mat-icon></div>
-        <div class="card-content">
-          <div class="label">61-90 Days</div>
-          <div class="value">{{ formatCurrency(agingReport?.receivables?.aging?.days60) }}</div>
-        </div>
-      </div>
-      <div class="summary-card">
-        <div class="icon-wrapper danger"><mat-icon>error</mat-icon></div>
-        <div class="card-content">
-          <div class="label">Over 90 Days</div>
-          <div class="value">{{ formatCurrency(agingReport?.receivables?.aging?.over90) }}</div>
-        </div>
+  <div class="summary-cards">
+    <div class="summary-card">
+      <div class="icon-wrapper purple"><mat-icon>account_balance_wallet</mat-icon></div>
+      <div class="card-content">
+        <div class="label">Total Receivables</div>
+        <div class="value">{{ formatCurrency(agingReport?.receivables?.total) }}</div>
       </div>
     </div>
+    <div class="summary-card">
+      <div class="icon-wrapper success"><mat-icon>check_circle</mat-icon></div>
+      <div class="card-content">
+        <div class="label">Current (0-30 days)</div>
+        <div class="value">{{ formatCurrency(agingReport?.receivables?.aging?.current) }}</div>
+      </div>
+    </div>
+    <div class="summary-card">
+      <div class="icon-wrapper info"><mat-icon>schedule</mat-icon></div>
+      <div class="card-content">
+        <div class="label">31-60 Days</div>
+        <div class="value">{{ formatCurrency(agingReport?.receivables?.aging?.days30) }}</div>
+      </div>
+    </div>
+    <div class="summary-card">
+      <div class="icon-wrapper warning"><mat-icon>warning</mat-icon></div>
+      <div class="card-content">
+        <div class="label">61-90 Days</div>
+        <div class="value">{{ formatCurrency(agingReport?.receivables?.aging?.days60) }}</div>
+      </div>
+    </div>
+    <div class="summary-card">
+      <div class="icon-wrapper danger"><mat-icon>error</mat-icon></div>
+      <div class="card-content">
+        <div class="label">Over 90 Days</div>
+        <div class="value">{{ formatCurrency(agingReport?.receivables?.aging?.over90) }}</div>
+      </div>
+    </div>
+  </div>
 
-    <mat-tab-group [(selectedIndex)]="activeTab" class="report-tabs">
-      <mat-tab label="Aging by Customer">
-        <div class="data-card">
-          <div class="card-header"><h2>Receivables Aging by Customer</h2></div>
-          <div class="table-container">
-            @if (agingReport?.receivables?.byCustomer?.length > 0) {
-              <table>
-                <thead><tr><th>Customer</th><th class="text-right">Current</th><th class="text-right">31-60</th><th class="text-right">61-90</th><th class="text-right">90+</th><th class="text-right">Total</th></tr></thead>
-                <tbody>
-                  @for (row of agingReport.receivables.byCustomer; track row.customer?._id) {
-                    <tr>
-                      <td>{{ row.customer?.name || 'Unknown' }}</td>
-                      <td class="text-right">{{ formatCurrency(row.aging?.current) }}</td>
-                      <td class="text-right">{{ formatCurrency(row.aging?.days30) }}</td>
-                      <td class="text-right">{{ formatCurrency(row.aging?.days60) }}</td>
-                      <td class="text-right">{{ formatCurrency(row.aging?.over90) }}</td>
-                      <td class="text-right amount">{{ formatCurrency(row.total) }}</td>
-                    </tr>
-                  }
-                </tbody>
-              </table>
-            } @else {
-              <div class="empty-state"><mat-icon>inbox</mat-icon><p>No aging data available</p></div>
-            }
-          </div>
+  <mat-tab-group [(selectedIndex)]="activeTab" class="report-tabs">
+    <mat-tab label="Aging by Customer">
+      <div class="data-card">
+        <div class="card-header">
+          <h2>Receivables Aging by Customer</h2>
         </div>
-      </mat-tab>
+        <div class="table-container">
+          @if (agingReport?.receivables?.byCustomer?.length > 0) {
+          <table>
+            <thead>
+              <tr>
+                <th>Customer</th>
+                <th class="text-right">Current</th>
+                <th class="text-right">31-60</th>
+                <th class="text-right">61-90</th>
+                <th class="text-right">90+</th>
+                <th class="text-right">Total</th>
+              </tr>
+            </thead>
+            <tbody>
+              @for (row of agingReport.receivables.byCustomer; track row.customer?._id) {
+              <tr>
+                <td>{{ row.customer?.name || 'Unknown' }}</td>
+                <td class="text-right">{{ formatCurrency(row.aging?.current) }}</td>
+                <td class="text-right">{{ formatCurrency(row.aging?.days30) }}</td>
+                <td class="text-right">{{ formatCurrency(row.aging?.days60) }}</td>
+                <td class="text-right">{{ formatCurrency(row.aging?.over90) }}</td>
+                <td class="text-right amount">{{ formatCurrency(row.total) }}</td>
+              </tr>
+              }
+            </tbody>
+          </table>
+          } @else {
+          <div class="empty-state"><mat-icon>inbox</mat-icon>
+            <p>No aging data available</p>
+          </div>
+          }
+        </div>
+      </div>
+    </mat-tab>
 
-      <mat-tab label="Pending Cheques">
-        <div class="data-card">
-          <div class="card-header"><h2>Pending Post-Dated Cheques</h2></div>
-          <div class="table-container">
-            @if (pendingCheques.length > 0) {
-              <table>
-                <thead><tr><th>Cheque No</th><th>Customer</th><th class="text-right">Amount</th><th class="text-right">Due Date</th></tr></thead>
-                <tbody>
-                  @for (row of pendingCheques; track row.chequeNo) {
-                    <tr>
-                      <td>{{ row.chequeNo }}</td>
-                      <td>{{ row.customer?.name || 'Unknown' }}</td>
-                      <td class="text-right amount">{{ formatCurrency(row.amount) }}</td>
-                      <td class="text-right">{{ row.dueDate | date:'mediumDate' }}</td>
-                    </tr>
-                  }
-                </tbody>
-              </table>
-            } @else {
-              <div class="empty-state"><mat-icon>check_circle</mat-icon><p>No pending cheques</p></div>
-            }
-          </div>
+    <mat-tab label="Pending Cheques">
+      <div class="data-card">
+        <div class="card-header">
+          <h2>Pending Post-Dated Cheques</h2>
         </div>
-      </mat-tab>
+        <div class="table-container">
+          @if (pendingCheques.length > 0) {
+          <table>
+            <thead>
+              <tr>
+                <th>Cheque No</th>
+                <th>Customer</th>
+                <th class="text-right">Amount</th>
+                <th class="text-right">Due Date</th>
+              </tr>
+            </thead>
+            <tbody>
+              @for (row of pendingCheques; track row.chequeNo) {
+              <tr>
+                <td>{{ row.chequeNo }}</td>
+                <td>{{ row.customer?.name || 'Unknown' }}</td>
+                <td class="text-right amount">{{ formatCurrency(row.amount) }}</td>
+                <td class="text-right">{{ row.dueDate | date:'mediumDate' }}</td>
+              </tr>
+              }
+            </tbody>
+          </table>
+          } @else {
+          <div class="empty-state"><mat-icon>check_circle</mat-icon>
+            <p>No pending cheques</p>
+          </div>
+          }
+        </div>
+      </div>
+    </mat-tab>
 
-      <mat-tab label="Collection Efficiency">
-        <div class="data-card">
-          <div class="card-header"><h2>Collection Efficiency</h2></div>
-          <div class="card-body">
-            @if (collectionEfficiency) {
-              <div class="efficiency-grid">
-                <div class="efficiency-item"><span class="label">Collection Rate:</span><span class="value">{{ (collectionEfficiency.collectionRate || 0).toFixed(1) }}%</span></div>
-                <div class="efficiency-item"><span class="label">Total Billed:</span><span class="value">{{ formatCurrency(collectionEfficiency.totalBilled) }}</span></div>
-                <div class="efficiency-item"><span class="label">Total Collected:</span><span class="value positive">{{ formatCurrency(collectionEfficiency.totalCollected) }}</span></div>
-                <div class="efficiency-item"><span class="label">Outstanding:</span><span class="value negative">{{ formatCurrency(collectionEfficiency.outstanding) }}</span></div>
-              </div>
-            } @else {
-              <div class="empty-state"><mat-icon>inbox</mat-icon><p>No efficiency data available</p></div>
-            }
-          </div>
+    <mat-tab label="Collection Efficiency">
+      <div class="data-card">
+        <div class="card-header">
+          <h2>Collection Efficiency</h2>
         </div>
-      </mat-tab>
-    </mat-tab-group>
+        <div class="card-body">
+          @if (collectionEfficiency) {
+          <div class="efficiency-grid">
+            <div class="efficiency-item"><span class="label">Collection Rate:</span><span class="value">{{
+                (collectionEfficiency.collectionRate || 0).toFixed(1) }}%</span></div>
+            <div class="efficiency-item"><span class="label">Total Billed:</span><span class="value">{{
+                formatCurrency(collectionEfficiency.totalBilled) }}</span></div>
+            <div class="efficiency-item"><span class="label">Total Collected:</span><span class="value positive">{{
+                formatCurrency(collectionEfficiency.totalCollected) }}</span></div>
+            <div class="efficiency-item"><span class="label">Outstanding:</span><span class="value negative">{{
+                formatCurrency(collectionEfficiency.outstanding) }}</span></div>
+          </div>
+          } @else {
+          <div class="empty-state"><mat-icon>inbox</mat-icon>
+            <p>No efficiency data available</p>
+          </div>
+          }
+        </div>
+      </div>
+    </mat-tab>
+  </mat-tab-group>
   }
 </div>

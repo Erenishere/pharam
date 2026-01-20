@@ -5,12 +5,7 @@
             <h1 class="page-title">Supplier Management</h1>
             <p class="page-subtitle">Manage your suppliers and customers</p>
         </div>
-        <button 
-            mat-raised-button 
-            color="primary" 
-            *ngIf="canCreate"
-            (click)="openCreateDialog()"
-            class="add-button">
+        <button mat-raised-button color="primary" *ngIf="canCreate" (click)="openCreateDialog()" class="add-button">
             <mat-icon>add</mat-icon>
             Add Supplier
         </button>
@@ -18,10 +13,7 @@
 
     <!-- Statistics Section (Admin/Accountant only) -->
     <div class="statistics-section" *ngIf="showStatistics">
-        <app-supplier-stats
-            [statistics]="statistics"
-            [loading]="statisticsLoading"
-            [error]="statisticsError"
+        <app-supplier-stats [statistics]="statistics" [loading]="statisticsLoading" [error]="statisticsError"
             (retry)="retryLoadStatistics()">
         </app-supplier-stats>
     </div>
@@ -31,18 +23,10 @@
         <div class="d-flex align-items-center">
             <mat-form-field appearance="outline" class="search-field" color="primary">
                 <mat-label>Search</mat-label>
-                <input 
-                    matInput 
-                    [formControl]="searchControl" 
-                    placeholder="Search by name or code (e.g., SUP001)">
+                <input matInput [formControl]="searchControl">
                 <mat-icon matPrefix>search</mat-icon>
-                <button 
-                    mat-icon-button 
-                    matSuffix 
-                    *ngIf="searchControl.value"
-                    (click)="clearSearch()"
-                    matTooltip="Clear search"
-                    type="button">
+                <button mat-icon-button matSuffix *ngIf="searchControl.value" (click)="clearSearch()"
+                    matTooltip="Clear search" type="button">
                     <mat-icon>clear</mat-icon>
                 </button>
             </mat-form-field>
@@ -51,9 +35,7 @@
         <div class="filter-actions d-flex align-items-center gap-2">
             <mat-form-field appearance="outline" class="filter-field" color="primary">
                 <mat-label>Filter by Type</mat-label>
-                <mat-select 
-                    [(ngModel)]="selectedType" 
-                    (selectionChange)="onTypeFilterChange()">
+                <mat-select [(ngModel)]="selectedType" (selectionChange)="onTypeFilterChange()">
                     <mat-option *ngFor="let type of types" [value]="type.value">
                         {{ type.label }}
                     </mat-option>
@@ -62,10 +44,7 @@
             </mat-form-field>
 
             <div class="inactive-toggle">
-                <mat-slide-toggle 
-                    [(ngModel)]="showInactive" 
-                    (change)="toggleShowInactive()" 
-                    color="primary">
+                <mat-slide-toggle [(ngModel)]="showInactive" (change)="toggleShowInactive()" color="primary">
                     Show Inactive Only
                 </mat-slide-toggle>
             </div>
@@ -91,7 +70,7 @@
     <!-- Suppliers Table -->
     <div class="table-container" *ngIf="!loading && !error">
         <table mat-table [dataSource]="dataSource" matSort class="suppliers-table">
-            
+
             <!-- Code Column -->
             <ng-container matColumnDef="code">
                 <th mat-header-cell *matHeaderCellDef mat-sort-header>Code</th>
@@ -153,21 +132,14 @@
                 <th mat-header-cell *matHeaderCellDef mat-sort-header>Status</th>
                 <td mat-cell *matCellDef="let supplier">
                     <!-- Toggle for users with permission -->
-                    <mat-slide-toggle
-                        *ngIf="canToggleStatus"
-                        [checked]="supplier.isActive"
-                        [disabled]="isActionPending(supplier._id, 'toggle')"
-                        (change)="toggleStatus(supplier, $event)"
-                        [matTooltip]="supplier.isActive ? 'Click to deactivate' : 'Click to activate'"
-                        color="primary">
+                    <mat-slide-toggle *ngIf="canToggleStatus" [checked]="supplier.isActive"
+                        [disabled]="isActionPending(supplier._id, 'toggle')" (change)="toggleStatus(supplier, $event)"
+                        [matTooltip]="supplier.isActive ? 'Click to deactivate' : 'Click to activate'" color="primary">
                         {{ getStatusLabel(supplier.isActive) }}
                     </mat-slide-toggle>
-                    
+
                     <!-- Chip for users without permission -->
-                    <mat-chip 
-                        *ngIf="!canToggleStatus"
-                        [color]="getStatusChipColor(supplier.isActive)" 
-                        selected>
+                    <mat-chip *ngIf="!canToggleStatus" [color]="getStatusChipColor(supplier.isActive)" selected>
                         {{ getStatusLabel(supplier.isActive) }}
                     </mat-chip>
                 </td>
@@ -178,40 +150,24 @@
                 <th mat-header-cell *matHeaderCellDef>Actions</th>
                 <td mat-cell *matCellDef="let supplier">
                     <div class="action-buttons">
-                        <button 
-                            mat-icon-button 
-                            (click)="openDetailDialog(supplier)"
-                            matTooltip="View Details"
+                        <button mat-icon-button (click)="openDetailDialog(supplier)" matTooltip="View Details"
                             color="primary">
                             <mat-icon>visibility</mat-icon>
                         </button>
-                        
-                        <button 
-                            mat-icon-button 
-                            *ngIf="canEdit"
-                            (click)="openEditDialog(supplier)"
-                            matTooltip="Edit"
+
+                        <button mat-icon-button *ngIf="canEdit" (click)="openEditDialog(supplier)" matTooltip="Edit"
                             color="accent">
                             <mat-icon>edit</mat-icon>
                         </button>
-                        
-                        <button 
-                            mat-icon-button 
-                            *ngIf="canDelete && supplier.isActive"
-                            (click)="confirmDelete(supplier)"
-                            [disabled]="isActionPending(supplier._id, 'delete')"
-                            matTooltip="Delete"
-                            color="warn">
+
+                        <button mat-icon-button *ngIf="canDelete && supplier.isActive" (click)="confirmDelete(supplier)"
+                            [disabled]="isActionPending(supplier._id, 'delete')" matTooltip="Delete" color="warn">
                             <mat-icon>delete</mat-icon>
                         </button>
-                        
-                        <button 
-                            mat-icon-button 
-                            *ngIf="canRestore && !supplier.isActive"
-                            (click)="restoreSupplier(supplier)"
-                            [disabled]="isActionPending(supplier._id, 'restore')"
-                            matTooltip="Restore"
-                            color="primary">
+
+                        <button mat-icon-button *ngIf="canRestore && !supplier.isActive"
+                            (click)="restoreSupplier(supplier)" [disabled]="isActionPending(supplier._id, 'restore')"
+                            matTooltip="Restore" color="primary">
                             <mat-icon>restore</mat-icon>
                         </button>
                     </div>
@@ -234,13 +190,8 @@
         </table>
 
         <!-- Paginator -->
-        <mat-paginator 
-            [length]="totalSuppliers"
-            [pageSize]="pageSize"
-            [pageSizeOptions]="pageSizeOptions"
-            [pageIndex]="pageIndex"
-            (page)="onPageChange($event)"
-            showFirstLastButtons>
+        <mat-paginator [length]="totalSuppliers" [pageSize]="pageSize" [pageSizeOptions]="pageSizeOptions"
+            [pageIndex]="pageIndex" (page)="onPageChange($event)" showFirstLastButtons>
         </mat-paginator>
     </div>
 </div>

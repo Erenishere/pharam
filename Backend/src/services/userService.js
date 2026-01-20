@@ -134,19 +134,7 @@ class UserService {
     });
 
     // Auto-create Salesman record for sales role users
-    if (role === 'sales') {
-      try {
-        await Salesman.create({
-          name: username,
-          email: email,
-          userId: user._id,
-          commissionRate: 0,
-          isActive: true,
-        });
-      } catch (salesmanError) {
-        console.error('Failed to create salesman record:', salesmanError.message);
-      }
-    }
+    await this.ensureSalesmanProfile(user);
 
     return user;
   }
@@ -202,6 +190,10 @@ class UserService {
 
     // Update user
     const updatedUser = await userRepository.update(id, updateData);
+
+    // Ensure salesman profile if role is 'sales'
+    await this.ensureSalesmanProfile(updatedUser);
+
     return updatedUser;
   }
 
@@ -351,7 +343,12 @@ class UserService {
       }
     }
 
-    return userRepository.updateRole(id, newRole);
+    const updatedUser = await userRepository.updateRole(id, newRole);
+
+    // Ensure salesman profile if new role is 'sales'
+    await this.ensureSalesmanProfile(updatedUser);
+
+    return updatedUser;
   }
 
   /**
@@ -433,6 +430,32 @@ class UserService {
     }
 
     return userRepository.paginate(page, limit, filters, sort);
+  }
+
+  /**
+   * Ensure a Salesman profile exists for a user with the 'sales' role
+   * @param {Object} user - User object
+   */
+  async ensureSalesmanProfile(user) {
+    if (user.role !== 'sales') {
+      return;
+    }
+
+    try {
+      const existingSalesman = await Salesman.findOne({ userId: user._id });
+      if (!existingSalesman) {
+        await Salesman.create({
+          name: user.username,
+          email: user.email,
+          userId: user._id,
+          commissionRate: 0,
+          isActive: true,
+        });
+        console.log(`Created missing salesman profile for user: ${user.username}`);
+      }
+    } catch (error) {
+      console.error(`Failed to ensure salesman profile for ${user.username}:`, error.message);
+    }
   }
 
   /**

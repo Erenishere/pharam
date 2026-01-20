@@ -37,13 +37,16 @@
         </div>
       </mat-card-content>
     </mat-card>
-    <mat-card class="summary-card net-change" [class.positive]="statistics.netChange >= 0" [class.negative]="statistics.netChange < 0">
+    <mat-card class="summary-card net-change" [class.positive]="statistics.netChange > 0"
+      [class.negative]="statistics.netChange < 0">
       <mat-card-content>
-        <mat-icon>{{ statistics.netChange >= 0 ? 'trending_up' : 'trending_down' }}</mat-icon>
-        <div class="card-info">
-          <span class="label">Net Change</span>
-          <span class="value">{{ statistics.netChange >= 0 ? '+' : '' }}{{ formatNumber(statistics.netChange) }}</span>
-        </div>
+        <mat-icon>{{ statistics.netChange > 0 ? 'trending_up' : (statistics.netChange < 0 ? 'trending_down' : 'remove' )
+            }}</mat-icon>
+            <div class="card-info">
+              <span class="label">Net Change</span>
+              <span class="value">{{ statistics.netChange > 0 ? '+' : '' }}{{ formatNumber(statistics.netChange)
+                }}</span>
+            </div>
       </mat-card-content>
     </mat-card>
   </div>
@@ -77,8 +80,8 @@
       </mat-select>
     </mat-form-field>
 
-    <button mat-stroked-button color="warn" (click)="clearFilters()" 
-            *ngIf="dateFrom || dateTo || selectedMovementType || selectedReferenceType">
+    <button mat-stroked-button color="warn" (click)="clearFilters()"
+      *ngIf="dateFrom || dateTo || selectedMovementType || selectedReferenceType">
       <mat-icon>clear</mat-icon> Clear
     </button>
   </div>
@@ -159,7 +162,7 @@
           <ng-container matColumnDef="movementType">
             <th mat-header-cell *matHeaderCellDef>Type</th>
             <td mat-cell *matCellDef="let row">
-              <mat-chip [color]="getMovementTypeColor(row.movementType)" selected>
+              <mat-chip class="dark-chip" [color]="getMovementTypeColor(row.movementType)" selected>
                 <mat-icon class="type-icon">{{ getMovementTypeIcon(row.movementType) }}</mat-icon>
                 {{ row.movementType | titlecase }}
               </mat-chip>
@@ -207,12 +210,8 @@
           <p>No stock movements found</p>
         </div>
 
-        <mat-paginator
-          [length]="totalMovements"
-          [pageSize]="pageSize"
-          [pageIndex]="pageIndex"
-          [pageSizeOptions]="[10, 25, 50, 100]"
-          (page)="onPageChange($event)">
+        <mat-paginator [length]="totalMovements" [pageSize]="pageSize" [pageIndex]="pageIndex"
+          [pageSizeOptions]="[10, 25, 50, 100]" (page)="onPageChange($event)">
         </mat-paginator>
       </div>
     </mat-tab>

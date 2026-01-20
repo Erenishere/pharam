@@ -48,14 +48,16 @@
   <div class="filters-section">
     <mat-form-field appearance="outline">
       <mat-label>From Date</mat-label>
-      <input matInput [matDatepicker]="fromPicker" [(ngModel)]="dateFrom" (dateChange)="onFilterChange()">
+      <input matInput [matDatepicker]="fromPicker" [(ngModel)]="dateFrom" (dateChange)="onFilterChange()"
+        placeholder="Choose a date">
       <mat-datepicker-toggle matSuffix [for]="fromPicker"></mat-datepicker-toggle>
       <mat-datepicker #fromPicker></mat-datepicker>
     </mat-form-field>
 
     <mat-form-field appearance="outline">
       <mat-label>To Date</mat-label>
-      <input matInput [matDatepicker]="toPicker" [(ngModel)]="dateTo" (dateChange)="onFilterChange()">
+      <input matInput [matDatepicker]="toPicker" [(ngModel)]="dateTo" (dateChange)="onFilterChange()"
+        placeholder="Choose a date">
       <mat-datepicker-toggle matSuffix [for]="toPicker"></mat-datepicker-toggle>
       <mat-datepicker #toPicker></mat-datepicker>
     </mat-form-field>
@@ -120,7 +122,8 @@
               </mat-form-field>
             </div>
 
-            <div class="form-row" *ngIf="receiptForm.get('paymentMethod')?.value === 'cheque'" formGroupName="bankDetails">
+            <div class="form-row" *ngIf="receiptForm.get('paymentMethod')?.value === 'cheque'"
+              formGroupName="bankDetails">
               <mat-form-field>
                 <mat-label>Bank Name</mat-label>
                 <input matInput formControlName="bankName">
@@ -211,12 +214,8 @@
           <p>No cash receipts found</p>
         </div>
 
-        <mat-paginator
-          [length]="totalReceipts"
-          [pageSize]="pageSize"
-          [pageIndex]="pageIndex"
-          [pageSizeOptions]="[10, 25, 50]"
-          (page)="onPageChange($event)">
+        <mat-paginator [length]="totalReceipts" [pageSize]="pageSize" [pageIndex]="pageIndex"
+          [pageSizeOptions]="[10, 25, 50]" (page)="onPageChange($event)">
         </mat-paginator>
       </div>
     </mat-tab>
@@ -344,12 +343,8 @@
           <p>No cash payments found</p>
         </div>
 
-        <mat-paginator
-          [length]="totalPayments"
-          [pageSize]="pageSize"
-          [pageIndex]="pageIndex"
-          [pageSizeOptions]="[10, 25, 50]"
-          (page)="onPageChange($event)">
+        <mat-paginator [length]="totalPayments" [pageSize]="pageSize" [pageIndex]="pageIndex"
+          [pageSizeOptions]="[10, 25, 50]" (page)="onPageChange($event)">
         </mat-paginator>
       </div>
     </mat-tab>

@@ -149,8 +149,9 @@ $purple: #867cf0;
   }
 
   ::ng-deep .mat-mdc-form-field-icon-prefix,
-  ::ng-deep .mat-mdc-form-field-icon-suffix {
-    color: $purple !important;
+  ::ng-deep .mat-mdc-form-field-icon-suffix,
+  ::ng-deep .mat-datepicker-toggle {
+    color: #2c2c2c !important;
   }
 
   ::ng-deep .mat-mdc-select-arrow {
@@ -238,12 +239,14 @@ $purple: #867cf0;
   h4 {
     margin: 0 0 16px;
     font-size: 16px;
-    font-weight: 500;
-    color: $text-card-title;
+    font-weight: 600;
+    color: #000000;
   }
 }
 
 .entry-form {
+  color: #000000;
+
   .form-row {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
@@ -269,15 +272,42 @@ $purple: #867cf0;
     }
   }
 
-  ::ng-deep .mat-mdc-form-field {
-    .mdc-text-field {
-      background: #ffffff !important;
-      border: 1px solid $border !important;
-      border-radius: 6px !important;
-    }
+  // Enforce black text for labels and inputs
+  ::ng-deep {
+    .mat-mdc-form-field {
+      .mdc-text-field {
+        background: #ffffff !important;
+        border: 1px solid $border !important;
+        border-radius: 6px !important;
+      }
 
-    &.mat-focused .mdc-text-field {
-      border-color: $purple !important;
+      &.mat-focused .mdc-text-field {
+        border-color: $purple !important;
+      }
+
+      .mat-mdc-form-field-label,
+      .mdc-floating-label {
+        color: #000000 !important;
+      }
+
+      .mat-mdc-input-element {
+        color: #000000 !important;
+        caret-color: #000000 !important;
+      }
+
+      .mat-mdc-select-value {
+        color: #000000 !important;
+      }
+
+      .mat-mdc-form-field-icon-prefix,
+      .mat-mdc-form-field-icon-suffix,
+      .mat-datepicker-toggle {
+        color: #000000 !important;
+      }
+
+      .mat-mdc-input-element::placeholder {
+        color: rgba(0, 0, 0, 0.6) !important;
+      }
     }
   }
 }

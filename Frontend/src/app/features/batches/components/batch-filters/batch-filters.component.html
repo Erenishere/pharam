@@ -14,12 +14,11 @@
         <div class="search-filters">
           <mat-form-field appearance="outline" class="search-field">
             <mat-label>Search batches</mat-label>
-            <input matInput formControlName="itemSearch" placeholder="Search by item name, code, or batch number..."
-              [matAutocomplete]="itemAuto" #searchInput>
+            <input matInput formControlName="itemSearch" [matAutocomplete]="itemAuto" #searchInput>
             <mat-icon matSuffix>search</mat-icon>
-            
+
             <button mat-icon-button matSuffix *ngIf="filterForm.get('itemSearch')?.value"
-              (click)="filterForm.get('itemSearch')?.setValue(''); searchInput.focus(); $event.stopPropagation()" 
+              (click)="filterForm.get('itemSearch')?.setValue(''); searchInput.focus(); $event.stopPropagation()"
               type="button" matTooltip="Clear search" class="clear-button">
               <mat-icon>close</mat-icon>
             </button>
@@ -35,7 +34,8 @@
                 </div>
               </div>
             </mat-option>
-            <mat-option *ngIf="(filteredItems$ | async)?.length === 0 && filterForm.get('itemSearch')?.value?.length >= 2"
+            <mat-option
+              *ngIf="(filteredItems$ | async)?.length === 0 && filterForm.get('itemSearch')?.value?.length >= 2"
               disabled>
               No items found
             </mat-option>

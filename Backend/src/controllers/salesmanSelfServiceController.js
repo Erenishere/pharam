@@ -19,6 +19,23 @@ const getMyProfile = async (req, res, next) => {
             .populate('routeId', 'code name');
 
         if (!salesman) {
+            // Auto-create if user has sales role but profile is missing
+            if (req.user.role === 'sales') {
+                const newSalesman = await Salesman.create({
+                    name: req.user.username,
+                    email: req.user.email,
+                    userId: req.user._id,
+                    commissionRate: 0,
+                    isActive: true,
+                });
+                console.log(`Auto-initialized missing salesman profile for user: ${req.user.username}`);
+                return res.json({
+                    success: true,
+                    data: newSalesman,
+                    message: 'Profile initialized and retrieved successfully',
+                });
+            }
+
             return res.status(404).json({
                 success: false,
                 message: 'Salesman profile not found. Please contact administrator.',

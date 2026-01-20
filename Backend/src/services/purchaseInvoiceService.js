@@ -85,15 +85,15 @@ class PurchaseInvoiceService {
     const processedItems = [];
 
     for (const item of items) {
-      const { 
-        itemId, 
-        quantity, 
-        unitPrice, 
+      const {
+        itemId,
+        quantity,
+        unitPrice,
         discount = 0, // Legacy single discount support
         discount1Percent = 0,
         discount2Percent = 0,
         claimAccountId,
-        batchInfo 
+        batchInfo
       } = item;
 
       // Validate item
@@ -388,7 +388,7 @@ class PurchaseInvoiceService {
   async getPurchaseInvoicesBySupplier(supplierId, options = {}) {
     // Validate supplier exists
     await supplierService.getSupplierById(supplierId);
-    
+
     return invoiceRepository.findBySupplier(supplierId, options);
   }
 
@@ -442,8 +442,48 @@ class PurchaseInvoiceService {
    * @returns {Promise<Object>} Purchase statistics
    */
   async getPurchaseStatistics(filters = {}) {
-    const purchaseFilters = { ...filters, type: 'purchase' };
-    return invoiceRepository.getStatistics('purchase');
+    const stats = await invoiceRepository.getStatistics('purchase');
+
+    const result = {
+      totalInvoices: 0,
+      totalAmount: 0,
+      paidAmount: 0,
+      pendingAmount: 0,
+      draftCount: 0,
+      confirmedCount: 0,
+      paidCount: 0,
+      cancelledCount: 0
+    };
+
+    stats.forEach(stat => {
+      const count = stat.count || 0;
+      const amount = stat.totalAmount || 0;
+
+      if (stat._id !== 'cancelled') {
+        result.totalInvoices += count;
+        result.totalAmount += amount;
+      }
+
+      switch (stat._id) {
+        case 'draft':
+          result.draftCount = count;
+          result.pendingAmount += amount;
+          break;
+        case 'confirmed':
+          result.confirmedCount = count;
+          result.pendingAmount += amount;
+          break;
+        case 'paid':
+          result.paidCount = count;
+          result.paidAmount += amount;
+          break;
+        case 'cancelled':
+          result.cancelledCount = count;
+          break;
+      }
+    });
+
+    return result;
   }
 
   /**
@@ -495,17 +535,17 @@ class PurchaseInvoiceService {
    */
   async createLedgerEntriesForPurchaseInvoice(invoice, userId) {
     const description = `Purchase Invoice ${invoice.invoiceNumber} - ${invoice.notes || 'Purchase transaction'}`;
-    
+
     const debitAccount = {
       accountId: 'INVENTORY_ASSET',
       accountType: 'Asset'
     };
-    
+
     const creditAccount = {
       accountId: invoice.supplierId,
       accountType: 'Supplier'
     };
-    
+
     const ledgerEntries = await ledgerService.createDoubleEntry(
       debitAccount,
       creditAccount,
@@ -515,7 +555,7 @@ class PurchaseInvoiceService {
       invoice._id,
       userId
     );
-    
+
     return ledgerEntries;
   }
 
@@ -573,7 +613,7 @@ class PurchaseInvoiceService {
 
     for (const item of items) {
       const itemDoc = await Item.findById(item.itemId);
-      
+
       if (!itemDoc) {
         throw new Error(`Item not found: ${item.itemId}`);
       }
@@ -779,7 +819,7 @@ class PurchaseInvoiceService {
     }
 
     const Invoice = require('../models/Invoice');
-    
+
     // Build query
     const query = {
       supplierId,
@@ -821,7 +861,7 @@ class PurchaseInvoiceService {
    */
   async validateSupplierBillNumber(supplierId, billNo, invoiceId = null) {
     const validation = await this.checkDuplicateSupplierBill(supplierId, billNo, invoiceId);
-    
+
     if (validation.isDuplicate) {
       throw new Error(validation.message);
     }

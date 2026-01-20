@@ -2,7 +2,7 @@
   <div class="statistics-header">
     <h1>Batch Statistics Dashboard</h1>
     <p class="subtitle">Comprehensive analytics and insights for batch management</p>
-    
+
     <!-- Date Range Filter -->
     <div class="date-filter-section">
       <mat-card class="filter-card">
@@ -10,18 +10,20 @@
           <div class="filter-controls">
             <mat-form-field appearance="outline">
               <mat-label>Start Date</mat-label>
-              <input matInput [matDatepicker]="startPicker" [(ngModel)]="dateFilter.start" (dateChange)="onDateFilterChange()">
+              <input matInput [matDatepicker]="startPicker" [(ngModel)]="dateFilter.start"
+                (dateChange)="onDateFilterChange()" placeholder="DD/MM/YYYY">
               <mat-datepicker-toggle matIconSuffix [for]="startPicker"></mat-datepicker-toggle>
               <mat-datepicker #startPicker></mat-datepicker>
             </mat-form-field>
-            
+
             <mat-form-field appearance="outline">
               <mat-label>End Date</mat-label>
-              <input matInput [matDatepicker]="endPicker" [(ngModel)]="dateFilter.end" (dateChange)="onDateFilterChange()">
+              <input matInput [matDatepicker]="endPicker" [(ngModel)]="dateFilter.end"
+                (dateChange)="onDateFilterChange()" placeholder="DD/MM/YYYY">
               <mat-datepicker-toggle matIconSuffix [for]="endPicker"></mat-datepicker-toggle>
               <mat-datepicker #endPicker></mat-datepicker>
             </mat-form-field>
-            
+
             <div class="filter-actions">
               <button mat-raised-button color="primary" (click)="applyDateFilter()">
                 <mat-icon>filter_list</mat-icon>
@@ -32,7 +34,7 @@
                 Clear
               </button>
             </div>
-            
+
             <div class="quick-filters">
               <button mat-button (click)="setQuickFilter('7days')">Last 7 Days</button>
               <button mat-button (click)="setQuickFilter('30days')">Last 30 Days</button>
@@ -62,12 +64,12 @@
 
   <!-- Statistics Content -->
   <div *ngIf="!loading && !error && statistics" class="statistics-content">
-    
+
     <!-- KPI Cards Section -->
     <div class="kpi-section">
       <h2>Key Performance Indicators</h2>
       <div class="kpi-grid">
-        
+
         <!-- Total Batches Card -->
         <mat-card class="kpi-card primary">
           <mat-card-content>
@@ -170,7 +172,7 @@
     <div class="charts-section">
       <h2>Analytics Charts</h2>
       <div class="charts-grid">
-        
+
         <!-- Batch Status Distribution Chart -->
         <mat-card class="chart-card clickable" (click)="drillDownToStatus()">
           <mat-card-header>
@@ -211,7 +213,8 @@
         </mat-card>
 
         <!-- Expiry Trend Chart -->
-        <mat-card class="chart-card full-width clickable" *ngIf="statistics.expiryAnalytics?.expiryTrend?.length" (click)="drillDownToExpiring()">
+        <mat-card class="chart-card full-width clickable" *ngIf="statistics.expiryAnalytics?.expiryTrend?.length"
+          (click)="drillDownToExpiring()">
           <mat-card-header>
             <mat-card-title>Expiry Trend Analysis</mat-card-title>
             <mat-card-subtitle>Click to view expiring batches</mat-card-subtitle>

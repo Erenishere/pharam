@@ -69,8 +69,8 @@ salesmanSchema.statics.generateSalesmanCode = async function () {
   return `SM${String(count + 1).padStart(4, '0')}`;
 };
 
-// Pre-save middleware to generate code if not provided
-salesmanSchema.pre('save', async function (next) {
+// Pre-validate middleware to generate code if not provided
+salesmanSchema.pre('validate', async function (next) {
   if (!this.code && this.isNew) {
     this.code = await this.constructor.generateSalesmanCode();
   }

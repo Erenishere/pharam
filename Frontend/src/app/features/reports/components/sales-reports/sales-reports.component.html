@@ -17,14 +17,14 @@
     <div class="filters-row">
       <mat-form-field class="filter-field" appearance="outline">
         <mat-label>Start Date</mat-label>
-        <input matInput [matDatepicker]="startPicker" [(ngModel)]="startDate">
+        <input matInput [matDatepicker]="startPicker" [(ngModel)]="startDate" placeholder="DD/MM/YYYY">
         <mat-datepicker-toggle matIconSuffix [for]="startPicker"></mat-datepicker-toggle>
         <mat-datepicker #startPicker></mat-datepicker>
       </mat-form-field>
 
       <mat-form-field class="filter-field" appearance="outline">
         <mat-label>End Date</mat-label>
-        <input matInput [matDatepicker]="endPicker" [(ngModel)]="endDate">
+        <input matInput [matDatepicker]="endPicker" [(ngModel)]="endDate" placeholder="DD/MM/YYYY">
         <mat-datepicker-toggle matIconSuffix [for]="endPicker"></mat-datepicker-toggle>
         <mat-datepicker #endPicker></mat-datepicker>
       </mat-form-field>
@@ -47,252 +47,252 @@
   </div>
 
   @if (loading) {
-    <div class="loading-container">
-      <mat-spinner diameter="48"></mat-spinner>
-      <p>Loading sales data...</p>
-    </div>
+  <div class="loading-container">
+    <mat-spinner diameter="48"></mat-spinner>
+    <p>Loading sales data...</p>
+  </div>
   } @else {
-    <div class="summary-cards">
-      <div class="summary-card">
-        <div class="icon-wrapper purple">
-          <mat-icon>attach_money</mat-icon>
-        </div>
-        <div class="card-content">
-          <div class="label">Total Sales</div>
-          <div class="value">{{ formatCurrency(summary?.totalSales) }}</div>
-        </div>
+  <div class="summary-cards">
+    <div class="summary-card">
+      <div class="icon-wrapper purple">
+        <mat-icon>attach_money</mat-icon>
       </div>
-
-      <div class="summary-card">
-        <div class="icon-wrapper info">
-          <mat-icon>receipt</mat-icon>
-        </div>
-        <div class="card-content">
-          <div class="label">Total Invoices</div>
-          <div class="value">{{ formatNumber(summary?.totalInvoices) }}</div>
-        </div>
-      </div>
-
-      <div class="summary-card">
-        <div class="icon-wrapper warning">
-          <mat-icon>local_offer</mat-icon>
-        </div>
-        <div class="card-content">
-          <div class="label">Total Discount</div>
-          <div class="value">{{ formatCurrency(summary?.totalDiscount) }}</div>
-        </div>
-      </div>
-
-      <div class="summary-card">
-        <div class="icon-wrapper danger">
-          <mat-icon>account_balance</mat-icon>
-        </div>
-        <div class="card-content">
-          <div class="label">Total Tax</div>
-          <div class="value">{{ formatCurrency(summary?.totalTax) }}</div>
-        </div>
-      </div>
-
-      <div class="summary-card">
-        <div class="icon-wrapper success">
-          <mat-icon>trending_up</mat-icon>
-        </div>
-        <div class="card-content">
-          <div class="label">Net Sales</div>
-          <div class="value">{{ formatCurrency(summary?.netSales) }}</div>
-        </div>
-      </div>
-
-      <div class="summary-card">
-        <div class="icon-wrapper purple">
-          <mat-icon>shopping_cart</mat-icon>
-        </div>
-        <div class="card-content">
-          <div class="label">Avg Order Value</div>
-          <div class="value">{{ formatCurrency(summary?.averageOrderValue) }}</div>
-        </div>
+      <div class="card-content">
+        <div class="label">Total Sales</div>
+        <div class="value">{{ formatCurrency(summary?.totalSales) }}</div>
       </div>
     </div>
 
-    <mat-tab-group [(selectedIndex)]="activeTab" class="report-tabs">
-      <mat-tab label="By Date">
-        <div class="data-card">
-          <div class="card-header">
-            <h2>Sales by Date</h2>
-          </div>
-          <div class="table-container">
-            @if (salesByDate.length > 0) {
-              <table>
-                <thead>
-                  <tr>
-                    <th>Date</th>
-                    <th class="text-right">Invoices</th>
-                    <th class="text-right">Amount</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  @for (row of salesByDate; track row.date) {
-                    <tr>
-                      <td>{{ row.date | date:'mediumDate' }}</td>
-                      <td class="text-right">{{ row.count }}</td>
-                      <td class="text-right amount">{{ formatCurrency(row.total) }}</td>
-                    </tr>
-                  }
-                </tbody>
-              </table>
-            } @else {
-              <div class="empty-state">
-                <mat-icon>inbox</mat-icon>
-                <p>No sales data found for the selected period</p>
-              </div>
-            }
-          </div>
-        </div>
-      </mat-tab>
+    <div class="summary-card">
+      <div class="icon-wrapper info">
+        <mat-icon>receipt</mat-icon>
+      </div>
+      <div class="card-content">
+        <div class="label">Total Invoices</div>
+        <div class="value">{{ formatNumber(summary?.totalInvoices) }}</div>
+      </div>
+    </div>
 
-      <mat-tab label="By Customer">
-        <div class="data-card">
-          <div class="card-header">
-            <h2>Sales by Customer</h2>
-          </div>
-          <div class="table-container">
-            @if (salesByCustomer.length > 0) {
-              <table>
-                <thead>
-                  <tr>
-                    <th>Customer</th>
-                    <th class="text-right">Invoices</th>
-                    <th class="text-right">Amount</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  @for (row of salesByCustomer; track row.customer?._id) {
-                    <tr>
-                      <td>{{ row.customer?.name || 'Unknown' }}</td>
-                      <td class="text-right">{{ row.count }}</td>
-                      <td class="text-right amount">{{ formatCurrency(row.total) }}</td>
-                    </tr>
-                  }
-                </tbody>
-              </table>
-            } @else {
-              <div class="empty-state">
-                <mat-icon>inbox</mat-icon>
-                <p>No customer data found</p>
-              </div>
-            }
-          </div>
-        </div>
-      </mat-tab>
+    <div class="summary-card">
+      <div class="icon-wrapper warning">
+        <mat-icon>local_offer</mat-icon>
+      </div>
+      <div class="card-content">
+        <div class="label">Total Discount</div>
+        <div class="value">{{ formatCurrency(summary?.totalDiscount) }}</div>
+      </div>
+    </div>
 
-      <mat-tab label="By Item">
-        <div class="data-card">
-          <div class="card-header">
-            <h2>Sales by Item</h2>
-          </div>
-          <div class="table-container">
-            @if (salesByItem.length > 0) {
-              <table>
-                <thead>
-                  <tr>
-                    <th>Item</th>
-                    <th class="text-right">Quantity</th>
-                    <th class="text-right">Amount</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  @for (row of salesByItem; track row.item?._id) {
-                    <tr>
-                      <td>{{ row.item?.name || 'Unknown' }}</td>
-                      <td class="text-right">{{ formatNumber(row.quantity) }}</td>
-                      <td class="text-right amount">{{ formatCurrency(row.total) }}</td>
-                    </tr>
-                  }
-                </tbody>
-              </table>
-            } @else {
-              <div class="empty-state">
-                <mat-icon>inbox</mat-icon>
-                <p>No item data found</p>
-              </div>
-            }
-          </div>
-        </div>
-      </mat-tab>
+    <div class="summary-card">
+      <div class="icon-wrapper danger">
+        <mat-icon>account_balance</mat-icon>
+      </div>
+      <div class="card-content">
+        <div class="label">Total Tax</div>
+        <div class="value">{{ formatCurrency(summary?.totalTax) }}</div>
+      </div>
+    </div>
 
-      <mat-tab label="By Salesman">
-        <div class="data-card">
-          <div class="card-header">
-            <h2>Sales by Salesman</h2>
-          </div>
-          <div class="table-container">
-            @if (salesBySalesman.length > 0) {
-              <table>
-                <thead>
-                  <tr>
-                    <th>Salesman</th>
-                    <th class="text-right">Invoices</th>
-                    <th class="text-right">Amount</th>
-                    <th class="text-right">Commission</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  @for (row of salesBySalesman; track row.salesman?._id) {
-                    <tr>
-                      <td>{{ row.salesman?.name || 'Unknown' }}</td>
-                      <td class="text-right">{{ row.count }}</td>
-                      <td class="text-right amount">{{ formatCurrency(row.total) }}</td>
-                      <td class="text-right">{{ formatCurrency(row.commission) }}</td>
-                    </tr>
-                  }
-                </tbody>
-              </table>
-            } @else {
-              <div class="empty-state">
-                <mat-icon>inbox</mat-icon>
-                <p>No salesman data found</p>
-              </div>
-            }
-          </div>
-        </div>
-      </mat-tab>
+    <div class="summary-card">
+      <div class="icon-wrapper success">
+        <mat-icon>trending_up</mat-icon>
+      </div>
+      <div class="card-content">
+        <div class="label">Net Sales</div>
+        <div class="value">{{ formatCurrency(summary?.netSales) }}</div>
+      </div>
+    </div>
 
-      <mat-tab label="Top Customers">
-        <div class="data-card">
-          <div class="card-header">
-            <h2>Top Customers</h2>
-          </div>
-          <div class="table-container">
-            @if (topCustomers.length > 0) {
-              <table>
-                <thead>
-                  <tr>
-                    <th>#</th>
-                    <th>Customer</th>
-                    <th class="text-right">Orders</th>
-                    <th class="text-right">Revenue</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  @for (row of topCustomers; track row.customer?._id; let i = $index) {
-                    <tr>
-                      <td>{{ i + 1 }}</td>
-                      <td>{{ row.customer?.name || row.name || 'Unknown' }}</td>
-                      <td class="text-right">{{ row.orders || row.count || 0 }}</td>
-                      <td class="text-right amount">{{ formatCurrency(row.revenue || row.total) }}</td>
-                    </tr>
-                  }
-                </tbody>
-              </table>
-            } @else {
-              <div class="empty-state">
-                <mat-icon>inbox</mat-icon>
-                <p>No customer data found</p>
-              </div>
-            }
-          </div>
+    <div class="summary-card">
+      <div class="icon-wrapper purple">
+        <mat-icon>shopping_cart</mat-icon>
+      </div>
+      <div class="card-content">
+        <div class="label">Avg Order Value</div>
+        <div class="value">{{ formatCurrency(summary?.averageOrderValue) }}</div>
+      </div>
+    </div>
+  </div>
+
+  <mat-tab-group [(selectedIndex)]="activeTab" class="report-tabs">
+    <mat-tab label="By Date">
+      <div class="data-card">
+        <div class="card-header">
+          <h2>Sales by Date</h2>
         </div>
-      </mat-tab>
-    </mat-tab-group>
+        <div class="table-container">
+          @if (salesByDate.length > 0) {
+          <table>
+            <thead>
+              <tr>
+                <th>Date</th>
+                <th class="text-right">Invoices</th>
+                <th class="text-right">Amount</th>
+              </tr>
+            </thead>
+            <tbody>
+              @for (row of salesByDate; track row.date) {
+              <tr>
+                <td>{{ row.date | date:'mediumDate' }}</td>
+                <td class="text-right">{{ row.count }}</td>
+                <td class="text-right amount">{{ formatCurrency(row.total) }}</td>
+              </tr>
+              }
+            </tbody>
+          </table>
+          } @else {
+          <div class="empty-state">
+            <mat-icon>inbox</mat-icon>
+            <p>No sales data found for the selected period</p>
+          </div>
+          }
+        </div>
+      </div>
+    </mat-tab>
+
+    <mat-tab label="By Customer">
+      <div class="data-card">
+        <div class="card-header">
+          <h2>Sales by Customer</h2>
+        </div>
+        <div class="table-container">
+          @if (salesByCustomer.length > 0) {
+          <table>
+            <thead>
+              <tr>
+                <th>Customer</th>
+                <th class="text-right">Invoices</th>
+                <th class="text-right">Amount</th>
+              </tr>
+            </thead>
+            <tbody>
+              @for (row of salesByCustomer; track row.customer?._id) {
+              <tr>
+                <td>{{ row.customer?.name || 'Unknown' }}</td>
+                <td class="text-right">{{ row.count }}</td>
+                <td class="text-right amount">{{ formatCurrency(row.total) }}</td>
+              </tr>
+              }
+            </tbody>
+          </table>
+          } @else {
+          <div class="empty-state">
+            <mat-icon>inbox</mat-icon>
+            <p>No customer data found</p>
+          </div>
+          }
+        </div>
+      </div>
+    </mat-tab>
+
+    <mat-tab label="By Item">
+      <div class="data-card">
+        <div class="card-header">
+          <h2>Sales by Item</h2>
+        </div>
+        <div class="table-container">
+          @if (salesByItem.length > 0) {
+          <table>
+            <thead>
+              <tr>
+                <th>Item</th>
+                <th class="text-right">Quantity</th>
+                <th class="text-right">Amount</th>
+              </tr>
+            </thead>
+            <tbody>
+              @for (row of salesByItem; track row.item?._id) {
+              <tr>
+                <td>{{ row.item?.name || 'Unknown' }}</td>
+                <td class="text-right">{{ formatNumber(row.quantity) }}</td>
+                <td class="text-right amount">{{ formatCurrency(row.total) }}</td>
+              </tr>
+              }
+            </tbody>
+          </table>
+          } @else {
+          <div class="empty-state">
+            <mat-icon>inbox</mat-icon>
+            <p>No item data found</p>
+          </div>
+          }
+        </div>
+      </div>
+    </mat-tab>
+
+    <mat-tab label="By Salesman">
+      <div class="data-card">
+        <div class="card-header">
+          <h2>Sales by Salesman</h2>
+        </div>
+        <div class="table-container">
+          @if (salesBySalesman.length > 0) {
+          <table>
+            <thead>
+              <tr>
+                <th>Salesman</th>
+                <th class="text-right">Invoices</th>
+                <th class="text-right">Amount</th>
+                <th class="text-right">Commission</th>
+              </tr>
+            </thead>
+            <tbody>
+              @for (row of salesBySalesman; track row.salesman?._id) {
+              <tr>
+                <td>{{ row.salesman?.name || 'Unknown' }}</td>
+                <td class="text-right">{{ row.count }}</td>
+                <td class="text-right amount">{{ formatCurrency(row.total) }}</td>
+                <td class="text-right">{{ formatCurrency(row.commission) }}</td>
+              </tr>
+              }
+            </tbody>
+          </table>
+          } @else {
+          <div class="empty-state">
+            <mat-icon>inbox</mat-icon>
+            <p>No salesman data found</p>
+          </div>
+          }
+        </div>
+      </div>
+    </mat-tab>
+
+    <mat-tab label="Top Customers">
+      <div class="data-card">
+        <div class="card-header">
+          <h2>Top Customers</h2>
+        </div>
+        <div class="table-container">
+          @if (topCustomers.length > 0) {
+          <table>
+            <thead>
+              <tr>
+                <th>#</th>
+                <th>Customer</th>
+                <th class="text-right">Orders</th>
+                <th class="text-right">Revenue</th>
+              </tr>
+            </thead>
+            <tbody>
+              @for (row of topCustomers; track row.customer?._id; let i = $index) {
+              <tr>
+                <td>{{ i + 1 }}</td>
+                <td>{{ row.customer?.name || row.name || 'Unknown' }}</td>
+                <td class="text-right">{{ row.orders || row.count || 0 }}</td>
+                <td class="text-right amount">{{ formatCurrency(row.revenue || row.total) }}</td>
+              </tr>
+              }
+            </tbody>
+          </table>
+          } @else {
+          <div class="empty-state">
+            <mat-icon>inbox</mat-icon>
+            <p>No customer data found</p>
+          </div>
+          }
+        </div>
+      </div>
+    </mat-tab>
+  </mat-tab-group>
   }
 </div>

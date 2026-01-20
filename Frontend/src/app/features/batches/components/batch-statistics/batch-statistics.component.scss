@@ -5,6 +5,10 @@
     background: #F8F7FA;
     min-height: 100vh;
 
+    ::ng-deep .mat-datepicker-toggle {
+        color: #2c2c2c !important;
+    }
+
     .statistics-header {
         margin-bottom: 32px;
         text-align: center;

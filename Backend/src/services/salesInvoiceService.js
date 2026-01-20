@@ -576,8 +576,48 @@ class SalesInvoiceService {
    * @returns {Promise<Object>} Sales statistics
    */
   async getSalesStatistics(filters = {}) {
-    const salesFilters = { ...filters, type: 'sales' };
-    return invoiceRepository.getStatistics('sales');
+    const stats = await invoiceRepository.getStatistics('sales');
+
+    const result = {
+      totalInvoices: 0,
+      totalAmount: 0,
+      paidAmount: 0,
+      pendingAmount: 0,
+      draftCount: 0,
+      confirmedCount: 0,
+      paidCount: 0,
+      cancelledCount: 0
+    };
+
+    stats.forEach(stat => {
+      const count = stat.count || 0;
+      const amount = stat.totalAmount || 0;
+
+      if (stat._id !== 'cancelled') {
+        result.totalInvoices += count;
+        result.totalAmount += amount;
+      }
+
+      switch (stat._id) {
+        case 'draft':
+          result.draftCount = count;
+          result.pendingAmount += amount;
+          break;
+        case 'confirmed':
+          result.confirmedCount = count;
+          result.pendingAmount += amount;
+          break;
+        case 'paid':
+          result.paidCount = count;
+          result.paidAmount += amount;
+          break;
+        case 'cancelled':
+          result.cancelledCount = count;
+          break;
+      }
+    });
+
+    return result;
   }
 
   /**

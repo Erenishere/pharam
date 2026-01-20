@@ -87,16 +87,7 @@ class AnalyticsService {
 
     const trends = this._groupByInterval(invoices, interval);
 
-    return {
-      interval,
-      period: { startDate, endDate },
-      trends,
-      summary: {
-        totalSales: invoices.reduce((sum, inv) => sum + (inv.totals?.grandTotal || 0), 0),
-        averageSale: invoices.length > 0 ? invoices.reduce((sum, inv) => sum + (inv.totals?.grandTotal || 0), 0) / invoices.length : 0,
-        invoiceCount: invoices.length,
-      },
-    };
+    return trends;
   }
 
   /**
@@ -131,8 +122,8 @@ class AnalyticsService {
 
     return result.map((item) => ({
       customer: item._id,
-      totalAmount: item.totalAmount,
-      invoiceCount: item.invoiceCount,
+      revenue: item.totalAmount,
+      orders: item.invoiceCount,
     }));
   }
 
@@ -198,7 +189,7 @@ class AnalyticsService {
         $match: {
           type: 'sales',
           invoiceDate: { $gte: startDate, $lte: endDate },
-          status: { $in: ['confirmed', 'paid'] },
+          status: { $ne: 'cancelled' },
         },
       },
       {
@@ -223,7 +214,7 @@ class AnalyticsService {
         $match: {
           type: 'purchase',
           invoiceDate: { $gte: startDate, $lte: endDate },
-          status: { $in: ['confirmed', 'paid'] },
+          status: { $ne: 'cancelled' },
         },
       },
       {
@@ -259,7 +250,7 @@ class AnalyticsService {
     const invoices = await Invoice.find({
       type: 'sales',
       invoiceDate: { $gte: startDate, $lte: endDate },
-      status: { $in: ['confirmed', 'paid'] },
+      status: { $ne: 'cancelled' },
     }).populate('items.itemId', 'category');
 
     const categoryRevenue = {};
@@ -281,7 +272,14 @@ class AnalyticsService {
       });
     });
 
-    return Object.values(categoryRevenue).sort((a, b) => b.revenue - a.revenue);
+    const totalRevenue = Object.values(categoryRevenue).reduce((sum, c) => sum + c.revenue, 0);
+
+    return Object.values(categoryRevenue)
+      .map(c => ({
+        ...c,
+        percentage: totalRevenue > 0 ? Math.round((c.revenue / totalRevenue) * 10000) / 100 : 0
+      }))
+      .sort((a, b) => b.revenue - a.revenue);
   }
 
   /**
@@ -295,12 +293,12 @@ class AnalyticsService {
       Invoice.find({
         type: 'sales',
         invoiceDate: { $gte: startDate, $lte: endDate },
-        status: { $in: ['confirmed', 'paid'] },
+        status: { $ne: 'cancelled' },
       }),
       Invoice.find({
         type: 'purchase',
         invoiceDate: { $gte: startDate, $lte: endDate },
-        status: { $in: ['confirmed', 'paid'] },
+        status: { $ne: 'cancelled' },
       }),
     ]);
 
@@ -365,7 +363,7 @@ class AnalyticsService {
       Invoice.find({
         type: 'sales',
         invoiceDate: { $gte: startDate, $lte: endDate },
-        status: { $in: ['confirmed', 'paid'] },
+        status: { $ne: 'cancelled' },
       }),
       Item.find({ isActive: true }),
     ]);
@@ -459,17 +457,17 @@ class AnalyticsService {
 
       if (!grouped[key]) {
         grouped[key] = {
-          period: key,
-          totalAmount: 0,
-          invoiceCount: 0,
+          date: key,
+          sales: 0,
+          orders: 0,
         };
       }
 
-      grouped[key].totalAmount += invoice.totals.grandTotal;
-      grouped[key].invoiceCount++;
+      grouped[key].sales += invoice.totals.grandTotal;
+      grouped[key].orders++;
     });
 
-    return Object.values(grouped).sort((a, b) => a.period.localeCompare(b.period));
+    return Object.values(grouped).sort((a, b) => a.date.localeCompare(b.date));
   }
 }
 

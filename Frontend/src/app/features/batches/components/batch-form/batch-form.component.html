@@ -9,21 +9,18 @@
 
     <mat-card-content>
       <form [formGroup]="batchForm" (ngSubmit)="onSubmit()" class="batch-form">
-        
+
         <!-- Item Selection -->
         <div class="form-row">
           <mat-form-field appearance="outline" class="full-width item-selection-field">
             <mat-label>Item *</mat-label>
-            <input
-              matInput
-              formControlName="itemSearch"
-              [matAutocomplete]="itemAuto"
-              placeholder="Search for an item..."
-              [readonly]="isEditMode">
+            <input matInput formControlName="itemSearch" [matAutocomplete]="itemAuto"
+              placeholder="Search for an item..." [readonly]="isEditMode">
             <mat-icon matSuffix>search</mat-icon>
             <mat-autocomplete #itemAuto="matAutocomplete" [displayWith]="displayItemFn">
-              <mat-option *ngFor="let item of filteredItems$ | async" [value]="item" (onSelectionChange)="onItemSelected(item)">
-                <span class="item-code">{{ item.code }}</span> - 
+              <mat-option *ngFor="let item of filteredItems$ | async" [value]="item"
+                (onSelectionChange)="onItemSelected(item)">
+                <span class="item-code">{{ item.code }}</span> -
                 <span class="item-name">{{ item.name }}</span>
                 <small class="item-category">({{ item.category }})</small>
               </mat-option>
@@ -78,7 +75,7 @@
         <div class="form-row two-columns">
           <mat-form-field appearance="outline">
             <mat-label>Manufacturing Date *</mat-label>
-            <input matInput [matDatepicker]="mfgPicker" formControlName="manufacturingDate">
+            <input matInput [matDatepicker]="mfgPicker" formControlName="manufacturingDate" placeholder="DD/MM/YYYY">
             <mat-datepicker-toggle matSuffix [for]="mfgPicker"></mat-datepicker-toggle>
             <mat-datepicker #mfgPicker></mat-datepicker>
             <mat-error *ngIf="batchForm.get('manufacturingDate')?.hasError('required')">
@@ -88,7 +85,7 @@
 
           <mat-form-field appearance="outline">
             <mat-label>Expiry Date *</mat-label>
-            <input matInput [matDatepicker]="expPicker" formControlName="expiryDate">
+            <input matInput [matDatepicker]="expPicker" formControlName="expiryDate" placeholder="DD/MM/YYYY">
             <mat-datepicker-toggle matSuffix [for]="expPicker"></mat-datepicker-toggle>
             <mat-datepicker #expPicker></mat-datepicker>
             <mat-error *ngIf="batchForm.get('expiryDate')?.hasError('required')">
@@ -124,15 +121,13 @@
         <div class="form-row">
           <mat-form-field appearance="outline" class="full-width supplier-selection-field">
             <mat-label>Supplier (Optional)</mat-label>
-            <input
-              matInput
-              formControlName="supplierSearch"
-              [matAutocomplete]="supplierAuto"
+            <input matInput formControlName="supplierSearch" [matAutocomplete]="supplierAuto"
               placeholder="Search for a supplier...">
             <mat-icon matSuffix>business</mat-icon>
             <mat-autocomplete #supplierAuto="matAutocomplete" [displayWith]="displaySupplierFn">
-              <mat-option *ngFor="let supplier of filteredSuppliers$ | async" [value]="supplier" (onSelectionChange)="onSupplierSelected(supplier)">
-                <span class="supplier-code">{{ supplier.code }}</span> - 
+              <mat-option *ngFor="let supplier of filteredSuppliers$ | async" [value]="supplier"
+                (onSelectionChange)="onSupplierSelected(supplier)">
+                <span class="supplier-code">{{ supplier.code }}</span> -
                 <span class="supplier-name">{{ supplier.name }}</span>
               </mat-option>
             </mat-autocomplete>
@@ -143,7 +138,8 @@
         <div class="form-row">
           <mat-form-field appearance="outline" class="full-width notes-field">
             <mat-label>Notes</mat-label>
-            <textarea matInput formControlName="notes" rows="3" placeholder="Additional notes about this batch..."></textarea>
+            <textarea matInput formControlName="notes" rows="3"
+              placeholder="Additional notes about this batch..."></textarea>
             <mat-icon matSuffix>note</mat-icon>
           </mat-form-field>
         </div>
@@ -153,11 +149,7 @@
           <button mat-button type="button" (click)="onCancel()" [disabled]="isLoading">
             Cancel
           </button>
-          <button 
-            mat-raised-button 
-            color="primary" 
-            type="submit" 
-            [disabled]="!isFormValid || isLoading">
+          <button mat-raised-button color="primary" type="submit" [disabled]="!isFormValid || isLoading">
             <mat-spinner *ngIf="isLoading" diameter="20"></mat-spinner>
             <mat-icon *ngIf="!isLoading">{{ isEditMode ? 'save' : 'add' }}</mat-icon>
             {{ isEditMode ? 'Update Batch' : 'Create Batch' }}

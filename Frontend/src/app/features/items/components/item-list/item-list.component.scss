@@ -151,7 +151,9 @@ $purple: #867cf0;
             border-width: 1px !important;
         }
 
-        &:hover, &.mat-focused {
+        &:hover,
+        &.mat-focused {
+
             .mdc-notched-outline__leading,
             .mdc-notched-outline__notch,
             .mdc-notched-outline__trailing {
@@ -161,11 +163,25 @@ $purple: #867cf0;
         }
 
         .mdc-floating-label {
-            color: rgba($purple, 0.7) !important;
+            color: #000000 !important;
+            font-weight: 500 !important;
         }
 
         &.mat-focused .mdc-floating-label {
             color: $purple !important;
+        }
+
+        .mat-mdc-input-element {
+            color: #000000 !important;
+            caret-color: #000000 !important;
+        }
+
+        .mat-mdc-input-element::placeholder {
+            color: rgba(0, 0, 0, 0.6) !important;
+        }
+
+        .mat-mdc-select-value {
+            color: #000000 !important;
         }
 
         .mat-mdc-select-arrow {
@@ -173,7 +189,7 @@ $purple: #867cf0;
         }
 
         .mat-mdc-form-field-icon-suffix {
-            color: $purple !important;
+            color: #000000 !important;
         }
     }
 }
@@ -221,7 +237,7 @@ $purple: #867cf0;
             box-shadow: 0 8px 24px rgba($purple, .35);
             transform: translateY(-2px);
 
-            td, 
+            td,
             .item-name strong,
             .item-code,
             .pricing-info .sale-price,
@@ -236,7 +252,7 @@ $purple: #867cf0;
                 color: #ffffff !important;
                 background-color: transparent !important;
                 border: none !important;
-                
+
                 ::ng-deep .mdc-evolution-chip__text-label {
                     color: #ffffff !important;
                 }
@@ -304,6 +320,7 @@ mat-chip {
     min-height: unset !important;
 
     ::ng-deep {
+
         .mdc-evolution-chip__cell,
         .mdc-evolution-chip__action,
         .mat-mdc-chip-action-label {
@@ -312,7 +329,8 @@ mat-chip {
         }
 
         .mdc-evolution-chip__text-label {
-            color: #424242 !important; /* Dark Gray for visibility */
+            color: #424242 !important;
+            /* Dark Gray for visibility */
             padding: 0 !important;
         }
 
@@ -325,7 +343,8 @@ mat-chip {
     &.status-chip.active,
     &.stock-normal {
         ::ng-deep .mdc-evolution-chip__text-label {
-            color: #28c76f !important; /* Keep green but bold for visibility if desired, or #424242 */
+            color: #28c76f !important;
+            /* Keep green but bold for visibility if desired, or #424242 */
         }
     }
 
@@ -335,7 +354,7 @@ mat-chip {
             color: #ea5455 !important;
         }
     }
-    
+
     &.stock-low {
         ::ng-deep .mdc-evolution-chip__text-label {
             color: #ff9f43 !important;
@@ -369,10 +388,21 @@ mat-chip {
             height: 18px;
         }
 
-        &[matTooltip="View Details"] { color: #6c757d; }
-        &[matTooltip="Edit Item"] { color: #0d6efd; }
-        &[matTooltip="Update Stock"] { color: #00bcd4; }
-        &[matTooltip="Delete Item"] { color: #e91e63; }
+        &[matTooltip="View Details"] {
+            color: #6c757d;
+        }
+
+        &[matTooltip="Edit Item"] {
+            color: #0d6efd;
+        }
+
+        &[matTooltip="Update Stock"] {
+            color: #00bcd4;
+        }
+
+        &[matTooltip="Delete Item"] {
+            color: #e91e63;
+        }
     }
 }
 
@@ -408,7 +438,8 @@ mat-chip {
 }
 
 /* No Data & Loading */
-.no-data, .loading-container {
+.no-data,
+.loading-container {
     padding: 48px;
     text-align: center;
     color: $text-muted;
@@ -427,6 +458,11 @@ mat-chip {
 }
 
 @keyframes spin {
-    0% { transform: rotate(0deg); }
-    100% { transform: rotate(360deg); }
+    0% {
+        transform: rotate(0deg);
+    }
+
+    100% {
+        transform: rotate(360deg);
+    }
 }

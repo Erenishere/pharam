@@ -17,14 +17,14 @@
     <div class="filters-row">
       <mat-form-field class="filter-field" appearance="outline">
         <mat-label>Start Date</mat-label>
-        <input matInput [matDatepicker]="startPicker" [(ngModel)]="startDate">
+        <input matInput [matDatepicker]="startPicker" [(ngModel)]="startDate" placeholder="DD/MM/YYYY">
         <mat-datepicker-toggle matIconSuffix [for]="startPicker"></mat-datepicker-toggle>
         <mat-datepicker #startPicker></mat-datepicker>
       </mat-form-field>
 
       <mat-form-field class="filter-field" appearance="outline">
         <mat-label>End Date</mat-label>
-        <input matInput [matDatepicker]="endPicker" [(ngModel)]="endDate">
+        <input matInput [matDatepicker]="endPicker" [(ngModel)]="endDate" placeholder="DD/MM/YYYY">
         <mat-datepicker-toggle matIconSuffix [for]="endPicker"></mat-datepicker-toggle>
         <mat-datepicker #endPicker></mat-datepicker>
       </mat-form-field>
@@ -37,209 +37,209 @@
   </div>
 
   @if (loading) {
-    <div class="loading-container">
-      <mat-spinner diameter="48"></mat-spinner>
-      <p>Loading purchase data...</p>
-    </div>
+  <div class="loading-container">
+    <mat-spinner diameter="48"></mat-spinner>
+    <p>Loading purchase data...</p>
+  </div>
   } @else {
-    <div class="summary-cards">
-      <div class="summary-card">
-        <div class="icon-wrapper purple">
-          <mat-icon>shopping_cart</mat-icon>
-        </div>
-        <div class="card-content">
-          <div class="label">Total Purchases</div>
-          <div class="value">{{ formatCurrency(summary?.totalPurchases) }}</div>
-        </div>
+  <div class="summary-cards">
+    <div class="summary-card">
+      <div class="icon-wrapper purple">
+        <mat-icon>shopping_cart</mat-icon>
       </div>
-
-      <div class="summary-card">
-        <div class="icon-wrapper info">
-          <mat-icon>receipt</mat-icon>
-        </div>
-        <div class="card-content">
-          <div class="label">Total Invoices</div>
-          <div class="value">{{ formatNumber(summary?.totalInvoices) }}</div>
-        </div>
-      </div>
-
-      <div class="summary-card">
-        <div class="icon-wrapper warning">
-          <mat-icon>percent</mat-icon>
-        </div>
-        <div class="card-content">
-          <div class="label">GST 4%</div>
-          <div class="value">{{ formatCurrency(summary?.gst4Total) }}</div>
-        </div>
-      </div>
-
-      <div class="summary-card">
-        <div class="icon-wrapper danger">
-          <mat-icon>percent</mat-icon>
-        </div>
-        <div class="card-content">
-          <div class="label">GST 18%</div>
-          <div class="value">{{ formatCurrency(summary?.gst18Total) }}</div>
-        </div>
-      </div>
-
-      <div class="summary-card">
-        <div class="icon-wrapper success">
-          <mat-icon>account_balance</mat-icon>
-        </div>
-        <div class="card-content">
-          <div class="label">Net Purchases</div>
-          <div class="value">{{ formatCurrency(summary?.netPurchases) }}</div>
-        </div>
+      <div class="card-content">
+        <div class="label">Total Purchases</div>
+        <div class="value">{{ formatCurrency(summary?.totalPurchases) }}</div>
       </div>
     </div>
 
-    <mat-tab-group [(selectedIndex)]="activeTab" class="report-tabs">
-      <mat-tab label="By Supplier">
-        <div class="data-card">
-          <div class="card-header">
-            <h2>Purchases by Supplier</h2>
-          </div>
-          <div class="table-container">
-            @if (purchaseBySupplier.length > 0) {
-              <table>
-                <thead>
-                  <tr>
-                    <th>Supplier</th>
-                    <th class="text-right">Invoices</th>
-                    <th class="text-right">GST 4%</th>
-                    <th class="text-right">GST 18%</th>
-                    <th class="text-right">Amount</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  @for (row of purchaseBySupplier; track row.supplier?._id) {
-                    <tr>
-                      <td>{{ row.supplier?.name || 'Unknown' }}</td>
-                      <td class="text-right">{{ row.count }}</td>
-                      <td class="text-right">{{ formatCurrency(row.gst4) }}</td>
-                      <td class="text-right">{{ formatCurrency(row.gst18) }}</td>
-                      <td class="text-right amount">{{ formatCurrency(row.total) }}</td>
-                    </tr>
-                  }
-                </tbody>
-              </table>
-            } @else {
-              <div class="empty-state">
-                <mat-icon>inbox</mat-icon>
-                <p>No supplier data found</p>
-              </div>
-            }
-          </div>
-        </div>
-      </mat-tab>
+    <div class="summary-card">
+      <div class="icon-wrapper info">
+        <mat-icon>receipt</mat-icon>
+      </div>
+      <div class="card-content">
+        <div class="label">Total Invoices</div>
+        <div class="value">{{ formatNumber(summary?.totalInvoices) }}</div>
+      </div>
+    </div>
 
-      <mat-tab label="By Item">
-        <div class="data-card">
-          <div class="card-header">
-            <h2>Purchases by Item</h2>
-          </div>
-          <div class="table-container">
-            @if (purchaseByItem.length > 0) {
-              <table>
-                <thead>
-                  <tr>
-                    <th>Item</th>
-                    <th class="text-right">Quantity</th>
-                    <th class="text-right">Amount</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  @for (row of purchaseByItem; track row.item?._id) {
-                    <tr>
-                      <td>{{ row.item?.name || 'Unknown' }}</td>
-                      <td class="text-right">{{ formatNumber(row.quantity) }}</td>
-                      <td class="text-right amount">{{ formatCurrency(row.total) }}</td>
-                    </tr>
-                  }
-                </tbody>
-              </table>
-            } @else {
-              <div class="empty-state">
-                <mat-icon>inbox</mat-icon>
-                <p>No item data found</p>
-              </div>
-            }
-          </div>
-        </div>
-      </mat-tab>
+    <div class="summary-card">
+      <div class="icon-wrapper warning">
+        <mat-icon>percent</mat-icon>
+      </div>
+      <div class="card-content">
+        <div class="label">GST 4%</div>
+        <div class="value">{{ formatCurrency(summary?.gst4Total) }}</div>
+      </div>
+    </div>
 
-      <mat-tab label="GST Breakdown">
-        <div class="data-card">
-          <div class="card-header">
-            <h2>GST Breakdown (4% vs 18%)</h2>
-          </div>
-          <div class="card-body">
-            @if (gstBreakdown) {
-              <div class="gst-summary">
-                <div class="gst-item">
-                  <span class="gst-label">GST 4% Taxable Amount:</span>
-                  <span class="gst-value">{{ formatCurrency(gstBreakdown.gst4?.taxableAmount) }}</span>
-                </div>
-                <div class="gst-item">
-                  <span class="gst-label">GST 4% Tax Amount:</span>
-                  <span class="gst-value">{{ formatCurrency(gstBreakdown.gst4?.taxAmount) }}</span>
-                </div>
-                <div class="gst-item">
-                  <span class="gst-label">GST 18% Taxable Amount:</span>
-                  <span class="gst-value">{{ formatCurrency(gstBreakdown.gst18?.taxableAmount) }}</span>
-                </div>
-                <div class="gst-item">
-                  <span class="gst-label">GST 18% Tax Amount:</span>
-                  <span class="gst-value">{{ formatCurrency(gstBreakdown.gst18?.taxAmount) }}</span>
-                </div>
-              </div>
-            } @else {
-              <div class="empty-state">
-                <mat-icon>inbox</mat-icon>
-                <p>No GST data found</p>
-              </div>
-            }
-          </div>
-        </div>
-      </mat-tab>
+    <div class="summary-card">
+      <div class="icon-wrapper danger">
+        <mat-icon>percent</mat-icon>
+      </div>
+      <div class="card-content">
+        <div class="label">GST 18%</div>
+        <div class="value">{{ formatCurrency(summary?.gst18Total) }}</div>
+      </div>
+    </div>
 
-      <mat-tab label="Supplier-wise GST">
-        <div class="data-card">
-          <div class="card-header">
-            <h2>Supplier-wise GST Report</h2>
-          </div>
-          <div class="table-container">
-            @if (supplierWiseGst.length > 0) {
-              <table>
-                <thead>
-                  <tr>
-                    <th>Supplier</th>
-                    <th class="text-right">GST 4%</th>
-                    <th class="text-right">GST 18%</th>
-                    <th class="text-right">Total GST</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  @for (row of supplierWiseGst; track row.supplier?._id) {
-                    <tr>
-                      <td>{{ row.supplier?.name || row.name || 'Unknown' }}</td>
-                      <td class="text-right">{{ formatCurrency(row.gst4) }}</td>
-                      <td class="text-right">{{ formatCurrency(row.gst18) }}</td>
-                      <td class="text-right amount">{{ formatCurrency((row.gst4 || 0) + (row.gst18 || 0)) }}</td>
-                    </tr>
-                  }
-                </tbody>
-              </table>
-            } @else {
-              <div class="empty-state">
-                <mat-icon>inbox</mat-icon>
-                <p>No supplier GST data found</p>
-              </div>
-            }
-          </div>
+    <div class="summary-card">
+      <div class="icon-wrapper success">
+        <mat-icon>account_balance</mat-icon>
+      </div>
+      <div class="card-content">
+        <div class="label">Net Purchases</div>
+        <div class="value">{{ formatCurrency(summary?.netPurchases) }}</div>
+      </div>
+    </div>
+  </div>
+
+  <mat-tab-group [(selectedIndex)]="activeTab" class="report-tabs">
+    <mat-tab label="By Supplier">
+      <div class="data-card">
+        <div class="card-header">
+          <h2>Purchases by Supplier</h2>
         </div>
-      </mat-tab>
-    </mat-tab-group>
+        <div class="table-container">
+          @if (purchaseBySupplier.length > 0) {
+          <table>
+            <thead>
+              <tr>
+                <th>Supplier</th>
+                <th class="text-right">Invoices</th>
+                <th class="text-right">GST 4%</th>
+                <th class="text-right">GST 18%</th>
+                <th class="text-right">Amount</th>
+              </tr>
+            </thead>
+            <tbody>
+              @for (row of purchaseBySupplier; track row.supplier?._id) {
+              <tr>
+                <td>{{ row.supplier?.name || 'Unknown' }}</td>
+                <td class="text-right">{{ row.count }}</td>
+                <td class="text-right">{{ formatCurrency(row.gst4) }}</td>
+                <td class="text-right">{{ formatCurrency(row.gst18) }}</td>
+                <td class="text-right amount">{{ formatCurrency(row.total) }}</td>
+              </tr>
+              }
+            </tbody>
+          </table>
+          } @else {
+          <div class="empty-state">
+            <mat-icon>inbox</mat-icon>
+            <p>No supplier data found</p>
+          </div>
+          }
+        </div>
+      </div>
+    </mat-tab>
+
+    <mat-tab label="By Item">
+      <div class="data-card">
+        <div class="card-header">
+          <h2>Purchases by Item</h2>
+        </div>
+        <div class="table-container">
+          @if (purchaseByItem.length > 0) {
+          <table>
+            <thead>
+              <tr>
+                <th>Item</th>
+                <th class="text-right">Quantity</th>
+                <th class="text-right">Amount</th>
+              </tr>
+            </thead>
+            <tbody>
+              @for (row of purchaseByItem; track row.item?._id) {
+              <tr>
+                <td>{{ row.item?.name || 'Unknown' }}</td>
+                <td class="text-right">{{ formatNumber(row.quantity) }}</td>
+                <td class="text-right amount">{{ formatCurrency(row.total) }}</td>
+              </tr>
+              }
+            </tbody>
+          </table>
+          } @else {
+          <div class="empty-state">
+            <mat-icon>inbox</mat-icon>
+            <p>No item data found</p>
+          </div>
+          }
+        </div>
+      </div>
+    </mat-tab>
+
+    <mat-tab label="GST Breakdown">
+      <div class="data-card">
+        <div class="card-header">
+          <h2>GST Breakdown (4% vs 18%)</h2>
+        </div>
+        <div class="card-body">
+          @if (gstBreakdown) {
+          <div class="gst-summary">
+            <div class="gst-item">
+              <span class="gst-label">GST 4% Taxable Amount:</span>
+              <span class="gst-value">{{ formatCurrency(gstBreakdown.gst4?.taxableAmount) }}</span>
+            </div>
+            <div class="gst-item">
+              <span class="gst-label">GST 4% Tax Amount:</span>
+              <span class="gst-value">{{ formatCurrency(gstBreakdown.gst4?.taxAmount) }}</span>
+            </div>
+            <div class="gst-item">
+              <span class="gst-label">GST 18% Taxable Amount:</span>
+              <span class="gst-value">{{ formatCurrency(gstBreakdown.gst18?.taxableAmount) }}</span>
+            </div>
+            <div class="gst-item">
+              <span class="gst-label">GST 18% Tax Amount:</span>
+              <span class="gst-value">{{ formatCurrency(gstBreakdown.gst18?.taxAmount) }}</span>
+            </div>
+          </div>
+          } @else {
+          <div class="empty-state">
+            <mat-icon>inbox</mat-icon>
+            <p>No GST data found</p>
+          </div>
+          }
+        </div>
+      </div>
+    </mat-tab>
+
+    <mat-tab label="Supplier-wise GST">
+      <div class="data-card">
+        <div class="card-header">
+          <h2>Supplier-wise GST Report</h2>
+        </div>
+        <div class="table-container">
+          @if (supplierWiseGst.length > 0) {
+          <table>
+            <thead>
+              <tr>
+                <th>Supplier</th>
+                <th class="text-right">GST 4%</th>
+                <th class="text-right">GST 18%</th>
+                <th class="text-right">Total GST</th>
+              </tr>
+            </thead>
+            <tbody>
+              @for (row of supplierWiseGst; track row.supplier?._id) {
+              <tr>
+                <td>{{ row.supplier?.name || row.name || 'Unknown' }}</td>
+                <td class="text-right">{{ formatCurrency(row.gst4) }}</td>
+                <td class="text-right">{{ formatCurrency(row.gst18) }}</td>
+                <td class="text-right amount">{{ formatCurrency((row.gst4 || 0) + (row.gst18 || 0)) }}</td>
+              </tr>
+              }
+            </tbody>
+          </table>
+          } @else {
+          <div class="empty-state">
+            <mat-icon>inbox</mat-icon>
+            <p>No supplier GST data found</p>
+          </div>
+          }
+        </div>
+      </div>
+    </mat-tab>
+  </mat-tab-group>
   }
 </div>

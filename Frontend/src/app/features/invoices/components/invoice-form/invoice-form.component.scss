@@ -1,6 +1,10 @@
 .invoice-form-container {
   min-width: 800px;
   max-width: 1000px;
+
+  ::ng-deep .mat-datepicker-toggle {
+    color: #2c2c2c !important;
+  }
 }
 
 .loading-overlay {

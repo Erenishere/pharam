@@ -1,6 +1,6 @@
 <div class="invoice-form-container">
   <h2 mat-dialog-title>
-    {{ mode === 'create' ? 'Create' : mode === 'edit' ? 'Edit' : 'View' }} 
+    {{ mode === 'create' ? 'Create' : mode === 'edit' ? 'Edit' : 'View' }}
     {{ type === 'sales' ? 'Sales' : 'Purchase' }} Invoice
   </h2>
 
@@ -39,14 +39,16 @@
       <div class="form-row two-columns">
         <mat-form-field>
           <mat-label>Invoice Date</mat-label>
-          <input matInput [matDatepicker]="invoiceDatePicker" formControlName="invoiceDate" [disabled]="mode === 'view'">
+          <input matInput [matDatepicker]="invoiceDatePicker" formControlName="invoiceDate" [disabled]="mode === 'view'"
+            placeholder="DD/MM/YYYY">
           <mat-datepicker-toggle matIconSuffix [for]="invoiceDatePicker"></mat-datepicker-toggle>
           <mat-datepicker #invoiceDatePicker></mat-datepicker>
         </mat-form-field>
 
         <mat-form-field>
           <mat-label>Due Date</mat-label>
-          <input matInput [matDatepicker]="dueDatePicker" formControlName="dueDate" [disabled]="mode === 'view'">
+          <input matInput [matDatepicker]="dueDatePicker" formControlName="dueDate" [disabled]="mode === 'view'"
+            placeholder="DD/MM/YYYY">
           <mat-datepicker-toggle matIconSuffix [for]="dueDatePicker"></mat-datepicker-toggle>
           <mat-datepicker #dueDatePicker></mat-datepicker>
         </mat-form-field>
@@ -62,8 +64,8 @@
       <div class="items-section">
         <div class="items-header">
           <h3>Invoice Items</h3>
-          <button mat-raised-button color="primary" type="button" (click)="addItem()" 
-                  *ngIf="mode !== 'view'" [disabled]="loading">
+          <button mat-raised-button color="primary" type="button" (click)="addItem()" *ngIf="mode !== 'view'"
+            [disabled]="loading">
             <mat-icon>add</mat-icon> Add Item
           </button>
         </div>
@@ -75,14 +77,10 @@
               <td mat-cell *matCellDef="let item; let i = index">
                 <mat-form-field class="item-field" [formGroup]="item">
                   <mat-label>Select Item</mat-label>
-                  <input type="text" matInput
-                         [matAutocomplete]="autoItem"
-                         (input)="onItemSearch($event)"
-                         [value]="item.get('itemName')?.value"
-                         [readonly]="mode === 'view'">
-                  <mat-autocomplete #autoItem="matAutocomplete" 
-                                    [displayWith]="displayItem"
-                                    (optionSelected)="onItemSelected($event, i)">
+                  <input type="text" matInput [matAutocomplete]="autoItem" (input)="onItemSearch($event)"
+                    [value]="item.get('itemName')?.value" [readonly]="mode === 'view'">
+                  <mat-autocomplete #autoItem="matAutocomplete" [displayWith]="displayItem"
+                    (optionSelected)="onItemSelected($event, i)">
                     <mat-option *ngFor="let opt of filteredItems" [value]="opt">
                       {{ opt.code }} - {{ opt.name }}
                     </mat-option>
@@ -95,8 +93,8 @@
               <th mat-header-cell *matHeaderCellDef>Qty</th>
               <td mat-cell *matCellDef="let item; let i = index" [formGroup]="item">
                 <mat-form-field class="qty-field">
-                  <input matInput type="number" formControlName="quantity" 
-                         (change)="calculateLineTotal(i)" [readonly]="mode === 'view'">
+                  <input matInput type="number" formControlName="quantity" (change)="calculateLineTotal(i)"
+                    [readonly]="mode === 'view'">
                 </mat-form-field>
               </td>
             </ng-container>
@@ -105,8 +103,8 @@
               <th mat-header-cell *matHeaderCellDef>Rate</th>
               <td mat-cell *matCellDef="let item; let i = index" [formGroup]="item">
                 <mat-form-field class="rate-field">
-                  <input matInput type="number" formControlName="unitPrice" 
-                         (change)="calculateLineTotal(i)" [readonly]="mode === 'view'">
+                  <input matInput type="number" formControlName="unitPrice" (change)="calculateLineTotal(i)"
+                    [readonly]="mode === 'view'">
                 </mat-form-field>
               </td>
             </ng-container>
@@ -115,8 +113,8 @@
               <th mat-header-cell *matHeaderCellDef>Disc %</th>
               <td mat-cell *matCellDef="let item; let i = index" [formGroup]="item">
                 <mat-form-field class="disc-field">
-                  <input matInput type="number" formControlName="discount" 
-                         (change)="calculateLineTotal(i)" [readonly]="mode === 'view'">
+                  <input matInput type="number" formControlName="discount" (change)="calculateLineTotal(i)"
+                    [readonly]="mode === 'view'">
                 </mat-form-field>
               </td>
             </ng-container>
@@ -138,8 +136,8 @@
             <ng-container matColumnDef="actions">
               <th mat-header-cell *matHeaderCellDef></th>
               <td mat-cell *matCellDef="let item; let i = index">
-                <button mat-icon-button color="warn" (click)="removeItem(i)" 
-                        *ngIf="mode !== 'view'" matTooltip="Remove item">
+                <button mat-icon-button color="warn" (click)="removeItem(i)" *ngIf="mode !== 'view'"
+                  matTooltip="Remove item">
                   <mat-icon>delete</mat-icon>
                 </button>
               </td>
@@ -190,8 +188,7 @@
     <button mat-button (click)="cancel()">
       {{ mode === 'view' ? 'Close' : 'Cancel' }}
     </button>
-    <button mat-raised-button color="primary" (click)="save()" 
-            *ngIf="mode !== 'view'" [disabled]="saving || loading">
+    <button mat-raised-button color="primary" (click)="save()" *ngIf="mode !== 'view'" [disabled]="saving || loading">
       <mat-spinner diameter="20" *ngIf="saving"></mat-spinner>
       <span *ngIf="!saving">{{ mode === 'create' ? 'Create Invoice' : 'Update Invoice' }}</span>
     </button>

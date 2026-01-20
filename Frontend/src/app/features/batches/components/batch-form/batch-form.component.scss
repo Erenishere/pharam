@@ -241,8 +241,9 @@ mat-form-field {
     }
 
     // Icon color
-    .mat-icon {
-        color: #7367F0 !important;
+    .mat-icon,
+    ::ng-deep .mat-datepicker-toggle {
+        color: #2c2c2c !important;
     }
 
     // Ensure placeholders are visible even when form field has value

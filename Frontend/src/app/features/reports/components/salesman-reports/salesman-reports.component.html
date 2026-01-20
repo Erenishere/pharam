@@ -5,7 +5,8 @@
       <h1>Salesman Reports</h1>
     </div>
     <div class="header-actions">
-      <button mat-stroked-button class="refresh-btn" (click)="loadReport()"><mat-icon>refresh</mat-icon> Refresh</button>
+      <button mat-stroked-button class="refresh-btn" (click)="loadReport()"><mat-icon>refresh</mat-icon>
+        Refresh</button>
     </div>
   </div>
 
@@ -13,13 +14,13 @@
     <div class="filters-row">
       <mat-form-field class="filter-field" appearance="outline">
         <mat-label>Start Date</mat-label>
-        <input matInput [matDatepicker]="startPicker" [(ngModel)]="startDate">
+        <input matInput [matDatepicker]="startPicker" [(ngModel)]="startDate" placeholder="DD/MM/YYYY">
         <mat-datepicker-toggle matIconSuffix [for]="startPicker"></mat-datepicker-toggle>
         <mat-datepicker #startPicker></mat-datepicker>
       </mat-form-field>
       <mat-form-field class="filter-field" appearance="outline">
         <mat-label>End Date</mat-label>
-        <input matInput [matDatepicker]="endPicker" [(ngModel)]="endDate">
+        <input matInput [matDatepicker]="endPicker" [(ngModel)]="endDate" placeholder="DD/MM/YYYY">
         <mat-datepicker-toggle matIconSuffix [for]="endPicker"></mat-datepicker-toggle>
         <mat-datepicker #endPicker></mat-datepicker>
       </mat-form-field>
@@ -31,138 +32,184 @@
   </div>
 
   @if (loading) {
-    <div class="loading-container"><mat-spinner diameter="48"></mat-spinner><p>Loading salesman data...</p></div>
+  <div class="loading-container"><mat-spinner diameter="48"></mat-spinner>
+    <p>Loading salesman data...</p>
+  </div>
   } @else {
-    <div class="summary-cards">
-      <div class="summary-card">
-        <div class="icon-wrapper purple"><mat-icon>badge</mat-icon></div>
-        <div class="card-content">
-          <div class="label">Total Salesmen</div>
-          <div class="value">{{ formatNumber(performanceReport?.summary?.totalSalesmen) }}</div>
-        </div>
-      </div>
-      <div class="summary-card">
-        <div class="icon-wrapper success"><mat-icon>trending_up</mat-icon></div>
-        <div class="card-content">
-          <div class="label">Total Sales</div>
-          <div class="value">{{ formatCurrency(performanceReport?.summary?.totalSales) }}</div>
-        </div>
-      </div>
-      <div class="summary-card">
-        <div class="icon-wrapper info"><mat-icon>payments</mat-icon></div>
-        <div class="card-content">
-          <div class="label">Total Collections</div>
-          <div class="value">{{ formatCurrency(performanceReport?.summary?.totalCollections) }}</div>
-        </div>
-      </div>
-      <div class="summary-card">
-        <div class="icon-wrapper warning"><mat-icon>attach_money</mat-icon></div>
-        <div class="card-content">
-          <div class="label">Total Commission</div>
-          <div class="value">{{ formatCurrency(performanceReport?.summary?.totalCommission) }}</div>
-        </div>
+  <div class="summary-cards">
+    <div class="summary-card">
+      <div class="icon-wrapper purple"><mat-icon>badge</mat-icon></div>
+      <div class="card-content">
+        <div class="label">Total Salesmen</div>
+        <div class="value">{{ formatNumber(performanceReport?.summary?.totalSalesmen) }}</div>
       </div>
     </div>
+    <div class="summary-card">
+      <div class="icon-wrapper success"><mat-icon>trending_up</mat-icon></div>
+      <div class="card-content">
+        <div class="label">Total Sales</div>
+        <div class="value">{{ formatCurrency(performanceReport?.summary?.totalSales) }}</div>
+      </div>
+    </div>
+    <div class="summary-card">
+      <div class="icon-wrapper info"><mat-icon>payments</mat-icon></div>
+      <div class="card-content">
+        <div class="label">Total Collections</div>
+        <div class="value">{{ formatCurrency(performanceReport?.summary?.totalCollections) }}</div>
+      </div>
+    </div>
+    <div class="summary-card">
+      <div class="icon-wrapper warning"><mat-icon>attach_money</mat-icon></div>
+      <div class="card-content">
+        <div class="label">Total Commission</div>
+        <div class="value">{{ formatCurrency(performanceReport?.summary?.totalCommission) }}</div>
+      </div>
+    </div>
+  </div>
 
-    <mat-tab-group [(selectedIndex)]="activeTab" class="report-tabs">
-      <mat-tab label="Sales">
-        <div class="data-card">
-          <div class="card-header"><h2>Salesman Sales Report</h2></div>
-          <div class="table-container">
-            @if (salesReport.length > 0) {
-              <table>
-                <thead><tr><th>Salesman</th><th class="text-right">Invoices</th><th class="text-right">Sales Amount</th></tr></thead>
-                <tbody>
-                  @for (row of salesReport; track row.salesman?._id || row._id) {
-                    <tr>
-                      <td>{{ row.salesman?.name || row.name || 'Unknown' }}</td>
-                      <td class="text-right">{{ formatNumber(row.invoiceCount || row.count) }}</td>
-                      <td class="text-right amount">{{ formatCurrency(row.totalSales || row.total) }}</td>
-                    </tr>
-                  }
-                </tbody>
-              </table>
-            } @else {
-              <div class="empty-state"><mat-icon>inbox</mat-icon><p>No sales data available</p></div>
-            }
-          </div>
+  <mat-tab-group [(selectedIndex)]="activeTab" class="report-tabs">
+    <mat-tab label="Sales">
+      <div class="data-card">
+        <div class="card-header">
+          <h2>Salesman Sales Report</h2>
         </div>
-      </mat-tab>
+        <div class="table-container">
+          @if (salesReport.length > 0) {
+          <table>
+            <thead>
+              <tr>
+                <th>Salesman</th>
+                <th class="text-right">Invoices</th>
+                <th class="text-right">Sales Amount</th>
+              </tr>
+            </thead>
+            <tbody>
+              @for (row of salesReport; track row.salesman?._id || row._id) {
+              <tr>
+                <td>{{ row.salesman?.name || row.name || 'Unknown' }}</td>
+                <td class="text-right">{{ formatNumber(row.invoiceCount || row.count) }}</td>
+                <td class="text-right amount">{{ formatCurrency(row.totalSales || row.total) }}</td>
+              </tr>
+              }
+            </tbody>
+          </table>
+          } @else {
+          <div class="empty-state"><mat-icon>inbox</mat-icon>
+            <p>No sales data available</p>
+          </div>
+          }
+        </div>
+      </div>
+    </mat-tab>
 
-      <mat-tab label="Collections">
-        <div class="data-card">
-          <div class="card-header"><h2>Salesman Collections Report</h2></div>
-          <div class="table-container">
-            @if (collectionsReport.length > 0) {
-              <table>
-                <thead><tr><th>Salesman</th><th class="text-right">Receipts</th><th class="text-right">Amount Collected</th></tr></thead>
-                <tbody>
-                  @for (row of collectionsReport; track row.salesman?._id || row._id) {
-                    <tr>
-                      <td>{{ row.salesman?.name || row.name || 'Unknown' }}</td>
-                      <td class="text-right">{{ formatNumber(row.receiptCount || row.count) }}</td>
-                      <td class="text-right amount">{{ formatCurrency(row.totalCollected || row.total) }}</td>
-                    </tr>
-                  }
-                </tbody>
-              </table>
-            } @else {
-              <div class="empty-state"><mat-icon>inbox</mat-icon><p>No collections data available</p></div>
-            }
-          </div>
+    <mat-tab label="Collections">
+      <div class="data-card">
+        <div class="card-header">
+          <h2>Salesman Collections Report</h2>
         </div>
-      </mat-tab>
+        <div class="table-container">
+          @if (collectionsReport.length > 0) {
+          <table>
+            <thead>
+              <tr>
+                <th>Salesman</th>
+                <th class="text-right">Receipts</th>
+                <th class="text-right">Amount Collected</th>
+              </tr>
+            </thead>
+            <tbody>
+              @for (row of collectionsReport; track row.salesman?._id || row._id) {
+              <tr>
+                <td>{{ row.salesman?.name || row.name || 'Unknown' }}</td>
+                <td class="text-right">{{ formatNumber(row.receiptCount || row.count) }}</td>
+                <td class="text-right amount">{{ formatCurrency(row.totalCollected || row.total) }}</td>
+              </tr>
+              }
+            </tbody>
+          </table>
+          } @else {
+          <div class="empty-state"><mat-icon>inbox</mat-icon>
+            <p>No collections data available</p>
+          </div>
+          }
+        </div>
+      </div>
+    </mat-tab>
 
-      <mat-tab label="Performance">
-        <div class="data-card">
-          <div class="card-header"><h2>Salesman Performance Report</h2></div>
-          <div class="table-container">
-            @if (performanceReport?.performance?.length > 0) {
-              <table>
-                <thead><tr><th>Salesman</th><th class="text-right">Sales</th><th class="text-right">Collections</th><th class="text-right">Target</th><th class="text-right">Achievement</th></tr></thead>
-                <tbody>
-                  @for (row of performanceReport.performance; track row.salesman?._id) {
-                    <tr>
-                      <td>{{ row.salesman?.name || 'Unknown' }}</td>
-                      <td class="text-right">{{ formatCurrency(row.sales) }}</td>
-                      <td class="text-right">{{ formatCurrency(row.collections) }}</td>
-                      <td class="text-right">{{ formatCurrency(row.target) }}</td>
-                      <td class="text-right" [class.positive]="row.achievement >= 100" [class.negative]="row.achievement < 100">{{ (row.achievement || 0).toFixed(1) }}%</td>
-                    </tr>
-                  }
-                </tbody>
-              </table>
-            } @else {
-              <div class="empty-state"><mat-icon>inbox</mat-icon><p>No performance data available</p></div>
-            }
-          </div>
+    <mat-tab label="Performance">
+      <div class="data-card">
+        <div class="card-header">
+          <h2>Salesman Performance Report</h2>
         </div>
-      </mat-tab>
+        <div class="table-container">
+          @if (performanceReport?.performance?.length > 0) {
+          <table>
+            <thead>
+              <tr>
+                <th>Salesman</th>
+                <th class="text-right">Sales</th>
+                <th class="text-right">Collections</th>
+                <th class="text-right">Target</th>
+                <th class="text-right">Achievement</th>
+              </tr>
+            </thead>
+            <tbody>
+              @for (row of performanceReport.performance; track row.salesman?._id) {
+              <tr>
+                <td>{{ row.salesman?.name || 'Unknown' }}</td>
+                <td class="text-right">{{ formatCurrency(row.sales) }}</td>
+                <td class="text-right">{{ formatCurrency(row.collections) }}</td>
+                <td class="text-right">{{ formatCurrency(row.target) }}</td>
+                <td class="text-right" [class.positive]="row.achievement >= 100"
+                  [class.negative]="row.achievement < 100">{{ (row.achievement || 0).toFixed(1) }}%</td>
+              </tr>
+              }
+            </tbody>
+          </table>
+          } @else {
+          <div class="empty-state"><mat-icon>inbox</mat-icon>
+            <p>No performance data available</p>
+          </div>
+          }
+        </div>
+      </div>
+    </mat-tab>
 
-      <mat-tab label="Commission">
-        <div class="data-card">
-          <div class="card-header"><h2>Salesman Commission Report</h2></div>
-          <div class="table-container">
-            @if (commissionReport.length > 0) {
-              <table>
-                <thead><tr><th>Salesman</th><th class="text-right">Sales</th><th class="text-right">Commission Rate</th><th class="text-right">Commission Amount</th></tr></thead>
-                <tbody>
-                  @for (row of commissionReport; track row.salesman?._id || row._id) {
-                    <tr>
-                      <td>{{ row.salesman?.name || row.name || 'Unknown' }}</td>
-                      <td class="text-right">{{ formatCurrency(row.sales || row.totalSales) }}</td>
-                      <td class="text-right">{{ (row.commissionRate || 0).toFixed(2) }}%</td>
-                      <td class="text-right amount">{{ formatCurrency(row.commission || row.totalCommission) }}</td>
-                    </tr>
-                  }
-                </tbody>
-              </table>
-            } @else {
-              <div class="empty-state"><mat-icon>inbox</mat-icon><p>No commission data available</p></div>
-            }
-          </div>
+    <mat-tab label="Commission">
+      <div class="data-card">
+        <div class="card-header">
+          <h2>Salesman Commission Report</h2>
         </div>
-      </mat-tab>
-    </mat-tab-group>
+        <div class="table-container">
+          @if (commissionReport.length > 0) {
+          <table>
+            <thead>
+              <tr>
+                <th>Salesman</th>
+                <th class="text-right">Sales</th>
+                <th class="text-right">Commission Rate</th>
+                <th class="text-right">Commission Amount</th>
+              </tr>
+            </thead>
+            <tbody>
+              @for (row of commissionReport; track row.salesman?._id || row._id) {
+              <tr>
+                <td>{{ row.salesman?.name || row.name || 'Unknown' }}</td>
+                <td class="text-right">{{ formatCurrency(row.sales || row.totalSales) }}</td>
+                <td class="text-right">{{ (row.commissionRate || 0).toFixed(2) }}%</td>
+                <td class="text-right amount">{{ formatCurrency(row.commission || row.totalCommission) }}</td>
+              </tr>
+              }
+            </tbody>
+          </table>
+          } @else {
+          <div class="empty-state"><mat-icon>inbox</mat-icon>
+            <p>No commission data available</p>
+          </div>
+          }
+        </div>
+      </div>
+    </mat-tab>
+  </mat-tab-group>
   }
 </div>

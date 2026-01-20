@@ -51,7 +51,7 @@ import { ToastService } from '../../../../shared/services/toast.service';
             <div class="search-filters">
               <mat-form-field appearance="outline" class="search-field">
                 <mat-label>Search items</mat-label>
-                <input matInput [(ngModel)]="searchKeyword" (input)="onSearch()" placeholder="Search by name, code, or description">
+                <input matInput [(ngModel)]="searchKeyword" (input)="onSearch()">
                 <mat-icon matSuffix>search</mat-icon>
               </mat-form-field>
 

@@ -56,8 +56,8 @@ router.get(
       .withMessage('Page must be a positive integer'),
     query('limit')
       .optional()
-      .isInt({ min: 1, max: 100 })
-      .withMessage('Limit must be between 1 and 100'),
+      .isInt({ min: 1, max: 1000 })
+      .withMessage('Limit must be between 1 and 1000'),
     validate,
   ],
   salesInvoiceController.getSalesInvoicesByCustomer,
@@ -87,8 +87,8 @@ router.post(
       .withMessage('Page must be a positive integer'),
     body('limit')
       .optional()
-      .isInt({ min: 1, max: 100 })
-      .withMessage('Limit must be between 1 and 100'),
+      .isInt({ min: 1, max: 1000 })
+      .withMessage('Limit must be between 1 and 1000'),
     validate,
   ],
   salesInvoiceController.advancedSearch,
@@ -109,8 +109,8 @@ router.get(
       .withMessage('Page must be a positive integer'),
     query('limit')
       .optional()
-      .isInt({ min: 1, max: 100 })
-      .withMessage('Limit must be between 1 and 100'),
+      .isInt({ min: 1, max: 1000 })
+      .withMessage('Limit must be between 1 and 1000'),
     query('status')
       .optional()
       .isIn(['draft', 'confirmed', 'paid', 'cancelled'])
@@ -556,8 +556,8 @@ router.get(
       .withMessage('Page must be a positive integer'),
     query('limit')
       .optional()
-      .isInt({ min: 1, max: 100 })
-      .withMessage('Limit must be between 1 and 100'),
+      .isInt({ min: 1, max: 1000 })
+      .withMessage('Limit must be between 1 and 1000'),
     query('customerId')
       .optional()
       .custom(isValidObjectId)
@@ -582,8 +582,8 @@ router.get(
       .withMessage('Page must be a positive integer'),
     query('limit')
       .optional()
-      .isInt({ min: 1, max: 100 })
-      .withMessage('Limit must be between 1 and 100'),
+      .isInt({ min: 1, max: 1000 })
+      .withMessage('Limit must be between 1 and 1000'),
     query('customerId')
       .optional()
       .custom(isValidObjectId)

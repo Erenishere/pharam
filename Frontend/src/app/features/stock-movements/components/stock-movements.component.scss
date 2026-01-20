@@ -110,14 +110,32 @@ $purple: #867cf0;
   }
 
   &.net-change {
+    background: linear-gradient(135deg, #ff9800 0%, #ffb74d 100%);
+    color: white;
+    border: none;
+
+    mat-icon {
+      color: white;
+    }
+
     &.positive {
       background: linear-gradient(135deg, #28a745 0%, #5cb85c 100%);
       color: white;
+      border: none;
+
+      mat-icon {
+        color: white;
+      }
     }
 
     &.negative {
       background: linear-gradient(135deg, #e91e63 0%, #f06292 100%);
       color: white;
+      border: none;
+
+      mat-icon {
+        color: white;
+      }
     }
   }
 }
@@ -143,7 +161,7 @@ $purple: #867cf0;
   }
 
   ::ng-deep .mat-mdc-input-element {
-    color: #6c757d !important;
+    color: #000000 !important;
     caret-color: $purple !important;
   }
 
@@ -161,6 +179,12 @@ $purple: #867cf0;
     box-shadow: 0 0 0 2px rgba($purple, 0.25) !important;
   }
 
+  ::ng-deep .mat-mdc-form-field .mdc-floating-label {
+    opacity: 1 !important;
+    color: #000000 !important;
+    font-weight: 500 !important;
+  }
+
   ::ng-deep .mat-mdc-form-field.mat-focused .mdc-floating-label,
   ::ng-deep .mdc-floating-label--float-above {
     color: $purple !important;
@@ -170,16 +194,18 @@ $purple: #867cf0;
   }
 
   ::ng-deep .mat-mdc-form-field-icon-prefix,
-  ::ng-deep .mat-mdc-form-field-icon-suffix {
-    color: $purple !important;
+  ::ng-deep .mat-mdc-form-field-icon-suffix,
+  ::ng-deep .mat-datepicker-toggle {
+    color: #000000 !important;
   }
 
   ::ng-deep .mat-mdc-select-arrow {
     color: $purple !important;
   }
 
-  ::ng-deep .mat-mdc-select-value {
-    color: #4a4a4a !important;
+  ::ng-deep .mat-mdc-select-value,
+  ::ng-deep .mat-mdc-select-value-text {
+    color: #000000 !important;
   }
 
   button[mat-stroked-button] {
@@ -348,6 +374,18 @@ $purple: #867cf0;
   width: 16px !important;
   height: 16px !important;
   margin-right: 4px;
+}
+
+::ng-deep .dark-chip {
+  &.mat-mdc-standard-chip {
+    background-color: #3f4254 !important; // Dark grey/charcoal
+    color: #ffffff !important;
+    font-weight: 500;
+
+    .mat-icon {
+      color: #ffffff !important;
+    }
+  }
 }
 
 .ref-number {

@@ -53,22 +53,30 @@ class ReportService {
       .populate('items.itemId', 'code name category')
       .sort({ invoiceDate: 1 });
 
-    const summary = {
-      totalInvoices: invoices.length,
-      totalAmount: invoices.reduce((sum, inv) => {
-        let grandTotal = inv.totals?.grandTotal;
-        if (!grandTotal && grandTotal !== 0) {
-          // Heuristic 1: Reconstruct from totals
-          grandTotal = (inv.totals?.subtotal || 0) + (inv.totals?.totalTax || 0) - (inv.totals?.totalDiscount || 0);
-          // Heuristic 2: Sum from items (Ultimate fallback)
-          if (!grandTotal && grandTotal !== 0 && inv.items?.length > 0) {
-            grandTotal = inv.items.reduce((s, i) => s + (i.lineTotal || 0), 0) + (inv.totals?.totalTax || 0);
-          }
+    const totalSales = invoices.reduce((sum, inv) => {
+      let grandTotal = inv.totals?.grandTotal;
+      if (!grandTotal && grandTotal !== 0) {
+        // Heuristic 1: Reconstruct from totals
+        grandTotal = (inv.totals?.subtotal || 0) + (inv.totals?.totalTax || 0) - (inv.totals?.totalDiscount || 0);
+        // Heuristic 2: Sum from items (Ultimate fallback)
+        if (!grandTotal && grandTotal !== 0 && inv.items?.length > 0) {
+          grandTotal = inv.items.reduce((s, i) => s + (i.lineTotal || 0), 0) + (inv.totals?.totalTax || 0);
         }
-        return sum + (grandTotal || 0);
-      }, 0),
-      totalDiscount: invoices.reduce((sum, inv) => sum + (inv.totals?.totalDiscount || 0), 0),
-      totalTax: invoices.reduce((sum, inv) => sum + (inv.totals?.totalTax || 0), 0),
+      }
+      return sum + (grandTotal || 0);
+    }, 0);
+
+    const totalDiscount = invoices.reduce((sum, inv) => sum + (inv.totals?.totalDiscount || 0), 0);
+    const totalTax = invoices.reduce((sum, inv) => sum + (inv.totals?.totalTax || 0), 0);
+    const totalInvoices = invoices.length;
+
+    const summary = {
+      totalInvoices,
+      totalSales,
+      totalDiscount,
+      totalTax,
+      netSales: totalSales - totalDiscount,
+      averageOrderValue: totalInvoices > 0 ? totalSales / totalInvoices : 0
     };
 
     let groupedData = [];
@@ -82,13 +90,24 @@ class ReportService {
       groupedData = this._groupByDate(invoices);
     }
 
-    return {
+    const result = {
       reportType: 'sales',
       period: { startDate, endDate },
       summary,
-      data: groupedData,
       invoices,
     };
+
+    if (groupBy === 'customer') {
+      result.byCustomer = groupedData;
+    } else if (groupBy === 'item') {
+      result.byItem = groupedData;
+    } else if (groupBy === 'salesman') {
+      result.bySalesman = groupedData;
+    } else {
+      result.byDate = groupedData;
+    }
+
+    return result;
   }
 
   /**
@@ -118,15 +137,26 @@ class ReportService {
       .populate('items.itemId', 'code name category')
       .sort({ invoiceDate: 1 });
 
+    const totalPurchases = invoices.reduce((sum, inv) => {
+      const grandTotal = inv.totals?.grandTotal ||
+        ((inv.totals?.subtotal || 0) + (inv.totals?.totalTax || 0) - (inv.totals?.totalDiscount || 0));
+      return sum + grandTotal;
+    }, 0);
+
+    const totalDiscount = invoices.reduce((sum, inv) => sum + (inv.totals?.totalDiscount || 0), 0);
+    const totalTax = invoices.reduce((sum, inv) => sum + (inv.totals?.totalTax || 0), 0);
+    const gst4Total = invoices.reduce((sum, inv) => sum + (inv.totals?.gst4Total || 0), 0);
+    const gst18Total = invoices.reduce((sum, inv) => sum + (inv.totals?.gst18Total || 0), 0);
+    const totalInvoices = invoices.length;
+
     const summary = {
-      totalInvoices: invoices.length,
-      totalAmount: invoices.reduce((sum, inv) => {
-        const grandTotal = inv.totals?.grandTotal ||
-          ((inv.totals?.subtotal || 0) + (inv.totals?.totalTax || 0) - (inv.totals?.totalDiscount || 0));
-        return sum + grandTotal;
-      }, 0),
-      totalDiscount: invoices.reduce((sum, inv) => sum + (inv.totals?.totalDiscount || 0), 0),
-      totalTax: invoices.reduce((sum, inv) => sum + (inv.totals?.totalTax || 0), 0),
+      totalInvoices,
+      totalPurchases,
+      totalDiscount,
+      totalTax,
+      netPurchases: totalPurchases - totalDiscount,
+      gst4Total,
+      gst18Total
     };
 
     let groupedData = [];
@@ -138,13 +168,22 @@ class ReportService {
       groupedData = this._groupByDate(invoices);
     }
 
-    return {
+    const result = {
       reportType: 'purchase',
       period: { startDate, endDate },
       summary,
-      data: groupedData,
       invoices,
     };
+
+    if (groupBy === 'supplier') {
+      result.bySupplier = groupedData;
+    } else if (groupBy === 'item') {
+      result.byItem = groupedData;
+    } else {
+      result.byDate = groupedData;
+    }
+
+    return result;
   }
 
   /**
@@ -205,15 +244,15 @@ class ReportService {
       if (!grouped[customerId]) {
         grouped[customerId] = {
           customer: invoice.customerId,
-          invoiceCount: 0,
-          totalAmount: 0,
+          count: 0,
+          total: 0,
           totalDiscount: 0,
           totalTax: 0,
         };
       }
 
-      grouped[customerId].invoiceCount++;
-      grouped[customerId].totalAmount += (invoice.totals?.grandTotal || 0);
+      grouped[customerId].count++;
+      grouped[customerId].total += (invoice.totals?.grandTotal || 0);
       grouped[customerId].totalDiscount += (invoice.totals?.totalDiscount || 0);
       grouped[customerId].totalTax += (invoice.totals?.totalTax || 0);
     });
@@ -233,15 +272,19 @@ class ReportService {
       if (!grouped[supplierId]) {
         grouped[supplierId] = {
           supplier: invoice.supplierId,
-          invoiceCount: 0,
-          totalAmount: 0,
+          count: 0,
+          total: 0,
+          gst4: 0,
+          gst18: 0,
           totalDiscount: 0,
           totalTax: 0,
         };
       }
 
-      grouped[supplierId].invoiceCount++;
-      grouped[supplierId].totalAmount += (invoice.totals?.grandTotal || 0);
+      grouped[supplierId].count++;
+      grouped[supplierId].total += (invoice.totals?.grandTotal || 0);
+      grouped[supplierId].gst4 += (invoice.totals?.gst4Total || 0);
+      grouped[supplierId].gst18 += (invoice.totals?.gst18Total || 0);
       grouped[supplierId].totalDiscount += (invoice.totals?.totalDiscount || 0);
       grouped[supplierId].totalTax += (invoice.totals?.totalTax || 0);
     });
@@ -263,14 +306,14 @@ class ReportService {
           grouped[itemId] = {
             item: item.itemId,
             quantity: 0,
-            totalAmount: 0,
-            invoiceCount: 0,
+            total: 0,
+            count: 0,
           };
         }
 
         grouped[itemId].quantity += (item.quantity || 0);
-        grouped[itemId].totalAmount += (item.lineTotal || 0);
-        grouped[itemId].invoiceCount++;
+        grouped[itemId].total += (item.lineTotal || 0);
+        grouped[itemId].count++;
       });
     });
 
@@ -289,15 +332,15 @@ class ReportService {
       if (!grouped[dateKey]) {
         grouped[dateKey] = {
           date: dateKey,
-          invoiceCount: 0,
-          totalAmount: 0,
+          count: 0,
+          total: 0,
           totalDiscount: 0,
           totalTax: 0,
         };
       }
 
-      grouped[dateKey].invoiceCount++;
-      grouped[dateKey].totalAmount += (invoice.totals?.grandTotal || 0);
+      grouped[dateKey].count++;
+      grouped[dateKey].total += (invoice.totals?.grandTotal || 0);
       grouped[dateKey].totalDiscount += (invoice.totals?.totalDiscount || 0);
       grouped[dateKey].totalTax += (invoice.totals?.totalTax || 0);
     });
@@ -320,19 +363,25 @@ class ReportService {
       if (!grouped[salesmanKey]) {
         grouped[salesmanKey] = {
           salesman: invoice.salesmanId || { code: 'N/A', name: 'Unassigned' },
-          invoiceCount: 0,
-          totalAmount: 0,
+          count: 0,
+          total: 0,
           totalDiscount: 0,
           totalTax: 0,
           totalSubtotal: 0,
+          commission: 0
         };
       }
 
-      grouped[salesmanKey].invoiceCount++;
-      grouped[salesmanKey].totalAmount += (invoice.totals?.grandTotal || 0);
+      grouped[salesmanKey].count++;
+      grouped[salesmanKey].total += (invoice.totals?.grandTotal || 0);
       grouped[salesmanKey].totalDiscount += (invoice.totals?.totalDiscount || 0);
       grouped[salesmanKey].totalTax += (invoice.totals?.totalTax || 0);
       grouped[salesmanKey].totalSubtotal += (invoice.totals?.subtotal || 0);
+
+      // Calculate commission if salesman has a rate (placeholder logic)
+      if (invoice.salesmanId && invoice.salesmanId.commissionRate) {
+        grouped[salesmanKey].commission += (invoice.totals?.subtotal || 0) * (invoice.salesmanId.commissionRate / 100);
+      }
     });
 
     return Object.values(grouped);
@@ -382,7 +431,7 @@ class ReportService {
     const query = {
       type: { $in: ['purchase', 'return_purchase'] },
       invoiceDate: { $gte: normalizeStartDate(startDate), $lte: normalizeEndDate(endDate) },
-      status: 'confirmed',
+      status: { $ne: 'cancelled' },
     };
 
     if (supplierId) {
@@ -818,7 +867,7 @@ class ReportService {
     const invoices = await Invoice.find({
       type: { $in: ['purchase', 'return_purchase'] },
       invoiceDate: { $gte: normalizeStartDate(startDate), $lte: normalizeEndDate(endDate) },
-      status: 'confirmed'
+      status: { $ne: 'cancelled' }
     })
       .populate('supplierId', 'code name')
       .sort({ supplierId: 1, invoiceDate: 1 });
@@ -876,15 +925,17 @@ class ReportService {
     });
 
     const suppliers = Object.values(supplierMap).map(supplier => {
-      Object.keys(supplier.byTaxRate).forEach(key => {
-        supplier.byTaxRate[key].taxableAmount = Math.round(supplier.byTaxRate[key].taxableAmount * 100) / 100;
-        supplier.byTaxRate[key].gstAmount = Math.round(supplier.byTaxRate[key].gstAmount * 100) / 100;
-        supplier.byTaxRate[key].totalAmount = Math.round(supplier.byTaxRate[key].totalAmount * 100) / 100;
-      });
-      supplier.total.taxableAmount = Math.round(supplier.total.taxableAmount * 100) / 100;
-      supplier.total.gstAmount = Math.round(supplier.total.gstAmount * 100) / 100;
-      supplier.total.totalAmount = Math.round(supplier.total.totalAmount * 100) / 100;
-      return supplier;
+      return {
+        supplier: {
+          _id: supplier.supplierId,
+          code: supplier.supplierCode,
+          name: supplier.supplierName
+        },
+        gst4: Math.round((supplier.byTaxRate.gst4?.gstAmount || 0) * 100) / 100,
+        gst18: Math.round((supplier.byTaxRate.gst18?.gstAmount || 0) * 100) / 100,
+        total: Math.round(supplier.total.totalAmount * 100) / 100,
+        invoiceCount: supplier.invoiceCount
+      };
     });
 
     suppliers.sort((a, b) => b.total.totalAmount - a.total.totalAmount);
