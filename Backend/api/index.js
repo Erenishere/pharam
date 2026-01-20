@@ -1,16 +1,43 @@
+require('dotenv').config();
+const mongoose = require('mongoose');
 const ServerConfig = require('../src/config/server');
-const database = require('../src/config/database');
 
-// Create configuration
+let isConnected = false;
+
+const connectToDatabase = async () => {
+    if (isConnected && mongoose.connection.readyState === 1) {
+        return;
+    }
+    
+    const mongoUri = process.env.MONGODB_URI;
+    if (!mongoUri) {
+        throw new Error('MONGODB_URI environment variable is not set');
+    }
+    
+    try {
+        await mongoose.connect(mongoUri, {
+            maxPoolSize: 10,
+            serverSelectionTimeoutMS: 5000,
+            socketTimeoutMS: 45000,
+        });
+        isConnected = true;
+        console.log('Connected to MongoDB via Vercel');
+    } catch (error) {
+        console.error('MongoDB connection error:', error);
+        throw error;
+    }
+};
+
 const serverConfig = new ServerConfig();
 const app = serverConfig.getApp();
 
-// Connect to database (Serverless function requires connection on each invocation or cached connection)
-// In a serverless environment, we rely on Mongoose's internal connection buffering.
-// However, ensuring connection is established is good practice.
-database.connect()
-    .then(() => console.log('Connected to MongoDB via Vercel'))
-    .catch(err => console.error('MongoDB connection error:', err));
+app.use(async (req, res, next) => {
+    try {
+        await connectToDatabase();
+        next();
+    } catch (error) {
+        res.status(500).json({ error: 'Database connection failed', message: error.message });
+    }
+});
 
-// Export the app for Vercel
 module.exports = app;
