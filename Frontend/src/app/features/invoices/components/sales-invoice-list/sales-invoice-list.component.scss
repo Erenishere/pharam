@@ -165,6 +165,14 @@ $purple: #867cf0;
   ::ng-deep .mat-mdc-select-value {
     color: #4a4a4a !important;
   }
+
+  ::ng-deep .mdc-floating-label {
+    color: #6c757d !important;
+  }
+
+  ::ng-deep .mat-mdc-input-element {
+    color: #000000 !important;
+  }
 }
 
 .table-container {
