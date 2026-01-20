@@ -101,7 +101,8 @@ export interface RefreshTokenRequest {
 
 export interface RefreshTokenResponse extends ApiResponse<{
   accessToken: string;
-  refreshToken: string;
+  refreshToken?: string;
+  user?: User;
 }> { }
 
 // Generic API Response

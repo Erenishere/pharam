@@ -325,7 +325,6 @@ batchSchema.statics.getExpiredItemsByWarehouse = function (warehouseId) {
 batchSchema.statics.updateBatchStatuses = async function () {
   const now = new Date();
 
-  // Update expired batches
   const expiredResult = await this.updateMany(
     {
       expiryDate: { $lt: now },
@@ -339,28 +338,15 @@ batchSchema.statics.updateBatchStatuses = async function () {
     }
   );
 
-  // Update active batches - use aggregation pipeline for dynamic calculation
   const activeResult = await this.updateMany(
     {
       expiryDate: { $gte: now },
       manufacturingDate: { $lte: now },
-      status: { $nin: ['active', 'expired'] }
+      status: { $nin: ['active', 'expired', 'depleted'] }
     },
-    [
-      {
-        $set: {
-          status: 'active',
-          daysUntilExpiry: {
-            $ceil: {
-              $divide: [
-                { $subtract: ['$expiryDate', now] },
-                1000 * 60 * 60 * 24
-              ]
-            }
-          }
-        }
-      }
-    ]
+    {
+      $set: { status: 'active' }
+    }
   );
 
   return {

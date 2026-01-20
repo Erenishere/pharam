@@ -130,10 +130,16 @@ export class SalesReportsComponent implements OnInit {
   }
 
   formatCurrency(value: number): string {
-    return new Intl.NumberFormat('en-PK', { style: 'currency', currency: 'PKR', minimumFractionDigits: 0 }).format(value || 0);
+    if (value === undefined || value === null || isNaN(value)) {
+      return 'PKR 0';
+    }
+    return new Intl.NumberFormat('en-PK', { style: 'currency', currency: 'PKR', minimumFractionDigits: 0 }).format(value);
   }
 
   formatNumber(value: number): string {
-    return new Intl.NumberFormat('en-PK').format(value || 0);
+    if (value === undefined || value === null || isNaN(value)) {
+      return '0';
+    }
+    return new Intl.NumberFormat('en-PK').format(value);
   }
 }

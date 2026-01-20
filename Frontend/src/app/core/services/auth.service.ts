@@ -18,11 +18,18 @@ export class AuthService {
     constructor(private http: HttpClient) { }
 
     login(credentials: LoginRequest): Observable<LoginResponse> {
+        console.log('[AuthService] Login attempt with:', credentials.identifier);
         return this.http.post<LoginResponse>(`${API_CONFIG.BASE_URL}${API_CONFIG.ENDPOINTS.AUTH.LOGIN}`, credentials)
             .pipe(
                 tap(response => {
+                    console.log('[AuthService] Login response:', response);
                     if (response.success) {
+                        console.log('[AuthService] Login successful, setting session');
+                        console.log('[AuthService] AccessToken:', response.data.accessToken);
+                        console.log('[AuthService] User:', response.data.user);
                         this.setSession(response.data);
+                    } else {
+                        console.error('[AuthService] Login failed:', response);
                     }
                 })
             );
@@ -35,6 +42,13 @@ export class AuthService {
                 tap(response => {
                     if (response.success) {
                         localStorage.setItem(STORAGE_KEYS.TOKEN, response.data.accessToken);
+                        if (response.data.refreshToken) {
+                            localStorage.setItem(STORAGE_KEYS.REFRESH_TOKEN, response.data.refreshToken);
+                        }
+                        if (response.data.user) {
+                            localStorage.setItem(STORAGE_KEYS.USER, JSON.stringify(response.data.user));
+                            this.currentUserSubject.next(response.data.user);
+                        }
                     }
                 })
             );
@@ -58,9 +72,18 @@ export class AuthService {
     }
 
     private setSession(authResult: { accessToken: string; refreshToken: string; user: User }): void {
+        console.log('[AuthService] setSession called with:', authResult);
+        console.log('[AuthService] Storing accessToken:', authResult.accessToken);
+        console.log('[AuthService] Storing refresh token:', authResult.refreshToken);
+        console.log('[AuthService] Storing user:', authResult.user);
+
         localStorage.setItem(STORAGE_KEYS.TOKEN, authResult.accessToken);
         localStorage.setItem(STORAGE_KEYS.REFRESH_TOKEN, authResult.refreshToken);
         localStorage.setItem(STORAGE_KEYS.USER, JSON.stringify(authResult.user));
+
+        console.log('[AuthService] Verification - Token in storage:', localStorage.getItem(STORAGE_KEYS.TOKEN));
+        console.log('[AuthService] Verification - User in storage:', localStorage.getItem(STORAGE_KEYS.USER));
+
         this.currentUserSubject.next(authResult.user);
     }
 
@@ -86,6 +109,7 @@ export class AuthService {
 
     isAuthenticated(): boolean {
         const token = this.getToken();
+        console.log('[AuthService] isAuthenticated called, token:', token);
         return !!token;
     }
 }

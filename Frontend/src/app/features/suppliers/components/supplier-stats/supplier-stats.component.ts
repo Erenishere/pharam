@@ -62,11 +62,11 @@ export class SupplierStatsComponent implements OnInit {
      * 
      * @public
      * @param {number | undefined} value - The numeric value to format
-     * @returns {string} Formatted currency string or 'N/A' if value is undefined
+     * @returns {string} Formatted currency string or 'PKR 0' if value is invalid
      */
     formatCurrency(value: number | undefined): string {
-        if (value === undefined || value === null) {
-            return 'N/A';
+        if (value === undefined || value === null || isNaN(value)) {
+            return 'PKR 0';
         }
         return new Intl.NumberFormat('en-PK', {
             style: 'currency',
@@ -81,11 +81,11 @@ export class SupplierStatsComponent implements OnInit {
      * 
      * @public
      * @param {number | undefined} value - The numeric value to format
-     * @returns {string} Formatted number string or 'N/A' if value is undefined
+     * @returns {string} Formatted number string or '0' if value is invalid
      */
     formatNumber(value: number | undefined): string {
-        if (value === undefined || value === null) {
-            return 'N/A';
+        if (value === undefined || value === null || isNaN(value)) {
+            return '0';
         }
         return new Intl.NumberFormat('en-US').format(value);
     }

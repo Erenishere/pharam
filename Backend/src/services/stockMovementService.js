@@ -312,7 +312,7 @@ class StockMovementService {
   async getLowStockItems(days = 30) {
     const items = await Item.find({
       isActive: true,
-      $expr: { $lte: ['$stock.currentStock', '$stock.minStock'] },
+      $expr: { $lte: ['$inventory.currentStock', '$inventory.minStock'] },
     });
 
     const itemsWithMovements = await Promise.all(
@@ -326,9 +326,9 @@ class StockMovementService {
             category: item.category,
           },
           stock: {
-            current: item.stock.currentStock,
-            min: item.stock.minStock,
-            max: item.stock.maxStock,
+            current: item.inventory?.currentStock || 0,
+            min: item.inventory?.minStock || 0,
+            max: item.inventory?.maxStock || 0,
           },
           recentMovements: summary,
         };

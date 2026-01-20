@@ -161,6 +161,7 @@ class SalesInvoiceService {
       }
 
       // Get item details
+      console.log(`[DEBUG] Processing item with ID: "${itemId}"`);
       let itemDetails;
       try {
         itemDetails = await itemService.getItemById(itemId);
@@ -661,11 +662,11 @@ class SalesInvoiceService {
 
       const adjustmentDebitAccount = {
         accountId: invoice.adjustmentAccountId,
-        accountType: 'Expense'
+        accountType: 'Account'
       };
 
       const adjustmentCreditAccount = {
-        accountId: 'SALES_DISCOUNT',
+        accountId: 'SALES_REVENUE',
         accountType: 'Revenue'
       };
 

@@ -379,6 +379,9 @@ export class SalesInvoiceListComponent implements OnInit, OnDestroy {
   }
 
   formatCurrency(amount: number): string {
+    if (amount === undefined || amount === null || isNaN(amount)) {
+      return 'PKR 0';
+    }
     return new Intl.NumberFormat('en-PK', {
       style: 'currency',
       currency: 'PKR',
