@@ -1,0 +1,357 @@
+<div class="cashbook-container">
+  <div class="page-header">
+    <div class="header-left">
+      <h1>Cash Book</h1>
+      <p class="subtitle">Manage cash receipts and payments</p>
+    </div>
+  </div>
+
+  <div class="summary-cards">
+    <mat-card class="summary-card balance">
+      <mat-card-content>
+        <mat-icon>account_balance_wallet</mat-icon>
+        <div class="card-info">
+          <span class="label">Current Balance</span>
+          <span class="value">{{ formatCurrency(summary.balance) }}</span>
+        </div>
+      </mat-card-content>
+    </mat-card>
+    <mat-card class="summary-card receipts">
+      <mat-card-content>
+        <mat-icon>trending_up</mat-icon>
+        <div class="card-info">
+          <span class="label">Today's Receipts</span>
+          <span class="value">{{ formatCurrency(summary.todayReceipts) }}</span>
+        </div>
+      </mat-card-content>
+    </mat-card>
+    <mat-card class="summary-card payments">
+      <mat-card-content>
+        <mat-icon>trending_down</mat-icon>
+        <div class="card-info">
+          <span class="label">Today's Payments</span>
+          <span class="value">{{ formatCurrency(summary.todayPayments) }}</span>
+        </div>
+      </mat-card-content>
+    </mat-card>
+    <mat-card class="summary-card cheques">
+      <mat-card-content>
+        <mat-icon>schedule</mat-icon>
+        <div class="card-info">
+          <span class="label">Pending Cheques</span>
+          <span class="value">{{ summary.pendingCheques }}</span>
+        </div>
+      </mat-card-content>
+    </mat-card>
+  </div>
+
+  <div class="filters-section">
+    <mat-form-field appearance="outline">
+      <mat-label>From Date</mat-label>
+      <input matInput [matDatepicker]="fromPicker" [(ngModel)]="dateFrom" (dateChange)="onFilterChange()">
+      <mat-datepicker-toggle matSuffix [for]="fromPicker"></mat-datepicker-toggle>
+      <mat-datepicker #fromPicker></mat-datepicker>
+    </mat-form-field>
+
+    <mat-form-field appearance="outline">
+      <mat-label>To Date</mat-label>
+      <input matInput [matDatepicker]="toPicker" [(ngModel)]="dateTo" (dateChange)="onFilterChange()">
+      <mat-datepicker-toggle matSuffix [for]="toPicker"></mat-datepicker-toggle>
+      <mat-datepicker #toPicker></mat-datepicker>
+    </mat-form-field>
+
+    <mat-form-field appearance="outline">
+      <mat-label>Status</mat-label>
+      <mat-select [(value)]="selectedStatus" (selectionChange)="onFilterChange()">
+        <mat-option *ngFor="let opt of statusOptions" [value]="opt.value">{{ opt.label }}</mat-option>
+      </mat-select>
+    </mat-form-field>
+
+    <button mat-stroked-button color="warn" (click)="clearFilters()" *ngIf="dateFrom || dateTo || selectedStatus">
+      <mat-icon>clear</mat-icon> Clear
+    </button>
+  </div>
+
+  <mat-tab-group [(selectedIndex)]="activeTab">
+    <mat-tab label="Cash Receipts">
+      <div class="tab-content">
+        <div class="tab-header">
+          <h3>Cash Receipts from Customers</h3>
+          <button mat-raised-button color="primary" (click)="openReceiptForm()">
+            <mat-icon>add</mat-icon> New Receipt
+          </button>
+        </div>
+
+        <div class="form-panel" *ngIf="showReceiptForm">
+          <h4>{{ editingReceipt ? 'Edit' : 'New' }} Cash Receipt</h4>
+          <form [formGroup]="receiptForm" class="entry-form">
+            <div class="form-row">
+              <mat-form-field>
+                <mat-label>Customer</mat-label>
+                <mat-select formControlName="customerId">
+                  <mat-option *ngFor="let customer of customers" [value]="customer._id">
+                    {{ customer.code }} - {{ customer.name }}
+                  </mat-option>
+                </mat-select>
+              </mat-form-field>
+
+              <mat-form-field>
+                <mat-label>Receipt Date</mat-label>
+                <input matInput [matDatepicker]="receiptDatePicker" formControlName="receiptDate">
+                <mat-datepicker-toggle matSuffix [for]="receiptDatePicker"></mat-datepicker-toggle>
+                <mat-datepicker #receiptDatePicker></mat-datepicker>
+              </mat-form-field>
+            </div>
+
+            <div class="form-row">
+              <mat-form-field>
+                <mat-label>Amount</mat-label>
+                <input matInput type="number" formControlName="amount">
+                <span matPrefix>PKR&nbsp;</span>
+              </mat-form-field>
+
+              <mat-form-field>
+                <mat-label>Payment Method</mat-label>
+                <mat-select formControlName="paymentMethod">
+                  <mat-option *ngFor="let method of paymentMethods" [value]="method.value">
+                    {{ method.label }}
+                  </mat-option>
+                </mat-select>
+              </mat-form-field>
+            </div>
+
+            <div class="form-row" *ngIf="receiptForm.get('paymentMethod')?.value === 'cheque'" formGroupName="bankDetails">
+              <mat-form-field>
+                <mat-label>Bank Name</mat-label>
+                <input matInput formControlName="bankName">
+              </mat-form-field>
+              <mat-form-field>
+                <mat-label>Cheque Number</mat-label>
+                <input matInput formControlName="chequeNumber">
+              </mat-form-field>
+            </div>
+
+            <mat-form-field class="full-width">
+              <mat-label>Notes</mat-label>
+              <textarea matInput formControlName="notes" rows="2"></textarea>
+            </mat-form-field>
+
+            <div class="form-actions">
+              <button mat-button (click)="cancelForm()">Cancel</button>
+              <button mat-raised-button color="primary" (click)="saveReceipt()">
+                {{ editingReceipt ? 'Update' : 'Create' }} Receipt
+              </button>
+            </div>
+          </form>
+        </div>
+
+        <div class="loading-overlay" *ngIf="loading">
+          <mat-spinner diameter="40"></mat-spinner>
+        </div>
+
+        <table mat-table [dataSource]="receiptsDataSource" class="data-table">
+          <ng-container matColumnDef="receiptNumber">
+            <th mat-header-cell *matHeaderCellDef>Receipt #</th>
+            <td mat-cell *matCellDef="let row">{{ row.receiptNumber }}</td>
+          </ng-container>
+
+          <ng-container matColumnDef="receiptDate">
+            <th mat-header-cell *matHeaderCellDef>Date</th>
+            <td mat-cell *matCellDef="let row">{{ formatDate(row.receiptDate) }}</td>
+          </ng-container>
+
+          <ng-container matColumnDef="customerName">
+            <th mat-header-cell *matHeaderCellDef>Customer</th>
+            <td mat-cell *matCellDef="let row">{{ row.customerId?.name || row.customerName || '-' }}</td>
+          </ng-container>
+
+          <ng-container matColumnDef="amount">
+            <th mat-header-cell *matHeaderCellDef>Amount</th>
+            <td mat-cell *matCellDef="let row">{{ formatCurrency(row.amount) }}</td>
+          </ng-container>
+
+          <ng-container matColumnDef="paymentMethod">
+            <th mat-header-cell *matHeaderCellDef>Method</th>
+            <td mat-cell *matCellDef="let row">{{ row.paymentMethod | titlecase }}</td>
+          </ng-container>
+
+          <ng-container matColumnDef="status">
+            <th mat-header-cell *matHeaderCellDef>Status</th>
+            <td mat-cell *matCellDef="let row">
+              <mat-chip [color]="getStatusColor(row.status)" selected>{{ row.status | titlecase }}</mat-chip>
+            </td>
+          </ng-container>
+
+          <ng-container matColumnDef="actions">
+            <th mat-header-cell *matHeaderCellDef>Actions</th>
+            <td mat-cell *matCellDef="let row">
+              <button mat-icon-button [matMenuTriggerFor]="receiptMenu">
+                <mat-icon>more_vert</mat-icon>
+              </button>
+              <mat-menu #receiptMenu="matMenu">
+                <button mat-menu-item *ngIf="row.status === 'pending'" (click)="openReceiptForm(row)">
+                  <mat-icon>edit</mat-icon> Edit
+                </button>
+                <button mat-menu-item *ngIf="row.status === 'pending'" (click)="clearReceipt(row)">
+                  <mat-icon>check_circle</mat-icon> Clear
+                </button>
+                <button mat-menu-item *ngIf="row.status === 'pending'" (click)="cancelReceipt(row)">
+                  <mat-icon>cancel</mat-icon> Cancel
+                </button>
+              </mat-menu>
+            </td>
+          </ng-container>
+
+          <tr mat-header-row *matHeaderRowDef="receiptColumns"></tr>
+          <tr mat-row *matRowDef="let row; columns: receiptColumns;"></tr>
+        </table>
+
+        <div class="no-data" *ngIf="receiptsDataSource.data.length === 0 && !loading">
+          <mat-icon>receipt</mat-icon>
+          <p>No cash receipts found</p>
+        </div>
+
+        <mat-paginator
+          [length]="totalReceipts"
+          [pageSize]="pageSize"
+          [pageIndex]="pageIndex"
+          [pageSizeOptions]="[10, 25, 50]"
+          (page)="onPageChange($event)">
+        </mat-paginator>
+      </div>
+    </mat-tab>
+
+    <mat-tab label="Cash Payments">
+      <div class="tab-content">
+        <div class="tab-header">
+          <h3>Cash Payments to Suppliers</h3>
+          <button mat-raised-button color="primary" (click)="openPaymentForm()">
+            <mat-icon>add</mat-icon> New Payment
+          </button>
+        </div>
+
+        <div class="form-panel" *ngIf="showPaymentForm">
+          <h4>{{ editingPayment ? 'Edit' : 'New' }} Cash Payment</h4>
+          <form [formGroup]="paymentForm" class="entry-form">
+            <div class="form-row">
+              <mat-form-field>
+                <mat-label>Supplier</mat-label>
+                <mat-select formControlName="supplierId">
+                  <mat-option *ngFor="let supplier of suppliers" [value]="supplier._id">
+                    {{ supplier.code }} - {{ supplier.name }}
+                  </mat-option>
+                </mat-select>
+              </mat-form-field>
+
+              <mat-form-field>
+                <mat-label>Payment Date</mat-label>
+                <input matInput [matDatepicker]="paymentDatePicker" formControlName="paymentDate">
+                <mat-datepicker-toggle matSuffix [for]="paymentDatePicker"></mat-datepicker-toggle>
+                <mat-datepicker #paymentDatePicker></mat-datepicker>
+              </mat-form-field>
+            </div>
+
+            <div class="form-row">
+              <mat-form-field>
+                <mat-label>Amount</mat-label>
+                <input matInput type="number" formControlName="amount">
+                <span matPrefix>PKR&nbsp;</span>
+              </mat-form-field>
+
+              <mat-form-field>
+                <mat-label>Payment Method</mat-label>
+                <mat-select formControlName="paymentMethod">
+                  <mat-option *ngFor="let method of paymentMethods" [value]="method.value">
+                    {{ method.label }}
+                  </mat-option>
+                </mat-select>
+              </mat-form-field>
+            </div>
+
+            <mat-form-field class="full-width">
+              <mat-label>Notes</mat-label>
+              <textarea matInput formControlName="notes" rows="2"></textarea>
+            </mat-form-field>
+
+            <div class="form-actions">
+              <button mat-button (click)="cancelForm()">Cancel</button>
+              <button mat-raised-button color="primary" (click)="savePayment()">
+                {{ editingPayment ? 'Update' : 'Create' }} Payment
+              </button>
+            </div>
+          </form>
+        </div>
+
+        <table mat-table [dataSource]="paymentsDataSource" class="data-table">
+          <ng-container matColumnDef="paymentNumber">
+            <th mat-header-cell *matHeaderCellDef>Payment #</th>
+            <td mat-cell *matCellDef="let row">{{ row.paymentNumber }}</td>
+          </ng-container>
+
+          <ng-container matColumnDef="paymentDate">
+            <th mat-header-cell *matHeaderCellDef>Date</th>
+            <td mat-cell *matCellDef="let row">{{ formatDate(row.paymentDate) }}</td>
+          </ng-container>
+
+          <ng-container matColumnDef="supplierName">
+            <th mat-header-cell *matHeaderCellDef>Supplier</th>
+            <td mat-cell *matCellDef="let row">{{ row.supplierId?.name || row.supplierName || '-' }}</td>
+          </ng-container>
+
+          <ng-container matColumnDef="amount">
+            <th mat-header-cell *matHeaderCellDef>Amount</th>
+            <td mat-cell *matCellDef="let row">{{ formatCurrency(row.amount) }}</td>
+          </ng-container>
+
+          <ng-container matColumnDef="paymentMethod">
+            <th mat-header-cell *matHeaderCellDef>Method</th>
+            <td mat-cell *matCellDef="let row">{{ row.paymentMethod | titlecase }}</td>
+          </ng-container>
+
+          <ng-container matColumnDef="status">
+            <th mat-header-cell *matHeaderCellDef>Status</th>
+            <td mat-cell *matCellDef="let row">
+              <mat-chip [color]="getStatusColor(row.status)" selected>{{ row.status | titlecase }}</mat-chip>
+            </td>
+          </ng-container>
+
+          <ng-container matColumnDef="actions">
+            <th mat-header-cell *matHeaderCellDef>Actions</th>
+            <td mat-cell *matCellDef="let row">
+              <button mat-icon-button [matMenuTriggerFor]="paymentMenu">
+                <mat-icon>more_vert</mat-icon>
+              </button>
+              <mat-menu #paymentMenu="matMenu">
+                <button mat-menu-item *ngIf="row.status === 'pending'" (click)="openPaymentForm(row)">
+                  <mat-icon>edit</mat-icon> Edit
+                </button>
+                <button mat-menu-item *ngIf="row.status === 'pending'" (click)="clearPayment(row)">
+                  <mat-icon>check_circle</mat-icon> Clear
+                </button>
+                <button mat-menu-item *ngIf="row.status === 'pending'" (click)="cancelPayment(row)">
+                  <mat-icon>cancel</mat-icon> Cancel
+                </button>
+              </mat-menu>
+            </td>
+          </ng-container>
+
+          <tr mat-header-row *matHeaderRowDef="paymentColumns"></tr>
+          <tr mat-row *matRowDef="let row; columns: paymentColumns;"></tr>
+        </table>
+
+        <div class="no-data" *ngIf="paymentsDataSource.data.length === 0 && !loading">
+          <mat-icon>payment</mat-icon>
+          <p>No cash payments found</p>
+        </div>
+
+        <mat-paginator
+          [length]="totalPayments"
+          [pageSize]="pageSize"
+          [pageIndex]="pageIndex"
+          [pageSizeOptions]="[10, 25, 50]"
+          (page)="onPageChange($event)">
+        </mat-paginator>
+      </div>
+    </mat-tab>
+  </mat-tab-group>
+</div>

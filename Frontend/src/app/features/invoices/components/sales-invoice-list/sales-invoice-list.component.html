@@ -1,7 +1,12 @@
 <div class="sales-invoice-container">
   <div class="page-header">
-    <h1>Sales Invoices</h1>
-    <p class="subtitle">Manage customer sales and billing</p>
+    <div class="header-left">
+      <h1>Sales Invoices</h1>
+      <p class="subtitle">Manage customer sales and billing</p>
+    </div>
+    <button mat-raised-button color="primary" (click)="createInvoice()">
+      <mat-icon>add</mat-icon> New Sales Invoice
+    </button>
   </div>
 
   <div class="statistics-cards" *ngIf="statistics">
@@ -148,11 +153,19 @@
               <mat-icon>cancel</mat-icon>
               <span>Cancel Invoice</span>
             </button>
-            <button mat-menu-item *ngIf="row.status === 'draft'" (click)="deleteInvoice(row)" class="delete-action">
-              <mat-icon>delete</mat-icon>
-              <span>Delete</span>
-            </button>
-          </mat-menu>
+<button mat-menu-item (click)="viewInvoice(row)">
+                <mat-icon>visibility</mat-icon>
+                <span>View Details</span>
+              </button>
+              <button mat-menu-item *ngIf="row.status === 'draft'" (click)="editInvoice(row)">
+                <mat-icon>edit</mat-icon>
+                <span>Edit Invoice</span>
+              </button>
+              <button mat-menu-item *ngIf="row.status === 'draft'" (click)="deleteInvoice(row)" class="delete-action">
+                <mat-icon>delete</mat-icon>
+                <span>Delete</span>
+              </button>
+            </mat-menu>
         </td>
       </ng-container>
 

@@ -97,10 +97,20 @@ import { AuthService } from '../../core/services/auth.service';
         </a>
 
         <a mat-list-item routerLink="/warehouses" routerLinkActive="active">
-          <mat-icon matListItemIcon>warehouse</mat-icon>
-          <span matListItemTitle>Warehouses</span>
-        </a>
-      </ng-container>
+            <mat-icon matListItemIcon>warehouse</mat-icon>
+            <span matListItemTitle>Warehouses</span>
+          </a>
+
+          <a mat-list-item routerLink="/stock-movements" routerLinkActive="active">
+            <mat-icon matListItemIcon>swap_vert</mat-icon>
+            <span matListItemTitle>Stock Movements</span>
+          </a>
+
+          <a mat-list-item routerLink="/cashbook" routerLinkActive="active">
+            <mat-icon matListItemIcon>account_balance_wallet</mat-icon>
+            <span matListItemTitle>Cash Book</span>
+          </a>
+        </ng-container>
 
       <mat-divider *ngIf="isAdmin || isSalesman"></mat-divider>
 

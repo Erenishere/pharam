@@ -106,6 +106,14 @@ export const routes: Routes = [
                 loadComponent: () => import('./features/warehouses/components/warehouse-list/warehouse-list.component').then(m => m.WarehouseListComponent)
             },
             {
+                path: 'cashbook',
+                loadComponent: () => import('./features/cashbook/components/cashbook.component').then(m => m.CashBookComponent)
+            },
+            {
+                path: 'stock-movements',
+                loadComponent: () => import('./features/stock-movements/components/stock-movements.component').then(m => m.StockMovementsComponent)
+            },
+            {
                 path: 'reports',
                 children: [
                     {

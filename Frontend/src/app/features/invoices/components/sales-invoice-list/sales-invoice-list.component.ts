@@ -19,6 +19,7 @@ import { Subject, debounceTime, distinctUntilChanged, takeUntil } from 'rxjs';
 import { InvoiceService } from '../../services/invoice.service';
 import { ToastService } from '../../../../shared/services/toast.service';
 import { Invoice, InvoiceStatistics, InvoiceQueryParams } from '../../models/invoice.model';
+import { InvoiceFormComponent, InvoiceFormData } from '../invoice-form/invoice-form.component';
 
 @Component({
   selector: 'app-sales-invoice-list',
@@ -391,5 +392,43 @@ export class SalesInvoiceListComponent implements OnInit, OnDestroy {
 
   formatDate(date: string): string {
     return new Date(date).toLocaleDateString('en-PK');
+  }
+
+  createInvoice(): void {
+    const dialogRef = this.dialog.open(InvoiceFormComponent, {
+      width: '900px',
+      maxHeight: '90vh',
+      data: { mode: 'create', type: 'sales' } as InvoiceFormData
+    });
+
+    dialogRef.afterClosed().subscribe(result => {
+      if (result) {
+        this.loadInvoices();
+        this.loadStatistics();
+      }
+    });
+  }
+
+  editInvoice(invoice: Invoice): void {
+    const dialogRef = this.dialog.open(InvoiceFormComponent, {
+      width: '900px',
+      maxHeight: '90vh',
+      data: { mode: 'edit', type: 'sales', invoice } as InvoiceFormData
+    });
+
+    dialogRef.afterClosed().subscribe(result => {
+      if (result) {
+        this.loadInvoices();
+        this.loadStatistics();
+      }
+    });
+  }
+
+  viewInvoice(invoice: Invoice): void {
+    this.dialog.open(InvoiceFormComponent, {
+      width: '900px',
+      maxHeight: '90vh',
+      data: { mode: 'view', type: 'sales', invoice } as InvoiceFormData
+    });
   }
 }
