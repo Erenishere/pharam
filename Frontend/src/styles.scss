@@ -55,6 +55,12 @@ h6 {
     padding: 24px;
 }
 
+/* Material Card Background Override */
+.mat-mdc-card {
+    background-color: #ffffff !important;
+    --mdc-elevated-card-container-color: #ffffff !important;
+}
+
 /* Material Overrides for Vuexy Look */
 .mat-mdc-raised-button.mat-primary {
     background-color: var(--primary-color) !important;
