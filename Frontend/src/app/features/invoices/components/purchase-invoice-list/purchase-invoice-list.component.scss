@@ -1,25 +1,55 @@
 @import '../../../../../styles/vuexy-vars';
 
+$page-bg: #f8f7fa;
+$card-bg: #ffffff;
+$field-bg: #ffffff;
+$border: #e9ecef;
+$purple: #867cf0;
+
 .purchase-invoice-container {
   padding: 24px;
-  background-color: $bg-page;
-  min-height: calc(100vh - 80px);
+  max-width: 1400px;
+  margin: 0 auto;
+  background-color: $page-bg;
+  min-height: 100vh;
 }
 
 .page-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
   margin-bottom: 24px;
 
   h1 {
     margin: 0;
-    font-size: 28px;
-    font-weight: 500;
-    color: #333;
+    font-size: 24px;
+    font-weight: 600;
+    color: $text-card-title;
+    border-left: 4px solid $purple;
+    padding-left: 12px;
   }
 
   .subtitle {
-    margin: 4px 0 0;
-    color: #666;
+    margin: 4px 0 0 16px;
+    color: $text-muted;
     font-size: 14px;
+  }
+
+  button[mat-raised-button] {
+    background: linear-gradient(118deg, $purple, rgba($purple, 0.8));
+    box-shadow: 0 0 10px 1px rgba($purple, 0.4);
+    color: #fff;
+    font-weight: 500;
+    transition: all 0.25s ease;
+
+    &:hover {
+      box-shadow: 0 0 14px 2px rgba($purple, 0.6);
+      transform: translateY(-1px);
+    }
+
+    mat-icon {
+      margin-right: 6px;
+    }
   }
 }
 
@@ -36,21 +66,21 @@
     padding: 20px;
     background: white;
     border-radius: 8px;
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.08);
 
     mat-icon {
       font-size: 40px;
       width: 40px;
       height: 40px;
-      color: #1976d2;
+      color: $purple;
     }
 
     &.pending mat-icon {
-      color: #f57c00;
+      color: #ff9800;
     }
 
     &.paid mat-icon {
-      color: #388e3c;
+      color: #28a745;
     }
 
     .stat-content {
@@ -60,12 +90,12 @@
       .stat-value {
         font-size: 24px;
         font-weight: 600;
-        color: #333;
+        color: $text-card-title;
       }
 
       .stat-label {
         font-size: 12px;
-        color: #666;
+        color: $text-muted;
         text-transform: uppercase;
       }
     }
@@ -77,6 +107,10 @@
   flex-wrap: wrap;
   gap: 16px;
   margin-bottom: 24px;
+  padding: 20px 24px;
+  background: $card-bg;
+  border-radius: 8px;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.08);
   align-items: center;
 
   .search-field {
@@ -87,13 +121,57 @@
   mat-form-field {
     min-width: 150px;
   }
+
+  ::ng-deep .mat-mdc-input-element::placeholder {
+    color: #6c757d !important;
+    opacity: 1 !important;
+  }
+
+  ::ng-deep .mat-mdc-input-element {
+    color: #6c757d !important;
+    caret-color: $purple !important;
+  }
+
+  ::ng-deep .mdc-text-field {
+    background: #ffffff !important;
+    border: 1px solid $purple !important;
+    border-radius: 6px !important;
+  }
+
+  ::ng-deep .mdc-line-ripple {
+    display: none !important;
+  }
+
+  ::ng-deep .mdc-text-field--focused {
+    box-shadow: 0 0 0 2px rgba($purple, 0.25) !important;
+  }
+
+  ::ng-deep .mat-mdc-form-field.mat-focused .mdc-floating-label,
+  ::ng-deep .mdc-floating-label--float-above {
+    color: $purple !important;
+    font-weight: 500 !important;
+    background: #ffffff !important;
+    padding: 0 2px !important;
+  }
+
+  ::ng-deep .mat-mdc-form-field-icon-prefix {
+    color: $purple !important;
+  }
+
+  ::ng-deep .mat-mdc-select-arrow {
+    color: $purple !important;
+  }
+
+  ::ng-deep .mat-mdc-select-value {
+    color: #4a4a4a !important;
+  }
 }
 
 .table-container {
   position: relative;
-  background: white;
+  background: $card-bg;
   border-radius: 8px;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.08);
   overflow: hidden;
 
   .loading-overlay {
@@ -115,7 +193,7 @@
     justify-content: center;
     gap: 8px;
     padding: 40px;
-    color: #f44336;
+    color: #e91e63;
 
     mat-icon {
       font-size: 24px;
@@ -124,20 +202,78 @@
 
   table {
     width: 100%;
+    border-collapse: separate;
+    border-spacing: 0 8px;
 
     .invoice-number {
       font-family: monospace;
       font-weight: 500;
-      color: #1976d2;
+      color: $purple;
     }
 
     .amount {
       font-weight: 500;
-      color: #333;
+      color: $text-card-title;
     }
 
     .delete-action {
-      color: #f44336;
+      color: #e91e63;
+    }
+
+    ::ng-deep .mat-mdc-header-row {
+      background-color: #ffffff;
+      height: 48px;
+    }
+
+    ::ng-deep .mat-mdc-header-cell {
+      color: $text-card-title;
+      font-size: 12px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      border-bottom: 1px solid $border;
+      background: #ffffff !important;
+    }
+
+    ::ng-deep .mat-mdc-row {
+      background: #ffffff;
+      border: 1px solid $border;
+      border-radius: 12px;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+      transition: all 0.25s ease;
+      margin-bottom: 8px;
+
+      &:hover {
+        background-color: $purple;
+        border-color: $purple;
+        box-shadow: 0 8px 24px rgba($purple, 0.35);
+        transform: translateY(-2px);
+
+        .mat-mdc-cell {
+          color: #ffffff !important;
+        }
+
+        .invoice-number,
+        .amount {
+          color: #ffffff !important;
+        }
+
+        button mat-icon {
+          color: #ffffff !important;
+        }
+
+        ::ng-deep .mat-mdc-chip {
+          background-color: rgba(255, 255, 255, 0.2) !important;
+          color: #ffffff !important;
+        }
+      }
+    }
+
+    ::ng-deep .mat-mdc-cell {
+      color: $text-body;
+      font-size: 14px;
+      padding: 12px 16px;
+      border: none;
     }
   }
 
@@ -147,13 +283,15 @@
     align-items: center;
     justify-content: center;
     padding: 60px 20px;
-    color: #999;
+    color: $text-muted;
 
     mat-icon {
       font-size: 64px;
       width: 64px;
       height: 64px;
       margin-bottom: 16px;
+      opacity: 0.3;
+      color: $purple;
     }
 
     p {
@@ -163,6 +301,58 @@
   }
 }
 
+::ng-deep .mat-mdc-table {
+  background-color: #ffffff !important;
+}
+
+::ng-deep .mat-mdc-paginator {
+  background: $purple !important;
+  border-radius: 0 0 8px 8px;
+
+  .mat-mdc-paginator-page-size-label,
+  .mat-mdc-paginator-range-label {
+    color: #ffffff !important;
+  }
+
+  .mat-mdc-icon-button {
+    color: #ffffff !important;
+  }
+
+  .mat-mdc-form-field {
+    .mat-mdc-text-field-wrapper {
+      background-color: #ffffff !important;
+      border-radius: 4px !important;
+    }
+
+    .mat-mdc-select-value,
+    .mat-mdc-select-value-text {
+      color: #2c2c2c !important;
+    }
+
+    .mat-mdc-select-arrow {
+      color: #2c2c2c !important;
+    }
+  }
+}
+
 mat-chip {
   font-size: 12px;
+  font-weight: 500;
+}
+
+::ng-deep .mat-mdc-chip {
+  &.mat-primary {
+    background-color: rgba($purple, 0.12) !important;
+    color: $purple !important;
+  }
+
+  &.mat-accent {
+    background-color: rgba(#ff9800, 0.12) !important;
+    color: #ff9800 !important;
+  }
+
+  &.mat-warn {
+    background-color: rgba(#e91e63, 0.12) !important;
+    color: #e91e63 !important;
+  }
 }
