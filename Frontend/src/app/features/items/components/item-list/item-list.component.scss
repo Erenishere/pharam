@@ -1,60 +1,45 @@
 @import 'styles/vuexy-vars';
 
+$page-bg: #f8f7fa;
+$card-bg: #ffffff;
+$field-bg: #ffffff;
+$border: #e9ecef;
 $purple: #867cf0;
 
 .item-list-container {
     padding: 24px;
     max-width: 1400px;
     margin: 0 auto;
+    background-color: $page-bg;
+    min-height: 100vh;
+}
 
-    .page-header {
-        margin-bottom: 32px;
+/* ---------- header ---------- */
+.header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 24px;
 
-        h1 {
-            display: flex;
-            align-items: center;
-            gap: 12px;
-            margin: 0 0 8px 0;
-            font-size: 28px;
-            font-weight: 600;
-            color: $text-card-title;
-
-            mat-icon {
-                font-size: 32px;
-                width: 32px;
-                height: 32px;
-                color: $primary;
-            }
-        }
-
-        .page-description {
-            margin: 0;
-            color: $text-body;
-            font-size: 16px;
-        }
+    h1 {
+        margin: 0;
+        font-size: 24px;
+        font-weight: 600;
+        color: $text-card-title;
+        border-left: 4px solid $purple;
+        padding-left: 12px;
     }
 
-    .items-card {
-        box-shadow: $shadow-card;
-        border-radius: $radius-card;
-        overflow: hidden;
-        background: #ffffff;
+    button[mat-raised-button] {
+        background: linear-gradient(118deg, $purple, rgba($purple, .8));
+        box-shadow: 0 0 10px 1px rgba($purple, .4);
+        color: #fff;
+        font-weight: 500;
+        transition: all .25s ease;
 
-        mat-card-header {
-            background: linear-gradient(135deg, $primary, rgba($primary, 0.8));
-            color: white;
-            padding: 20px 24px;
-
-            mat-card-title {
-                font-size: 20px;
-                font-weight: 600;
-                margin: 0;
-            }
-
-            mat-card-subtitle {
-                color: rgba(255, 255, 255, 0.8);
-                margin: 4px 0 0 0;
-            }
+        &:hover {
+            box-shadow: 0 0 14px 2px rgba($purple, .6);
+            transform: translateY(-1px);
         }
 
         mat-card-content {
@@ -478,70 +463,213 @@ $purple: #867cf0;
         box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
 
         mat-icon {
-            font-size: 64px;
-            width: 64px;
-            height: 64px;
-            color: #8c959f;
-            margin-bottom: 16px;
-        }
-
-        h3 {
-            margin: 0 0 8px 0;
-            color: #24292f;
-            font-weight: 600;
-        }
-
-        p {
-            margin: 0 0 24px 0;
-            color: #656d76;
+            margin-right: 6px;
         }
     }
+}
 
-    .loading-container {
+/* ---------- card ---------- */
+.card {
+    background: $card-bg;
+    border-radius: 8px;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, .08);
+
+    /* Placeholder (not floating) */
+    ::ng-deep .mat-mdc-input-element::placeholder {
+        color: #6c757d !important;
+        z-index: 100 !important;
+        opacity: 1 !important;
+    }
+
+    /* Search field specific placeholder */
+    ::ng-deep .search-filters .mat-mdc-input-element::placeholder {
+        color: #867cf0 !important;
+        opacity: 0.7 !important;
+    }
+
+    /* Caret color */
+    ::ng-deep .mat-mdc-input-element {
+        color: #6c757d !important;
+        caret-color: #867cf0 !important;
+        text-rendering: optimizeLegibility !important;
+        -webkit-font-smoothing: antialiased !important;
+        -moz-osx-font-smoothing: grayscale !important;
+        background: transparent !important;
+    }
+
+    /* Default field appearance */
+    ::ng-deep .mdc-text-field {
+        background: #ffffff !important;
+        border: 1px solid #867cf0 !important;
+        border-radius: 6px !important;
+        transition: border 0.2s ease !important;
+    }
+
+    /* Remove underline completely */
+    ::ng-deep .mdc-line-ripple {
+        display: none !important;
+    }
+
+    /* FOCUSED state (active click) */
+    ::ng-deep .mdc-text-field--focused {
+        box-shadow: 0 0 0 2px rgba(134, 124, 240, 0.25) !important;
+    }
+
+    /* Floating label */
+    ::ng-deep .mat-mdc-form-field.mat-focused .mdc-floating-label,
+    ::ng-deep .mdc-floating-label--float-above {
+        color: #867cf0 !important;
+        font-weight: 500 !important;
+        background: #ffffff !important;
+        padding: 2px !important;
+        z-index: 10 !important;
+    }
+
+    ::ng-deep .mdc-notched-outline__notch {
+        border-left: none !important;
+    }
+
+    /* FOCUS STATE */
+    ::ng-deep .mdc-text-field--focused .mdc-notched-outline__leading,
+    ::ng-deep .mdc-text-field--focused .mdc-notched-outline__notch,
+    ::ng-deep .mdc-text-field--focused .mdc-notched-outline__trailing {
+        border-width: 2px !important;
+        border-color: #867cf0 !important;
+    }
+
+    /* Search icon color */
+    ::ng-deep .mat-mdc-form-field-icon-prefix {
+        color: #867cf0 !important;
+    }
+
+    /* Fix input infix area */
+    ::ng-deep .mat-mdc-form-field-infix {
+        background: #ffffff !important;
+        width: 250px;
+    }
+
+    /* Floating label sharp */
+    ::ng-deep .mdc-floating-label {
+        opacity: 0 !important;
+        transition: all 0.2s ease !important;
+    }
+
+    /* On focus, floating label becomes visible */
+    ::ng-deep .mat-mdc-form-field.mat-focused .mdc-floating-label,
+    ::ng-deep .mdc-floating-label--float-above {
+        opacity: 1 !important;
+        color: #867cf0 !important;
+        background: #ffffff !important;
+        padding: 0 2px !important;
+        font-weight: 500 !important;
+        text-rendering: optimizeLegibility !important;
+        -webkit-font-smoothing: antialiased !important;
+        -moz-osx-font-smoothing: grayscale !important;
+        z-index: 10 !important;
+    }
+}
+
+/* ---------- card-header (filters) ---------- */
+.card-header {
+    padding: 24px;
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 24px;
+    flex-wrap: wrap;
+
+    .search-filters {
         display: flex;
-        flex-direction: column;
+        gap: 16px;
+        flex-wrap: wrap;
+        flex: 1;
+
+        mat-form-field {
+            min-width: 400px;
+            flex: 1;
+        }
+    }
+
+    .filter-actions {
+        display: flex;
+        gap: 12px;
         align-items: center;
-        justify-content: center;
-        padding: 48px;
-        background: white;
-        border-radius: 8px;
-        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+        flex-wrap: wrap;
 
-        .loading-icon {
-            font-size: 48px;
-            width: 48px;
-            height: 48px;
-            color: #0969da;
-            animation: spin 2s linear infinite;
-            margin-bottom: 16px;
+        .category-filter,
+        .stock-filter {
+            min-width: 180px;
         }
 
-        p {
-            color: #656d76;
-            margin: 0;
-            font-weight: 500;
-        }
-    }
+        button[mat-stroked-button] {
+            border: 2px solid $purple;
+            color: $purple;
+            background: white;
+            font-weight: 600;
+            box-shadow: 0 2px 8px rgba($purple, 0.2);
+            transition: all .25s ease;
 
-    mat-paginator {
-        margin-top: 24px;
-        border-top: 1px solid #e9ecef;
-        background: white;
-        border-radius: 0 0 8px 8px;
+            &:hover {
+                background: $purple;
+                color: white;
+                box-shadow: 0 4px 12px rgba($purple, 0.4);
+                transform: translateY(-1px);
+            }
+
+            mat-icon {
+                margin-right: 6px;
+            }
+        }
     }
 }
 
-@keyframes spin {
-    0% {
-        transform: rotate(0deg);
+::ng-deep .mat-mdc-option .mdc-list-item__primary-text {
+    color: #6c757d !important;
+}
+
+::ng-deep .mat-mdc-option:hover .mdc-list-item__primary-text {
+    color: $purple !important;
+}
+
+/* ---------- filters – ALWAYS purple state ---------- */
+.category-filter,
+.stock-filter {
+
+    ::ng-deep .mdc-notched-outline__leading,
+    ::ng-deep .mdc-notched-outline__notch,
+    ::ng-deep .mdc-notched-outline__trailing {
+        border-color: #867cf0 !important;
     }
 
-    100% {
-        transform: rotate(360deg);
+    ::ng-deep .mdc-text-field {
+        background: #ffffff !important;
+        border-radius: 6px !important;
+        cursor: pointer !important;
+        caret-color: $purple !important;
+    }
+
+    ::ng-deep .mat-mdc-select-trigger {
+        caret-color: transparent !important;
+    }
+
+    ::ng-deep .mat-mdc-select-value,
+    ::ng-deep .mat-mdc-select-value-text {
+        color: #4a4a4a !important;
+        cursor: pointer !important;
+    }
+
+    ::ng-deep .mdc-floating-label {
+        color: #867cf0 !important;
+        cursor: pointer !important;
+    }
+
+    /* Dropdown arrow color - PURPLE */
+    ::ng-deep .mat-mdc-select-arrow {
+        color: #867cf0 !important;
     }
 }
 
-// Dropdown panel styling - Make dropdown backgrounds white (same as users module)
+/* DROPDOWN PANEL */
 ::ng-deep .mat-mdc-select-panel {
     background: #ffffff !important;
     color: #4a4a4a !important;
@@ -573,12 +701,518 @@ $purple: #867cf0;
     color: #867cf0 !important;
 }
 
-// Responsive Design
+/* Style "All" options in purple */
+::ng-deep .mat-mdc-option.all-option .mdc-list-item__primary-text {
+    color: #867cf0 !important;
+    font-weight: 600 !important;
+}
+
+/* ---------- item count ---------- */
+.item-count {
+    padding: 12px 24px 8px;
+    color: $text-muted;
+    font-size: 13px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+
+    mat-icon {
+        font-size: 18px;
+        width: 18px;
+        height: 18px;
+    }
+}
+
+/* =====  Angular Material table overrides – white & clean  ===== */
+::ng-deep .mat-mdc-table {
+    min-width: 100%;
+    border: 0;
+    border-spacing: 0;
+    table-layout: auto;
+    white-space: normal;
+    background-color: #ffffff !important;
+}
+
+::ng-deep .mat-mdc-row,
+::ng-deep .mat-mdc-header-row {
+    border-bottom: none !important;
+}
+
+::ng-deep .mat-mdc-header-row {
+    box-shadow: 0 1px 0 0 #e9ecef;
+}
+
+::ng-deep .mat-mdc-header-cell {
+    color: #4a4a4a !important;
+}
+
+::ng-deep .mat-mdc-cell {
+    color: #4a4a4a !important;
+}
+
+.table-responsive {
+    padding: 0 24px 24px;
+    width: 98%;
+}
+
+.items-table {
+    width: 100%;
+    border-collapse: separate;
+    border-spacing: 0 8px;
+
+    .mat-mdc-header-row {
+        background-color: #ffffff;
+        height: 48px;
+    }
+
+    .mat-mdc-header-cell {
+        color: #4a4a4a;
+        font-size: 12px;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: .5px;
+        border-bottom: 1px solid $border;
+    }
+
+    .mat-mdc-row {
+        background: #ffffff;
+        border: 1px solid $border;
+        border-radius: 12px;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, .12);
+        transition: all .25s ease;
+        margin-bottom: 8px;
+
+        &:hover {
+            background-color: $purple;
+            border-color: $purple;
+            box-shadow: 0 8px 24px rgba($purple, .35);
+            transform: translateY(-2px);
+
+            .mat-mdc-cell,
+            .item-name strong,
+            .item-code {
+                color: #ffffff !important;
+            }
+
+            .item-category,
+            .pricing-info .cost-price {
+                color: rgba(255, 255, 255, 0.8) !important;
+            }
+
+            .pricing-info .sale-price {
+                color: #ffffff !important;
+            }
+
+            // Make stock info visible on hover
+            .stock-info mat-chip,
+            .stock-info small {
+                color: #ffffff !important;
+            }
+
+            // Make chip text labels white on hover
+            .stock-info mat-chip ::ng-deep .mdc-evolution-chip__text-label {
+                color: #ffffff !important;
+            }
+
+            // Make status visible on hover
+            mat-chip.status-active,
+            mat-chip.status-inactive {
+                color: #ffffff !important;
+            }
+
+            // Make status chip text labels white on hover
+            mat-chip.status-active ::ng-deep .mdc-evolution-chip__text-label,
+            mat-chip.status-inactive ::ng-deep .mdc-evolution-chip__text-label {
+                color: #ffffff !important;
+            }
+
+            // Make ALL action icons white on hover
+            .action-buttons button mat-icon {
+                color: #ffffff !important;
+            }
+        }
+    }
+
+    .mat-mdc-cell {
+        color: #4a4a4a;
+        font-size: 14px;
+        padding: 12px 16px;
+        border: none;
+    }
+
+    .item-code {
+        color: #867cf0;
+        font-size: 13px;
+        font-weight: 500;
+    }
+
+    .item-name {
+        display: flex;
+        flex-direction: column;
+        gap: 2px;
+
+        strong {
+            display: block;
+            color: #4a4a4a;
+            font-size: 14px;
+            font-weight: 500;
+        }
+
+        .item-category {
+            color: #4a4a4a;
+            font-size: 13px;
+        }
+    }
+
+    .pricing-info {
+        .sale-price {
+            font-weight: 600;
+            color: #4a4a4a;
+            font-size: 14px;
+        }
+
+        .cost-price {
+            font-size: 12px;
+            color: #4a4a4a;
+            margin-top: 2px;
+        }
+    }
+
+    .stock-info {
+        display: flex;
+        flex-direction: column;
+        gap: 4px;
+
+        mat-chip {
+            font-size: 14px;
+            height: auto;
+            font-weight: 700;
+            background-color: transparent !important;
+            color: #424242 !important;
+            border: none !important;
+            padding: 0 !important;
+            box-shadow: none !important;
+
+            &.stock-normal,
+            &.stock-low,
+            &.stock-out,
+            &.stock-over {
+                background-color: transparent !important;
+                color: #424242 !important;
+                border: none !important;
+                box-shadow: none !important;
+            }
+
+            // Remove chip container completely
+            ::ng-deep .mat-mdc-chip-action {
+                padding: 0 !important;
+            }
+
+            ::ng-deep .mdc-evolution-chip__cell {
+                padding: 0 !important;
+            }
+
+            ::ng-deep .mdc-evolution-chip__action {
+                padding: 0 !important;
+                background: transparent !important;
+                border: none !important;
+            }
+
+            // Ensure chip text label is dark gray and no background
+            ::ng-deep .mdc-evolution-chip__text-label {
+                color: #424242 !important;
+                padding: 0 !important;
+            }
+
+            // Remove the chip background/border container
+            ::ng-deep .mat-mdc-chip-focus-overlay,
+            ::ng-deep .mat-mdc-chip-ripple,
+            ::ng-deep .mdc-evolution-chip__graphic,
+            ::ng-deep .mdc-evolution-chip__checkmark {
+                display: none !important;
+            }
+        }
+
+        small {
+            color: #424242;
+            font-size: 12px;
+            font-weight: 600;
+        }
+    }
+
+    mat-chip {
+
+        &.status-active,
+        &.status-inactive {
+            background-color: transparent !important;
+            color: #424242 !important;
+            border: none !important;
+            font-weight: 700;
+            font-size: 14px;
+            height: auto;
+            padding: 0 !important;
+            box-shadow: none !important;
+
+            // Remove chip container completely
+            ::ng-deep .mat-mdc-chip-action {
+                padding: 0 !important;
+            }
+
+            ::ng-deep .mdc-evolution-chip__cell {
+                padding: 0 !important;
+            }
+
+            ::ng-deep .mdc-evolution-chip__action {
+                padding: 0 !important;
+                background: transparent !important;
+                border: none !important;
+            }
+
+            // Ensure chip text label is dark gray
+            ::ng-deep .mdc-evolution-chip__text-label {
+                color: #424242 !important;
+                padding: 0 !important;
+            }
+
+            // Remove the chip background/border container
+            ::ng-deep .mat-mdc-chip-focus-overlay,
+            ::ng-deep .mat-mdc-chip-ripple,
+            ::ng-deep .mdc-evolution-chip__graphic,
+            ::ng-deep .mdc-evolution-chip__checkmark {
+                display: none !important;
+            }
+        }
+    }
+
+    // Ensure action icons have their proper colors in normal state (not hovering)
+    .mat-mdc-row:not(:hover) {
+        .action-buttons button[matTooltip="View Details"] mat-icon {
+            color: #6C757D !important; // Gray for view
+        }
+
+        .action-buttons button[matTooltip="Edit Item"] mat-icon {
+            color: #0D6EFD !important; // Blue for edit
+        }
+
+        .action-buttons button[matTooltip="Delete Item"] mat-icon {
+            color: #e91e63 !important; // Red/Pink for delete
+        }
+
+        .action-buttons button[matTooltip="Update Stock"] mat-icon {
+            color: #00bcd4 !important; // Cyan for stock update
+        }
+    }
+}
+
+.action-buttons {
+    display: flex;
+    gap: 4px;
+
+    button.mat-icon-button {
+        transition: background-color .2s, color .2s;
+        width: 36px;
+        height: 36px;
+
+        mat-icon {
+            font-size: 18px;
+            width: 18px;
+            height: 18px;
+        }
+
+        &[matTooltip="View Details"] {
+            color: #b3a9f5;
+
+            &:hover {
+                background-color: rgba(#b3a9f5, .12);
+                color: #9d8ff5;
+            }
+        }
+
+        &[matTooltip="Edit Item"] {
+            color: #9d8ff5;
+
+            &:hover {
+                background-color: rgba(#9d8ff5, .12);
+                color: #9d8ff5;
+            }
+        }
+
+        &[matTooltip="Delete Item"] {
+            color: #e91e63;
+
+            &:hover {
+                background-color: rgba(#e91e63, .12);
+                color: #e91e63;
+            }
+        }
+
+        &[matTooltip="Update Stock"] {
+            color: #7469e0;
+
+            &:hover {
+                background-color: rgba(#7469e0, .12);
+                color: #7469e0;
+            }
+        }
+
+        &[matTooltip="Delete Item"] {
+            color: #e91e63;
+
+            &:hover {
+                background-color: rgba(#e91e63, .12);
+                color: #e91e63;
+            }
+        }
+    }
+}
+
+.no-data {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 48px;
+    color: $text-muted;
+
+    mat-icon {
+        font-size: 48px;
+        width: 48px;
+        height: 48px;
+        opacity: .5;
+        margin-bottom: 16px;
+    }
+
+    p {
+        margin: 0;
+        font-size: 16px;
+    }
+}
+
+.loading-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 48px;
+    background: white;
+
+    .loading-icon {
+        font-size: 48px;
+        width: 48px;
+        height: 48px;
+        color: #0969da;
+        animation: spin 2s linear infinite;
+        margin-bottom: 16px;
+    }
+
+    p {
+        color: #656d76;
+        margin: 0;
+        font-weight: 500;
+    }
+}
+
+@keyframes spin {
+    0% {
+        transform: rotate(0deg);
+    }
+
+    100% {
+        transform: rotate(360deg);
+    }
+}
+
+::ng-deep .mat-mdc-paginator {
+    background: #867cf0 !important;
+    border-top: 1px solid #867cf0;
+
+    .mat-mdc-paginator-page-size-label,
+    .mat-mdc-paginator-range-label {
+        color: #ffffff !important;
+    }
+
+    .mat-mdc-icon-button {
+        color: #ffffff !important;
+    }
+
+    .mdc-notched-outline__leading,
+    .mdc-notched-outline__notch,
+    .mdc-notched-outline__trailing {
+        border-color: rgba(255, 255, 255, 0.3) !important;
+    }
+
+    .mat-mdc-form-field {
+        .mat-mdc-text-field-wrapper {
+            background-color: #ffffff !important;
+            border-radius: 4px !important;
+        }
+
+        .mat-mdc-select-value,
+        .mat-mdc-select-value-text,
+        .mat-mdc-select-placeholder {
+            color: #2c2c2c !important;
+            background-color: #ffffff !important;
+            border-radius: 4px !important;
+            padding: 4px 8px !important;
+            font-weight: 500 !important;
+        }
+
+        .mat-mdc-select-arrow,
+        .mat-mdc-select-arrow svg {
+            color: #2c2c2c !important;
+            fill: #2c2c2c !important;
+        }
+
+        .mdc-notched-outline__leading,
+        .mdc-notched-outline__notch,
+        .mdc-notched-outline__trailing {
+            border-color: rgba(255, 255, 255, 0.5) !important;
+        }
+
+        &.mat-focused {
+
+            .mdc-notched-outline__leading,
+            .mdc-notched-outline__notch,
+            .mdc-notched-outline__trailing {
+                border-color: #ffffff !important;
+                border-width: 2px !important;
+            }
+        }
+    }
+}
+
+::ng-deep .mat-mdc-paginator .mat-mdc-select-value {
+    color: #2c2c2c !important;
+    background-color: #ffffff !important;
+}
+
+::ng-deep .mat-mdc-paginator .mat-mdc-select-arrow {
+    color: #2c2c2c !important;
+}
+
+::ng-deep .mat-mdc-select-panel {
+    background: #ffffff !important;
+
+    .mat-mdc-option {
+        color: #867cf0 !important;
+
+        &:hover {
+            background-color: rgba(134, 124, 240, 0.1) !important;
+        }
+
+        &.mat-mdc-option-active {
+            background-color: rgba(134, 124, 240, 0.2) !important;
+            color: #867cf0 !important;
+        }
+    }
+}
+
+/* Responsive Design */
 @media (max-width: 768px) {
     .item-list-container {
         padding: 16px;
 
-        .filters-section {
+        .card-header {
             flex-direction: column;
             align-items: stretch;
 
@@ -588,7 +1222,7 @@ $purple: #867cf0;
                 }
             }
 
-            .action-buttons {
+            .filter-actions {
                 justify-content: flex-start;
             }
         }
@@ -606,34 +1240,59 @@ $purple: #867cf0;
 
 @media (max-width: 480px) {
     .item-list-container {
-        .page-header h1 {
-            font-size: 24px;
+        .header h1 {
+            font-size: 20px;
         }
 
-        .filters-section .search-filters {
+        .card-header .search-filters {
             flex-direction: column;
             gap: 12px;
         }
     }
 }
 
-// Ensure action icons have their proper colors in normal state (not hovering) - Items Module
-.item-list-container .items-table {
-    .mat-mdc-row:not(:hover) {
-        .action-buttons button[matTooltip="View Details"] mat-icon {
-            color: #6C757D !important; // Gray for view
+/* Resp
+onsive Design */
+@media (max-width: 768px) {
+    .item-list-container {
+        padding: 16px;
+
+        .card-header {
+            flex-direction: column;
+            align-items: stretch;
+
+            .search-filters {
+                mat-form-field {
+                    min-width: auto;
+                    width: 100%;
+                }
+            }
+
+            .filter-actions {
+                justify-content: flex-start;
+            }
         }
 
-        .action-buttons button[matTooltip="Edit Item"] mat-icon {
-            color: #0D6EFD !important; // Blue for edit
+        .items-table {
+            font-size: 12px;
+
+            th,
+            td {
+                padding: 8px 6px;
+            }
+        }
+    }
+}
+
+@media (max-width: 480px) {
+    .item-list-container {
+        .header h1 {
+            font-size: 20px;
         }
 
-        .action-buttons button[matTooltip="Update Stock"] mat-icon {
-            color: #00bcd4 !important; // Cyan for stock update
-        }
-
-        .action-buttons button[matTooltip="Delete Item"] mat-icon {
-            color: #e91e63 !important; // Red/Pink for delete
+        .card-header .search-filters {
+            flex-direction: column;
+            gap: 12px;
         }
     }
 }

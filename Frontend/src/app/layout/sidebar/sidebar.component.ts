@@ -1,6 +1,6 @@
-import { Component, EventEmitter, Output } from '@angular/core';
+import { Component, EventEmitter, Output, OnInit, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { RouterModule } from '@angular/router';
+import { RouterModule, Router, NavigationEnd } from '@angular/router';
 import { MatSidenavModule } from '@angular/material/sidenav';
 import { MatListModule } from '@angular/material/list';
 import { MatIconModule } from '@angular/material/icon';
@@ -21,7 +21,7 @@ import { AuthService } from '../../core/services/auth.service';
   template: `
     <div class="sidebar-header">
       <div class="logo-text">
-        <span>Pharma</span> System
+        <span>Indus</span>traders
       </div>
     </div>
 
@@ -80,6 +80,13 @@ import { AuthService } from '../../core/services/auth.service';
         <span matListItemTitle>Salesman POS</span>
       </a>
 
+        <a mat-list-item routerLink="/suppliers" routerLinkActive="active">
+          <mat-icon matListItemIcon>local_shipping</mat-icon>
+          <span matListItemTitle>Suppliers</span>
+        </a>
+      </ng-container>
+
+      <!-- Shared Item link -->
       <a mat-list-item routerLink="/items" routerLinkActive="active">
         <mat-icon matListItemIcon>inventory_2</mat-icon>
         <span matListItemTitle>Items</span>
@@ -95,9 +102,14 @@ import { AuthService } from '../../core/services/auth.service';
   `,
   styleUrl: './sidebar.component.scss'
 })
-export class SidebarComponent {
+export class SidebarComponent implements OnInit, OnDestroy {
   @Output() closeSidebar = new EventEmitter<void>();
   userCount = 0;
+  isBatchSectionExpanded = false;
+  isBatchRouteActive = false;
+  isBatchDropdownOpen = false;
+  userRole: string | null = null;
+  private destroy$ = new Subject<void>();
 
   get isAdmin(): boolean {
     const user = this.authService.currentUserValue;
