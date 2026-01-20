@@ -31,6 +31,16 @@ router.post(
   authController.login
 );
 
+// Prevent GET requests to login
+router.get('/login', (req, res) => {
+  res.status(405).json({
+    success: false,
+    error: 'Method Not Allowed',
+    message: 'Use POST method to login',
+    debug: 'Expected POST /api/auth/login'
+  });
+});
+
 /**
  * @route   POST /api/auth/refresh
  * @desc    Refresh access token using refresh token
