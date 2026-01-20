@@ -122,7 +122,7 @@ export class SalesInvoiceListComponent implements OnInit, OnDestroy {
     const params: InvoiceQueryParams = {
       page: this.pageIndex + 1,
       limit: this.pageSize,
-      search: this.searchControl.value || undefined,
+      keyword: this.searchControl.value || undefined,
     };
 
     if (this.selectedStatus) {

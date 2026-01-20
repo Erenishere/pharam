@@ -65,7 +65,7 @@ export interface InvoiceQueryParams {
   paymentStatus?: string;
   dateFrom?: string;
   dateTo?: string;
-  search?: string;
+  keyword?: string;
   supplierId?: string;
   customerId?: string;
 }
