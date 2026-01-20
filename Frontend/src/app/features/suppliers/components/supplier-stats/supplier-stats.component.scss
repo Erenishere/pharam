@@ -101,6 +101,8 @@
         border: $border-card;
         border-radius: $radius-card;
         animation: cardSlideIn 0.4s ease-out;
+        background-color: $bg-card;
+        box-shadow: $shadow-card;
 
         // Stagger animation for cards
         @for $i from 1 through 8 {
