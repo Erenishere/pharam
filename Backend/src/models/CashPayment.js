@@ -85,8 +85,7 @@ const cashPaymentSchema = new mongoose.Schema(
   }
 );
 
-// Indexes
-cashPaymentSchema.index({ paymentNumber: 1 }, { unique: true });
+// Indexes (unique indexes already handled by schema 'unique: true')
 cashPaymentSchema.index({ paymentDate: -1 });
 cashPaymentSchema.index({ supplierId: 1, paymentDate: -1 });
 cashPaymentSchema.index({ status: 1 });

@@ -38,8 +38,7 @@ const routeSchema = new mongoose.Schema({
     timestamps: true,
 });
 
-// Indexes
-routeSchema.index({ code: 1 }, { unique: true });
+// Indexes (unique indexes already handled by schema 'unique: true')
 routeSchema.index({ name: 1 });
 routeSchema.index({ salesmanId: 1 });
 routeSchema.index({ isActive: 1 });

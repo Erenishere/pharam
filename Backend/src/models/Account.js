@@ -85,8 +85,7 @@ const accountSchema = new mongoose.Schema({
   toObject: { virtuals: true }
 });
 
-// Indexes
-accountSchema.index({ code: 1 }, { unique: true });
+// Indexes (avoid duplicating indexes defined with 'index: true' in schema)
 accountSchema.index({ accountType: 1, isActive: 1 });
 accountSchema.index({ parentAccountId: 1 });
 

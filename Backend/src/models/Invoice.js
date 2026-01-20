@@ -468,8 +468,7 @@ const invoiceSchema = new mongoose.Schema({
   timestamps: true,
 });
 
-// Indexes
-invoiceSchema.index({ invoiceNumber: 1 }, { unique: true });
+// Indexes (unique indexes already handled by schema 'unique: true')
 invoiceSchema.index({ type: 1, invoiceDate: -1 });
 invoiceSchema.index({ customerId: 1, invoiceDate: -1 });
 invoiceSchema.index({ supplierId: 1, invoiceDate: -1 });
@@ -477,13 +476,12 @@ invoiceSchema.index({ status: 1 });
 invoiceSchema.index({ paymentStatus: 1 });
 invoiceSchema.index({ dueDate: 1 });
 invoiceSchema.index({ createdBy: 1 });
-// Phase 2 indexes
-invoiceSchema.index({ originalInvoiceId: 1 }); // For return invoice lookups
-invoiceSchema.index({ supplierBillNo: 1, supplierId: 1 }); // For duplicate supplier bill checking
-invoiceSchema.index({ dimension: 1 }); // For dimension-based reporting
-invoiceSchema.index({ salesmanId: 1 }); // For salesman performance tracking
-invoiceSchema.index({ poId: 1 }); // For PO linking
-invoiceSchema.index({ expiryDate: 1 }); // For estimate expiry tracking
+invoiceSchema.index({ originalInvoiceId: 1 });
+invoiceSchema.index({ supplierBillNo: 1, supplierId: 1 });
+invoiceSchema.index({ dimension: 1 });
+invoiceSchema.index({ salesmanId: 1 });
+invoiceSchema.index({ poId: 1 });
+invoiceSchema.index({ expiryDate: 1 });
 
 // Virtual for days until due
 invoiceSchema.virtual('daysUntilDue').get(function () {

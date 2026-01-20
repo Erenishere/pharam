@@ -145,15 +145,13 @@ const itemSchema = new mongoose.Schema({
   timestamps: true,
 });
 
-// Indexes
-itemSchema.index({ code: 1 }, { unique: true });
+// Indexes (unique indexes already handled by schema 'unique: true')
 itemSchema.index({ name: 1 });
 itemSchema.index({ category: 1 });
 itemSchema.index({ isActive: 1 });
 itemSchema.index({ 'inventory.currentStock': 1 });
-itemSchema.index({ 'inventory.batches.batchNumber': 1 }); // New Index
+itemSchema.index({ 'inventory.batches.batchNumber': 1 });
 itemSchema.index({ 'pricing.salePrice': 1 });
-itemSchema.index({ barcode: 1 }, { unique: true, sparse: true });
 itemSchema.index({ packSize: 1 });
 itemSchema.index({ name: 'text', code: 'text', category: 'text', description: 'text' });
 itemSchema.index({ code: 1, name: 1, isActive: 1 });
@@ -277,11 +275,5 @@ itemSchema.pre('save', function (next) {
   }
   next();
 });
-
-// compound index for efficient searching
-itemSchema.index({ name: 'text', code: 'text', description: 'text', barcode: 'text' });
-itemSchema.index({ code: 1 });
-itemSchema.index({ barcode: 1 });
-itemSchema.index({ category: 1 });
 
 module.exports = mongoose.model('Item', itemSchema);

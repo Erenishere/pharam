@@ -140,8 +140,7 @@ const supplierSchema = new mongoose.Schema({
   timestamps: true,
 });
 
-// Indexes
-supplierSchema.index({ code: 1 }, { unique: true });
+// Indexes (unique indexes already handled by schema 'unique: true')
 supplierSchema.index({ name: 1 });
 supplierSchema.index({ type: 1 });
 supplierSchema.index({ isActive: 1 });

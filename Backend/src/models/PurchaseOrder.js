@@ -126,8 +126,7 @@ const purchaseOrderSchema = new mongoose.Schema(
   }
 );
 
-// Indexes for better query performance
-purchaseOrderSchema.index({ poNumber: 1 });
+// Indexes for better query performance (unique indexes handled by schema 'unique: true')
 purchaseOrderSchema.index({ supplierId: 1 });
 purchaseOrderSchema.index({ status: 1 });
 purchaseOrderSchema.index({ fulfillmentStatus: 1 });

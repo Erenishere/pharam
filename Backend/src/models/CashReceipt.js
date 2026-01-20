@@ -141,18 +141,16 @@ const cashReceiptSchema = new mongoose.Schema(
   }
 );
 
-// Indexes
-cashReceiptSchema.index({ receiptNumber: 1 }, { unique: true });
+// Indexes (unique indexes already handled by schema 'unique: true')
 cashReceiptSchema.index({ receiptDate: -1 });
 cashReceiptSchema.index({ customerId: 1, receiptDate: -1 });
 cashReceiptSchema.index({ status: 1 });
 cashReceiptSchema.index({ paymentMethod: 1 });
 cashReceiptSchema.index({ createdBy: 1 });
-// Phase 2 indexes
-cashReceiptSchema.index({ postDatedCheque: 1, 'bankDetails.chequeDate': 1 }); // For post-dated cheque queries
-cashReceiptSchema.index({ chequeStatus: 1 }); // For cheque status filtering
-cashReceiptSchema.index({ 'bankDetails.bankName': 1, 'bankDetails.chequeNumber': 1 }); // For duplicate cheque checking
-cashReceiptSchema.index({ salesmanId: 1 }); // For salesman performance tracking
+cashReceiptSchema.index({ postDatedCheque: 1, 'bankDetails.chequeDate': 1 });
+cashReceiptSchema.index({ chequeStatus: 1 });
+cashReceiptSchema.index({ 'bankDetails.bankName': 1, 'bankDetails.chequeNumber': 1 });
+cashReceiptSchema.index({ salesmanId: 1 });
 
 // Virtual for days since receipt
 cashReceiptSchema.virtual('daysSinceReceipt').get(function () {

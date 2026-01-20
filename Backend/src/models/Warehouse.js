@@ -96,8 +96,7 @@ const warehouseSchema = new mongoose.Schema({
   toObject: { virtuals: true },
 });
 
-// Indexes
-warehouseSchema.index({ code: 1 }, { unique: true });
+// Indexes (unique indexes already handled by schema 'unique: true')
 warehouseSchema.index({ name: 1 });
 warehouseSchema.index({ 'location.city': 1, 'location.country': 1 });
 warehouseSchema.index({ isActive: 1 });

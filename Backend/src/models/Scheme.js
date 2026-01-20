@@ -120,8 +120,7 @@ const schemeSchema = new mongoose.Schema({
   toObject: { virtuals: true }
 });
 
-// Indexes
-schemeSchema.index({ name: 1 }, { unique: true });
+// Indexes (avoid duplicating indexes defined with 'index: true' in schema)
 schemeSchema.index({ type: 1, isActive: 1 });
 schemeSchema.index({ company: 1, isActive: 1 });
 schemeSchema.index({ startDate: 1, endDate: 1 });

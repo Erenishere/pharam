@@ -151,8 +151,7 @@ const customerSchema = new mongoose.Schema({
   timestamps: true,
 });
 
-// Indexes
-customerSchema.index({ code: 1 }, { unique: true });
+// Indexes (unique indexes already handled by schema 'unique: true')
 customerSchema.index({ name: 1 });
 customerSchema.index({ type: 1 });
 customerSchema.index({ isActive: 1 });

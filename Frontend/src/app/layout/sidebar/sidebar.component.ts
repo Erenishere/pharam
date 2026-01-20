@@ -95,6 +95,11 @@ import { AuthService } from '../../core/services/auth.service';
           <mat-icon matListItemIcon>shopping_cart</mat-icon>
           <span matListItemTitle>Purchase Invoices</span>
         </a>
+
+        <a mat-list-item routerLink="/warehouses" routerLinkActive="active">
+          <mat-icon matListItemIcon>warehouse</mat-icon>
+          <span matListItemTitle>Warehouses</span>
+        </a>
       </ng-container>
 
       <mat-divider *ngIf="isAdmin || isSalesman"></mat-divider>

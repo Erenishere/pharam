@@ -58,8 +58,7 @@ const salesmanSchema = new mongoose.Schema(
   }
 );
 
-// Indexes
-salesmanSchema.index({ code: 1 }, { unique: true });
+// Indexes (unique indexes already handled by schema 'unique: true')
 salesmanSchema.index({ name: 1 });
 salesmanSchema.index({ isActive: 1 });
 salesmanSchema.index({ routeId: 1 });
