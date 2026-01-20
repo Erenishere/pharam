@@ -63,6 +63,21 @@ class ServerConfig {
   }
 
   setupRoutes() {
+    // Root endpoint
+    this.app.get('/', (req, res) => {
+      res.status(200).json({
+        success: true,
+        message: 'Pharam API Server',
+        version: '1.0.0',
+        endpoints: {
+          health: '/health',
+          api: '/api',
+          docs: '/api/docs',
+        },
+        timestamp: new Date().toISOString(),
+      });
+    });
+
     // Health check endpoint
     this.app.get('/health', (req, res) => {
       res.status(200).json({
