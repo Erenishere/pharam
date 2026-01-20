@@ -25,7 +25,10 @@ class ServerConfig {
     this.app.use(requestTrackingMiddleware);
 
     // Security middleware
-    this.app.use(helmet());
+    this.app.use(helmet({
+      crossOriginResourcePolicy: { policy: "cross-origin" },
+      contentSecurityPolicy: process.env.NODE_ENV === 'production' ? undefined : false
+    }));
 
     // CORS configuration - Allow all origins for development
     const corsOptions = {

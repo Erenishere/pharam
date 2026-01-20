@@ -435,6 +435,16 @@ const invoiceSchema = new mongoose.Schema({
       default: 0,
       min: [0, 'Income tax total cannot be negative'],
     },
+    paidAmount: {
+      type: Number,
+      default: 0,
+      min: [0, 'Paid amount cannot be negative'],
+    },
+    dueAmount: {
+      type: Number,
+      default: 0,
+      min: [0, 'Due amount cannot be negative'],
+    },
   },
   status: {
     type: String,
@@ -616,6 +626,8 @@ invoiceSchema.methods.calculateTotals = async function () {
     advanceTaxTotal: advanceTaxTotal || 0,
     nonFilerGSTTotal: nonFilerGSTTotal || 0,
     incomeTaxTotal: existingTotals.incomeTaxTotal || 0,
+    paidAmount: existingTotals.paidAmount || 0,
+    dueAmount: (subtotal - totalDiscount - to1Amount - to2Amount + totalTax) - (existingTotals.paidAmount || 0),
   };
 
   return this.totals;

@@ -4,6 +4,7 @@ const itemService = require('./itemService');
 const taxService = require('./taxService');
 const stockMovementRepository = require('../repositories/stockMovementRepository');
 const ledgerService = require('./ledgerService');
+const accountService = require('./accountService');
 const discountCalculationService = require('./discountCalculationService');
 const Item = require('../models/Item');
 const Warehouse = require('../models/Warehouse');
@@ -673,14 +674,17 @@ class SalesInvoiceService {
   async createLedgerEntriesForSalesInvoice(invoice, userId) {
     const description = `Sales Invoice ${invoice.invoiceNumber} - ${invoice.notes || 'Sales transaction'}`;
 
+    // Get Sales Revenue account
+    const salesRevenueAccount = await accountService.getAccountByCode('SALES_REVENUE');
+
     const debitAccount = {
       accountId: invoice.customerId,
       accountType: 'Customer'
     };
 
     const creditAccount = {
-      accountId: 'SALES_REVENUE',
-      accountType: 'Revenue'
+      accountId: salesRevenueAccount._id,
+      accountType: 'Account'
     };
 
     const ledgerEntries = await ledgerService.createDoubleEntry(
@@ -700,14 +704,15 @@ class SalesInvoiceService {
         throw new Error('Adjustment account is required when Trade Offers are applied');
       }
 
+      // We use the adjustmentAccountId directly as it should already be a valid ObjectId
       const adjustmentDebitAccount = {
         accountId: invoice.adjustmentAccountId,
         accountType: 'Account'
       };
 
       const adjustmentCreditAccount = {
-        accountId: 'SALES_REVENUE',
-        accountType: 'Revenue'
+        accountId: salesRevenueAccount._id,
+        accountType: 'Account'
       };
 
       const toEntries = await ledgerService.createDoubleEntry(
@@ -720,7 +725,10 @@ class SalesInvoiceService {
         userId
       );
 
-      return [...ledgerEntries, ...toEntries];
+      return {
+        ...ledgerEntries,
+        tradeOfferEntries: toEntries
+      };
     }
 
     return ledgerEntries;

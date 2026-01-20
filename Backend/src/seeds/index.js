@@ -7,6 +7,7 @@ const itemSeeder = require('./itemSeeder');
 const routeSeeder = require('./routeSeeder');
 const salesmanSeeder = require('./salesmanSeeder');
 const pharmaSeeder = require('./pharmaSeeder');
+const accountSeeder = require('./accountSeeder');
 
 class DatabaseSeeder {
   constructor() {
@@ -18,6 +19,7 @@ class DatabaseSeeder {
       { name: 'Suppliers', seeder: supplierSeeder },
       { name: 'Items', seeder: itemSeeder },
       { name: 'Pharma Items', seeder: pharmaSeeder },
+      { name: 'System Accounts', seeder: accountSeeder },
     ];
   }
 

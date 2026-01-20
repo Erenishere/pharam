@@ -4,6 +4,7 @@ const itemService = require('./itemService');
 const taxService = require('./taxService');
 const stockMovementRepository = require('../repositories/stockMovementRepository');
 const ledgerService = require('./ledgerService');
+const accountService = require('./accountService');
 const discountCalculationService = require('./discountCalculationService');
 const Item = require('../models/Item');
 
@@ -536,9 +537,12 @@ class PurchaseInvoiceService {
   async createLedgerEntriesForPurchaseInvoice(invoice, userId) {
     const description = `Purchase Invoice ${invoice.invoiceNumber} - ${invoice.notes || 'Purchase transaction'}`;
 
+    // Get Inventory Asset account
+    const inventoryAssetAccount = await accountService.getAccountByCode('INVENTORY_ASSET');
+
     const debitAccount = {
-      accountId: 'INVENTORY_ASSET',
-      accountType: 'Asset'
+      accountId: inventoryAssetAccount._id,
+      accountType: 'Account'
     };
 
     const creditAccount = {
