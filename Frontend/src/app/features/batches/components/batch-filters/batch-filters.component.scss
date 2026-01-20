@@ -103,6 +103,92 @@ $purple: #867cf0;
     gap: 20px;
 }
 
+// Standardized Filters Section Layout
+.filters-section {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 24px;
+    flex-wrap: wrap;
+
+    .search-filters {
+        flex: 1;
+        min-width: 300px;
+        display: flex;
+        gap: 16px;
+
+        .search-field {
+            width: 100%;
+        }
+    }
+
+    .action-buttons {
+        display: flex;
+        gap: 12px;
+        align-items: center;
+        flex-shrink: 0;
+
+        button {
+            height: 48px;
+            padding: 0 20px;
+            border-radius: 6px;
+            font-weight: 500;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            transition: all 0.2s ease;
+            border: 2px solid transparent;
+
+            .mat-icon {
+                font-size: 20px;
+                width: 20px;
+                height: 20px;
+            }
+
+            &[color="primary"] {
+                background-color: $purple !important;
+                color: #FFFFFF !important;
+                border: 2px solid $purple !important;
+
+                &:hover {
+                    background-color: darken($purple, 8%) !important;
+                    border-color: darken($purple, 8%) !important;
+                    box-shadow: 0 4px 12px rgba(115, 103, 240, 0.3);
+                    transform: translateY(-1px);
+                }
+            }
+
+            &.mat-mdc-stroked-button {
+                border: 2px solid $purple !important;
+                color: $purple;
+                background-color: #FFFFFF !important;
+
+                &:hover {
+                    background-color: rgba(115, 103, 240, 0.08) !important;
+                    transform: translateY(-1px);
+                }
+            }
+
+            &.mat-mdc-button:not(.mat-mdc-raised-button):not(.mat-mdc-stroked-button) {
+                color: $purple;
+                border: 2px solid #E0E0E0 !important;
+                background-color: #FFFFFF !important;
+
+                &:hover {
+                    background-color: rgba(115, 103, 240, 0.08) !important;
+                    border-color: $purple !important;
+                }
+
+                &.active {
+                    background-color: rgba(115, 103, 240, 0.12) !important;
+                    border-color: $purple !important;
+                    font-weight: 600;
+                }
+            }
+        }
+    }
+}
+
 .filter-row {
     display: flex;
     gap: 24px;
@@ -325,7 +411,7 @@ $purple: #867cf0;
     .mat-mdc-raised-button {
         background: #7367F0;
         color: #FFFFFF;
-        border: none;
+        border: 2px solid #7367F0;
         border-radius: 6px;
         padding: 8px 16px;
         font-weight: 500;
@@ -333,6 +419,7 @@ $purple: #867cf0;
 
         &:hover {
             background: #5E50EE;
+            border-color: #5E50EE;
             transform: translateY(-1px);
             box-shadow: 0 4px 12px rgba(115, 103, 240, 0.3);
         }
@@ -341,7 +428,7 @@ $purple: #867cf0;
     .mat-mdc-button {
         background: transparent;
         color: #7367F0;
-        border: 1px solid #7367F0;
+        border: 2px solid #7367F0;
         border-radius: 6px;
         padding: 8px 16px;
         font-weight: 500;

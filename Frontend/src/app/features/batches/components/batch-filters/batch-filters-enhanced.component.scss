@@ -78,6 +78,7 @@
             align-items: center;
             gap: 8px;
             transition: all 0.2s ease;
+            border: 2px solid transparent;
 
             .mat-icon {
                 font-size: 20px;
@@ -88,21 +89,24 @@
             &[color="primary"] {
                 background-color: $batch-primary !important;
                 color: #FFFFFF !important;
+                border: 2px solid $batch-primary !important;
 
                 &:hover {
                     background-color: $batch-primary-hover !important;
+                    border-color: $batch-primary-hover !important;
                     box-shadow: 0 4px 12px rgba(115, 103, 240, 0.3);
                     transform: translateY(-1px);
                 }
             }
 
             &.mat-mdc-stroked-button {
-                border-color: #D8D6DE;
-                color: $batch-text-secondary;
+                border: 2px solid $batch-primary !important;
+                color: $batch-primary;
+                background-color: #FFFFFF !important;
 
                 &:hover {
                     background-color: #F8F7FA;
-                    border-color: $batch-primary;
+                    border-color: $batch-primary-hover !important;
                     color: $batch-primary;
                     transform: translateY(-1px);
                 }
@@ -110,13 +114,17 @@
 
             &.mat-mdc-button:not(.mat-mdc-raised-button):not(.mat-mdc-stroked-button) {
                 color: $batch-primary;
+                border: 2px solid #E0E0E0 !important;
+                background-color: #FFFFFF !important;
 
                 &:hover {
                     background-color: rgba(115, 103, 240, 0.08);
+                    border-color: $batch-primary !important;
                 }
 
                 &.active {
                     background-color: rgba(115, 103, 240, 0.12);
+                    border-color: $batch-primary !important;
                     font-weight: 600;
                 }
             }
