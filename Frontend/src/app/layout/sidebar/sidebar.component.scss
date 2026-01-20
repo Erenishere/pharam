@@ -28,10 +28,13 @@
 /* ----------  nav-item  ---------- */
 ::ng-deep .mat-mdc-list-item {
     height: 48px;
-    margin-bottom: 0;
+    margin: 4px 15px;
+    width: calc(100% - 30px);
     font-family: $font-family;
     font-size: 14px;
     font-weight: 500;
+    transition: background-color .25s ease, transform .25s ease;
+    border-radius: 4px;
 
     /* remove disabled fade */
     &.mdc-list-item--disabled {
@@ -65,18 +68,12 @@
         /* whole row background */
         transform: translateX(5px);
         /* keep slide if you like */
-        transition: background-color .25s ease, transform .25s ease;
-        border-radius: 4px;
-        /* soften corners */
     }
 
     /* active state */
     &.active {
         background: linear-gradient(118deg, $primary, rgba($primary, .7));
         box-shadow: 0 0 10px 1px rgba($primary, .7);
-        border-radius: 4px;
-        margin: 0 15px 4px 15px;
-        width: calc(100% - 30px);
 
         .mdc-list-item__content,
         .mdc-list-item__primary-text,
@@ -103,18 +100,19 @@
 }
 
 mat-divider {
-    margin: 16px 0;
+    margin: 8px 15px;
     border-top-color: $border-table;
 }
 
 /* ----------  Batch Management Dropdown - EXACT MATCH  ---------- */
 .batch-dropdown-container {
-    margin: 4px 0;
+    margin: 0;
 
     .batch-main-item {
         // EXACT MATCH to ::ng-deep .mat-mdc-list-item styling
         height: 48px;
-        margin-bottom: 0;
+        margin: 4px 15px;
+        width: calc(100% - 30px);
         font-family: $font-family;
         font-size: 14px;
         font-weight: 500;
@@ -155,16 +153,12 @@ mat-divider {
         &:hover {
             background-color: #f0f0f1;
             transform: translateX(5px);
-            border-radius: 4px;
         }
 
         /* EXACT MATCH: active state */
         &.active {
             background: linear-gradient(118deg, $primary, rgba($primary, .7));
             box-shadow: 0 0 10px 1px rgba($primary, .7);
-            border-radius: 4px;
-            margin: 0 15px 4px 15px;
-            width: calc(100% - 30px);
 
             .batch-icon,
             .batch-title,
@@ -178,7 +172,7 @@ mat-divider {
             font-size: 24px;
             width: 24px;
             height: 24px;
-            margin-right: 32px;
+            margin-right: 16px; // Corrected from 32px to match standard matListItemIcon
             flex-shrink: 0;
             display: inline-flex;
             align-items: center;
@@ -228,8 +222,8 @@ mat-divider {
         .submenu-item {
             height: 40px;
             font-size: 13px;
-            margin: 2px 16px;
-            width: calc(100% - 32px);
+            margin: 4px 15px; // Matched horizontal margin of parent
+            width: calc(100% - 30px); // Matched width of parent
             border-radius: 4px;
 
             &:not(.active) {

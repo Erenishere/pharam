@@ -84,7 +84,7 @@ import { AuthService } from '../../core/services/auth.service';
           </div>
         </div>
 
-        <mat-divider></mat-divider>
+        <mat-divider *ngIf="isAdmin"></mat-divider>
 
         <a mat-list-item routerLink="/sales-invoices" routerLinkActive="active">
           <mat-icon matListItemIcon>receipt</mat-icon>
@@ -112,7 +112,7 @@ import { AuthService } from '../../core/services/auth.service';
           </a>
         </ng-container>
 
-      <mat-divider *ngIf="isAdmin || isSalesman"></mat-divider>
+      <mat-divider *ngIf="isSalesman"></mat-divider>
 
       <!-- Salesman Specific -->
       <ng-container *ngIf="isSalesman">
@@ -132,7 +132,7 @@ import { AuthService } from '../../core/services/auth.service';
       </ng-container>
 
 
-      <mat-divider></mat-divider>
+      <mat-divider *ngIf="isAdmin"></mat-divider>
 
       <a mat-list-item routerLink="/reports" routerLinkActive="active" *ngIf="isAdmin">
         <mat-icon matListItemIcon>assessment</mat-icon>

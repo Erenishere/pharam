@@ -48,16 +48,40 @@
 
         .search-field {
             width: 100%;
-            
+
             ::ng-deep {
-                .mdc-text-field--outline {
+                .mat-mdc-form-field-flex {
                     background-color: #FFFFFF !important;
+                    border-radius: 8px !important;
                 }
+
+                .mdc-notched-outline {
+                    color: #D8D6DE !important; // Vuexy default border
+                }
+
+                .mdc-notched-outline__leading,
+                .mdc-notched-outline__notch,
+                .mdc-notched-outline__trailing {
+                    border-color: #D8D6DE !important;
+                    border-width: 1px !important;
+                }
+
+                &.mat-focused {
+
+                    .mdc-notched-outline__leading,
+                    .mdc-notched-outline__notch,
+                    .mdc-notched-outline__trailing {
+                        border-color: $batch-primary !important;
+                        border-width: 2px !important;
+                    }
+                }
+
                 .mat-mdc-form-field-suffix {
                     display: flex;
                     align-items: center;
-                    gap: 4px;
+                    gap: 8px;
                     color: $batch-primary !important;
+                    padding-right: 8px;
                 }
             }
         }
@@ -174,9 +198,14 @@
     gap: $batch-spacing-xxl;
     flex-wrap: wrap;
     padding: 16px;
-    background: #F8F7FA;
+    background: #FFFFFF; // Changed to white to match other fields
     border-radius: 8px;
-    border: 1px solid #EBE9F1;
+    border: 1px solid #D8D6DE; // Match form field borders
+    transition: all 0.2s ease;
+
+    &:hover {
+        border-color: $batch-primary;
+    }
 
     .mat-mdc-checkbox {
         ::ng-deep {
@@ -202,17 +231,19 @@
     margin-top: 16px;
     background-color: #FFFFFF !important;
     border-radius: 8px;
-    border: 1px solid #EBE9F1;
+    border: 1px solid #D8D6DE;
     overflow: hidden;
     box-shadow: none;
+    transition: all 0.3s ease;
 
     ::ng-deep .mat-expansion-panel-header {
-        display: none !important; // Hide the default header since we use a custom button
+        display: none !important;
     }
 
     &.mat-expanded {
-        border-color: #EBE9F1;
-        margin-bottom: 16px;
+        border-color: $batch-primary;
+        box-shadow: 0 4px 12px rgba(115, 103, 240, 0.1);
+        margin-bottom: 24px;
     }
 
     .mat-expansion-panel-content {
@@ -225,17 +256,44 @@
 
     // Advanced filters form fields
     .mat-mdc-form-field {
-        @include batch-form-field;
         width: 100%;
 
         ::ng-deep {
+
+            .mdc-notched-outline__leading,
+            .mdc-notched-outline__notch,
+            .mdc-notched-outline__trailing {
+                border-color: #D8D6DE !important;
+                border-width: 1px !important;
+            }
+
+            &:hover:not(.mat-focused) {
+
+                .mdc-notched-outline__leading,
+                .mdc-notched-outline__notch,
+                .mdc-notched-outline__trailing {
+                    border-color: $batch-primary !important;
+                    opacity: 0.7;
+                }
+            }
+
+            &.mat-focused {
+
+                .mdc-notched-outline__leading,
+                .mdc-notched-outline__notch,
+                .mdc-notched-outline__trailing {
+                    border-color: $batch-primary !important;
+                    border-width: 2px !important;
+                }
+
+                .mat-mdc-floating-label {
+                    color: $batch-primary !important;
+                }
+            }
+
             .mat-mdc-floating-label,
             mat-label {
                 color: $batch-text-secondary !important;
-            }
-
-            &.mat-focused .mat-mdc-floating-label {
-                color: $batch-primary !important;
             }
         }
     }
@@ -283,7 +341,7 @@
 
     .filter-row {
         flex-direction: column;
-        
+
         .half-width {
             width: 100%;
         }
