@@ -14,8 +14,11 @@ class AuthController {
     try {
       const { identifier, password } = req.body;
 
+      console.log('[AuthController] Login attempt for:', identifier);
+
       // Validate required fields
       if (!identifier || !password) {
+        console.log('[AuthController] Missing credentials');
         return res.status(400).json({
           error: 'Validation error',
           message: 'Username/email and password are required',
@@ -23,8 +26,10 @@ class AuthController {
       }
 
       // Authenticate user
+      console.log('[AuthController] Authenticating user...');
       const result = await authService.authenticate(identifier, password);
 
+      console.log('[AuthController] Login successful for:', identifier);
       res.status(200).json({
         success: true,
         message: 'Login successful',
@@ -35,24 +40,30 @@ class AuthController {
         },
       });
     } catch (error) {
+      console.error('[AuthController] Login error:', error.message);
+
       if (error.message === 'Invalid credentials') {
+        console.log('[AuthController] Invalid credentials for:', req.body.identifier);
         return res.status(401).json({
           error: 'Authentication failed',
           message: 'Invalid username/email or password',
+          debug: process.env.NODE_ENV === 'development' ? error.message : undefined,
         });
       }
 
       if (error.message === 'User account is inactive') {
+        console.log('[AuthController] User account inactive:', req.body.identifier);
         return res.status(401).json({
           error: 'Account inactive',
           message: 'Your account has been deactivated. Please contact administrator.',
         });
       }
 
-      console.error('Login error:', error);
+      console.error('[AuthController] Unexpected error:', error);
       res.status(500).json({
         error: 'Internal server error',
         message: 'An error occurred during login',
+        debug: process.env.NODE_ENV === 'development' ? error.message : undefined,
       });
     }
   }
