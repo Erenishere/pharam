@@ -25,7 +25,7 @@ const batchSchema = new Schema(
     },
     location: {
       type: Schema.Types.ObjectId,
-      ref: 'Location',
+      ref: 'Warehouse',
       index: true,
     },
     supplier: {
@@ -62,11 +62,7 @@ const batchSchema = new Schema(
       required: true,
       min: 0,
     },
-    location: {
-      type: Schema.Types.ObjectId,
-      ref: 'Location',
-      index: true,
-    },
+
     status: {
       type: String,
       enum: ['active', 'expired', 'depleted', 'quarantined'],
@@ -106,9 +102,11 @@ const batchSchema = new Schema(
 batchSchema.index({ batchNumber: 1, item: 1, warehouse: 1 }, { unique: true });
 batchSchema.index({ warehouse: 1, expiryDate: 1 });
 batchSchema.index({ item: 1, warehouse: 1, status: 1 });
+batchSchema.index({ expiryDate: 1, status: 1, remainingQuantity: 1 });
+batchSchema.index({ item: 1, expiryDate: 1, remainingQuantity: 1 });
 
 // Virtual for checking if batch is about to expire (within 30 days)
-batchSchema.virtual('isExpiringSoon').get(function() {
+batchSchema.virtual('isExpiringSoon').get(function () {
   const thirtyDaysFromNow = new Date();
   thirtyDaysFromNow.setDate(thirtyDaysFromNow.getDate() + 30);
   return this.expiryDate <= thirtyDaysFromNow && this.status === 'active';
@@ -122,7 +120,7 @@ batchSchema.virtual('isExpiringSoon').get(function() {
  * @param {string} [excludeBatchId] - Optional batch ID to exclude from the check
  * @returns {Promise<boolean>} True if the batch number exists
  */
-batchSchema.statics.batchNumberExists = async function(batchNumber, itemId, warehouseId, excludeBatchId = null) {
+batchSchema.statics.batchNumberExists = async function (batchNumber, itemId, warehouseId, excludeBatchId = null) {
   const query = {
     batchNumber: new RegExp(`^${batchNumber}$`, 'i'),
     item: itemId,
@@ -138,29 +136,29 @@ batchSchema.statics.batchNumberExists = async function(batchNumber, itemId, ware
 };
 
 // Method to update remaining quantity
-batchSchema.methods.updateRemainingQuantity = async function(quantityChange) {
+batchSchema.methods.updateRemainingQuantity = async function (quantityChange) {
   const newQuantity = this.remainingQuantity + quantityChange;
-  
+
   if (newQuantity < 0) {
     throw new Error('Insufficient quantity in batch');
   }
-  
+
   this.remainingQuantity = newQuantity;
-  
+
   // Update status if needed
   if (this.remainingQuantity === 0) {
     this.status = 'depleted';
   } else if (this.status === 'depleted' && this.remainingQuantity > 0) {
     this.status = 'active';
   }
-  
+
   return this.save();
 };
 
 // Pre-save hook to update status based on dates and validate data
-batchSchema.pre('save', async function(next) {
+batchSchema.pre('save', async function (next) {
   const now = new Date();
-  
+
   // Update status based on dates
   if (this.expiryDate < now) {
     this.status = 'expired';
@@ -169,16 +167,16 @@ batchSchema.pre('save', async function(next) {
   } else {
     this.status = 'active';
   }
-  
+
   // Calculate days until expiry
   const diffTime = this.expiryDate - now;
   this.daysUntilExpiry = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-  
+
   // Validate that remaining quantity doesn't exceed total quantity
   if (this.remainingQuantity > this.quantity) {
     return next(new AppError('Remaining quantity cannot exceed total quantity', 400));
   }
-  
+
   // Validate batch number uniqueness
   if (this.isNew || this.isModified('batchNumber')) {
     const exists = await this.constructor.batchNumberExists(
@@ -187,12 +185,12 @@ batchSchema.pre('save', async function(next) {
       this.warehouse,
       this._id
     );
-    
+
     if (exists) {
       return next(new AppError('Batch number already exists for this item in the specified warehouse', 400));
     }
   }
-  
+
   next();
 });
 
@@ -202,10 +200,10 @@ batchSchema.pre('save', async function(next) {
  * @param {string} [warehouseId] - Optional warehouse ID to filter by
  * @returns {Promise<Array>} Array of batches expiring soon
  */
-batchSchema.statics.getExpiringSoon = function(days = 30, warehouseId = null) {
+batchSchema.statics.getExpiringSoon = function (days = 30, warehouseId = null) {
   const date = new Date();
   date.setDate(date.getDate() + days);
-  
+
   const query = {
     expiryDate: { $lte: date, $gte: new Date() },
     status: { $ne: 'expired' }
@@ -214,7 +212,7 @@ batchSchema.statics.getExpiringSoon = function(days = 30, warehouseId = null) {
   if (warehouseId) {
     query.warehouse = warehouseId;
   }
-  
+
   return this.find(query)
     .populate('item', 'name code')
     .populate('warehouse', 'name code');
@@ -225,7 +223,7 @@ batchSchema.statics.getExpiringSoon = function(days = 30, warehouseId = null) {
  * @param {string} [warehouseId] - Optional warehouse ID to filter by
  * @returns {Promise<Array>} Array of expired batches
  */
-batchSchema.statics.getExpiredBatches = function(warehouseId = null) {
+batchSchema.statics.getExpiredBatches = function (warehouseId = null) {
   const query = {
     expiryDate: { $lt: new Date() },
     status: { $ne: 'expired' }
@@ -234,7 +232,7 @@ batchSchema.statics.getExpiredBatches = function(warehouseId = null) {
   if (warehouseId) {
     query.warehouse = warehouseId;
   }
-  
+
   return this.find(query)
     .populate('item', 'name code')
     .populate('warehouse', 'name code');
@@ -248,7 +246,7 @@ batchSchema.statics.getExpiredBatches = function(warehouseId = null) {
  * @param {boolean} [options.includeExpired] - Whether to include expired batches
  * @returns {Promise<Array>} Array of batches
  */
-batchSchema.statics.findByItemAndWarehouse = function(itemId, warehouseId, options = {}) {
+batchSchema.statics.findByItemAndWarehouse = function (itemId, warehouseId, options = {}) {
   const query = {
     item: itemId,
     warehouse: warehouseId,
@@ -269,7 +267,7 @@ batchSchema.statics.findByItemAndWarehouse = function(itemId, warehouseId, optio
  * @param {string} warehouseId - The warehouse ID
  * @returns {Promise<Array>} Array of expired items with batch details grouped by item
  */
-batchSchema.statics.getExpiredItemsByWarehouse = function(warehouseId) {
+batchSchema.statics.getExpiredItemsByWarehouse = function (warehouseId) {
   return this.aggregate([
     {
       $match: {
@@ -324,9 +322,9 @@ batchSchema.statics.getExpiredItemsByWarehouse = function(warehouseId) {
  * Update batch statuses (should be run periodically)
  * @returns {Promise<Object>} Result of the update operation
  */
-batchSchema.statics.updateBatchStatuses = async function() {
+batchSchema.statics.updateBatchStatuses = async function () {
   const now = new Date();
-  
+
   // Update expired batches
   const expiredResult = await this.updateMany(
     {
@@ -334,13 +332,13 @@ batchSchema.statics.updateBatchStatuses = async function() {
       status: { $ne: 'expired' }
     },
     {
-      $set: { 
+      $set: {
         status: 'expired',
         daysUntilExpiry: 0
       }
     }
   );
-  
+
   // Update active batches
   const activeResult = await this.updateMany(
     {
@@ -362,7 +360,7 @@ batchSchema.statics.updateBatchStatuses = async function() {
       }
     }
   );
-  
+
   return {
     expired: expiredResult.modifiedCount,
     activated: activeResult.modifiedCount
@@ -374,7 +372,7 @@ batchSchema.statics.updateBatchStatuses = async function() {
  * @param {string} itemId - The item ID
  * @returns {Promise<Array>} Array of warehouses with stock levels for the item
  */
-batchSchema.statics.getItemStockByWarehouse = function(itemId) {
+batchSchema.statics.getItemStockByWarehouse = function (itemId) {
   return this.aggregate([
     {
       $match: {

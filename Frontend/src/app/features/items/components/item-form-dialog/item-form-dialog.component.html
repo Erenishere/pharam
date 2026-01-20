@@ -1,0 +1,191 @@
+<div class="item-form-dialog">
+    <div class="dialog-header">
+        <h2 mat-dialog-title>
+            <mat-icon>{{ isEditMode ? 'edit' : 'add_box' }}</mat-icon>
+            {{ isEditMode ? 'Edit Item' : 'Create New Item' }}
+        </h2>
+        <button mat-icon-button mat-dialog-close>
+            <mat-icon>close</mat-icon>
+        </button>
+    </div>
+
+    <mat-dialog-content>
+        <form [formGroup]="itemForm" class="item-form">
+            <!-- Basic Information -->
+            <div class="form-section">
+                <h3>Basic Information</h3>
+                
+                <mat-form-field appearance="outline" class="full-width">
+                    <mat-label>Item Code</mat-label>
+                    <input matInput formControlName="code" placeholder="Enter item code" required>
+                    <mat-icon matPrefix>qr_code</mat-icon>
+                    <mat-error *ngIf="itemForm.get('code')?.hasError('required')">
+                        Item code is required
+                    </mat-error>
+                    <mat-error *ngIf="itemForm.get('code')?.hasError('maxlength')">
+                        Code cannot exceed 20 characters
+                    </mat-error>
+                </mat-form-field>
+
+                <mat-form-field appearance="outline" class="full-width">
+                    <mat-label>Item Name</mat-label>
+                    <input matInput formControlName="name" placeholder="Enter item name" required>
+                    <mat-icon matPrefix>inventory_2</mat-icon>
+                    <mat-error *ngIf="itemForm.get('name')?.hasError('required')">
+                        Item name is required
+                    </mat-error>
+                </mat-form-field>
+
+                <mat-form-field appearance="outline" class="full-width">
+                    <mat-label>Description</mat-label>
+                    <textarea matInput formControlName="description" placeholder="Enter description" rows="3"></textarea>
+                    <mat-icon matPrefix>description</mat-icon>
+                </mat-form-field>
+
+                <div class="form-row">
+                    <mat-form-field appearance="outline" class="half-width">
+                        <mat-label>Category</mat-label>
+                        <mat-select formControlName="category" required>
+                            <mat-option *ngFor="let cat of categories" [value]="cat.value">
+                                <mat-icon>{{ cat.icon }}</mat-icon>
+                                {{ cat.label }}
+                            </mat-option>
+                        </mat-select>
+                        <mat-icon matPrefix>category</mat-icon>
+                        <mat-error *ngIf="itemForm.get('category')?.hasError('required')">
+                            Category is required
+                        </mat-error>
+                    </mat-form-field>
+
+                    <mat-form-field appearance="outline" class="half-width">
+                        <mat-label>Unit</mat-label>
+                        <mat-select formControlName="unit" required>
+                            <mat-option *ngFor="let unit of units" [value]="unit.value">
+                                {{ unit.label }}
+                            </mat-option>
+                        </mat-select>
+                        <mat-icon matPrefix>straighten</mat-icon>
+                        <mat-error *ngIf="itemForm.get('unit')?.hasError('required')">
+                            Unit is required
+                        </mat-error>
+                    </mat-form-field>
+                </div>
+            </div>
+
+            <!-- Pricing Information -->
+            <div class="form-section">
+                <h3>Pricing</h3>
+                
+                <div class="form-row">
+                    <mat-form-field appearance="outline" class="half-width">
+                        <mat-label>Cost Price</mat-label>
+                        <input matInput type="number" formControlName="costPrice" placeholder="0.00" required>
+                        <mat-icon matPrefix>attach_money</mat-icon>
+                        <mat-error *ngIf="itemForm.get('costPrice')?.hasError('required')">
+                            Cost price is required
+                        </mat-error>
+                        <mat-error *ngIf="itemForm.get('costPrice')?.hasError('min')">
+                            Cost price cannot be negative
+                        </mat-error>
+                    </mat-form-field>
+
+                    <mat-form-field appearance="outline" class="half-width">
+                        <mat-label>Sale Price</mat-label>
+                        <input matInput type="number" formControlName="salePrice" placeholder="0.00" required>
+                        <mat-icon matPrefix>sell</mat-icon>
+                        <mat-error *ngIf="itemForm.get('salePrice')?.hasError('required')">
+                            Sale price is required
+                        </mat-error>
+                        <mat-error *ngIf="itemForm.get('salePrice')?.hasError('min')">
+                            Sale price cannot be negative
+                        </mat-error>
+                    </mat-form-field>
+                </div>
+
+                <div class="form-row">
+                    <mat-form-field appearance="outline" class="third-width">
+                        <mat-label>Currency</mat-label>
+                        <input matInput formControlName="currency" placeholder="PKR" required>
+                        <mat-icon matPrefix>currency_exchange</mat-icon>
+                    </mat-form-field>
+
+                    <mat-form-field appearance="outline" class="third-width">
+                        <mat-label>GST Rate (%)</mat-label>
+                        <input matInput type="number" formControlName="gstRate" placeholder="0">
+                        <mat-icon matPrefix>percent</mat-icon>
+                    </mat-form-field>
+
+                    <mat-form-field appearance="outline" class="third-width">
+                        <mat-label>WHT Rate (%)</mat-label>
+                        <input matInput type="number" formControlName="whtRate" placeholder="0">
+                        <mat-icon matPrefix>percent</mat-icon>
+                    </mat-form-field>
+                </div>
+            </div>
+
+            <!-- Inventory Information -->
+            <div class="form-section">
+                <h3>Inventory</h3>
+                
+                <div class="form-row">
+                    <mat-form-field appearance="outline" class="third-width">
+                        <mat-label>Current Stock</mat-label>
+                        <input matInput type="number" formControlName="currentStock" placeholder="0">
+                        <mat-icon matPrefix>inventory</mat-icon>
+                    </mat-form-field>
+
+                    <mat-form-field appearance="outline" class="third-width">
+                        <mat-label>Minimum Stock</mat-label>
+                        <input matInput type="number" formControlName="minimumStock" placeholder="0">
+                        <mat-icon matPrefix>warning</mat-icon>
+                    </mat-form-field>
+
+                    <mat-form-field appearance="outline" class="third-width">
+                        <mat-label>Maximum Stock</mat-label>
+                        <input matInput type="number" formControlName="maximumStock" placeholder="1000">
+                        <mat-icon matPrefix>check_circle</mat-icon>
+                    </mat-form-field>
+                </div>
+            </div>
+
+            <!-- Additional Information -->
+            <div class="form-section">
+                <h3>Additional Information</h3>
+                
+                <div class="form-row">
+                    <mat-form-field appearance="outline" class="half-width">
+                        <mat-label>Barcode</mat-label>
+                        <input matInput formControlName="barcode" placeholder="Enter barcode">
+                        <mat-icon matPrefix>barcode</mat-icon>
+                    </mat-form-field>
+
+                    <mat-form-field appearance="outline" class="half-width">
+                        <mat-label>Pack Size</mat-label>
+                        <input matInput type="number" formControlName="packSize" placeholder="1">
+                        <mat-icon matPrefix>package</mat-icon>
+                    </mat-form-field>
+                </div>
+            </div>
+
+            <div class="status-toggle">
+                <mat-slide-toggle formControlName="isActive" color="primary">
+                    <span class="toggle-label">
+                        <mat-icon>{{ itemForm.get('isActive')?.value ? 'check_circle' : 'cancel' }}</mat-icon>
+                        {{ itemForm.get('isActive')?.value ? 'Active' : 'Inactive' }}
+                    </span>
+                </mat-slide-toggle>
+            </div>
+        </form>
+    </mat-dialog-content>
+
+    <mat-dialog-actions align="end">
+        <button mat-button mat-dialog-close [disabled]="saving">
+            Cancel
+        </button>
+        <button mat-raised-button color="primary" (click)="onSubmit()" [disabled]="itemForm.invalid || saving">
+            <mat-spinner *ngIf="saving" diameter="20"></mat-spinner>
+            <mat-icon *ngIf="!saving">{{ isEditMode ? 'save' : 'add' }}</mat-icon>
+            {{ saving ? 'Saving...' : (isEditMode ? 'Update' : 'Create') }}
+        </button>
+    </mat-dialog-actions>
+</div>

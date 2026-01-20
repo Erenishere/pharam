@@ -1,6 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const itemController = require('../controllers/itemController');
+const batchController = require('../controllers/batchController');
 const { authenticate, authorize } = require('../middleware/auth');
 
 /**
@@ -415,5 +416,9 @@ router.patch('/:id/stock', authenticate, authorize(['admin', 'inventory_manager'
  *         description: Warehouse or item not found
  */
 router.post('/transfer', authenticate, authorize(['admin', 'inventory_manager']), itemController.transferStock);
+
+// Batch related item routes
+router.get('/:itemId/next-batch-number', authenticate, batchController.getNextBatchNumber);
+router.get('/:itemId/batches', authenticate, batchController.getBatchesByItem);
 
 module.exports = router;

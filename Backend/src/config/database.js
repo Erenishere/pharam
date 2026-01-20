@@ -37,10 +37,10 @@ class Database {
       });
 
       return this.connection;
-    } catch (error) {
-      console.error('Database connection failed:', error.message);
-      process.exit(1);
-    }
+      } catch (error) {
+        console.error('Database connection failed:', error.message);
+        throw error;
+      }
   }
 
   async disconnect() {

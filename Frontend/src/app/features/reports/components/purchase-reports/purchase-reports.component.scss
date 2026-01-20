@@ -1,0 +1,34 @@
+@import 'styles/vuexy-vars';
+@import '../../styles/report-common.scss';
+
+.gst-summary {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: 16px;
+
+  .gst-item {
+    display: flex;
+    justify-content: space-between;
+    padding: 16px;
+    background: $bg-page;
+    border-radius: $radius-card;
+    border: $border-card;
+
+    .gst-label {
+      color: $text-body;
+      font-size: 14px;
+    }
+
+    .gst-value {
+      color: $text-card-title;
+      font-weight: 600;
+      font-size: 16px;
+    }
+  }
+}
+
+.report-tabs {
+  .mat-mdc-tab-body-wrapper {
+    padding-top: 20px;
+  }
+}

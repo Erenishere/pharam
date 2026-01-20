@@ -1,0 +1,231 @@
+/* Custom SweetAlert2 Styles for Notifications */
+
+/* Toast Notifications */
+.custom-swal-toast {
+    font-family: 'Roboto', sans-serif !important;
+    border-radius: 8px !important;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15) !important;
+    border: none !important;
+    min-width: 300px !important;
+
+    .swal2-icon {
+        margin: 0 8px 0 0 !important;
+        width: 24px !important;
+        height: 24px !important;
+        border: none !important;
+
+        &.swal2-success {
+            color: #28a745 !important;
+
+            .swal2-success-ring {
+                border-color: #28a745 !important;
+            }
+        }
+
+        &.swal2-error {
+            color: #dc3545 !important;
+            border-color: #dc3545 !important;
+        }
+
+        &.swal2-warning {
+            color: #ffc107 !important;
+            border-color: #ffc107 !important;
+        }
+
+        &.swal2-info {
+            color: #17a2b8 !important;
+            border-color: #17a2b8 !important;
+        }
+    }
+}
+
+.custom-swal-toast-title {
+    font-size: 14px !important;
+    font-weight: 600 !important;
+    color: #333 !important;
+    margin: 0 !important;
+}
+
+.custom-swal-toast-text {
+    font-size: 13px !important;
+    color: #666 !important;
+    margin: 4px 0 0 0 !important;
+    line-height: 1.4 !important;
+}
+
+.custom-swal-timer-bar {
+    height: 3px !important;
+    background: linear-gradient(90deg, #867cf0, #a855f7) !important;
+}
+
+/* Modal Dialogs */
+.custom-swal-popup {
+    border-radius: 12px !important;
+    padding: 24px !important;
+    font-family: 'Roboto', sans-serif !important;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.12) !important;
+    border: 1px solid rgba(0, 0, 0, 0.08) !important;
+}
+
+.custom-swal-title {
+    font-size: 20px !important;
+    font-weight: 600 !important;
+    color: #333 !important;
+    margin-bottom: 16px !important;
+    text-align: center !important;
+}
+
+.custom-swal-text {
+    font-size: 14px !important;
+    color: #666 !important;
+    line-height: 1.5 !important;
+    text-align: center !important;
+    margin-bottom: 24px !important;
+}
+
+.custom-swal-confirm {
+    background: #867cf0 !important;
+    border: none !important;
+    border-radius: 6px !important;
+    padding: 10px 24px !important;
+    font-weight: 500 !important;
+    font-size: 14px !important;
+    transition: all 0.2s ease !important;
+
+    &:hover {
+        background: #7c6ce8 !important;
+        transform: translateY(-1px) !important;
+    }
+
+    &:focus {
+        box-shadow: 0 0 0 3px rgba(134, 124, 240, 0.3) !important;
+    }
+}
+
+.custom-swal-cancel {
+    background: #6c757d !important;
+    border: none !important;
+    border-radius: 6px !important;
+    padding: 10px 24px !important;
+    font-weight: 500 !important;
+    font-size: 14px !important;
+    transition: all 0.2s ease !important;
+
+    &:hover {
+        background: #5a6268 !important;
+        transform: translateY(-1px) !important;
+    }
+
+    &:focus {
+        box-shadow: 0 0 0 3px rgba(108, 117, 125, 0.3) !important;
+    }
+}
+
+/* Loading Dialog */
+.custom-swal-loading {
+    .swal2-loader {
+        border-color: #867cf0 transparent #867cf0 transparent !important;
+    }
+}
+
+/* Warning/Error Dialogs */
+.swal2-popup.swal2-modal {
+    &.swal2-icon-warning {
+        .swal2-icon.swal2-warning {
+            color: #ff9800 !important;
+            border-color: #ff9800 !important;
+        }
+    }
+
+    &.swal2-icon-error {
+        .swal2-icon.swal2-error {
+            color: #f44336 !important;
+            border-color: #f44336 !important;
+        }
+    }
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+    .custom-swal-toast {
+        min-width: 280px !important;
+        margin: 8px !important;
+    }
+
+    .custom-swal-popup {
+        margin: 16px !important;
+        padding: 20px !important;
+        width: calc(100% - 32px) !important;
+        max-width: none !important;
+    }
+
+    .custom-swal-title {
+        font-size: 18px !important;
+    }
+
+    .custom-swal-text {
+        font-size: 13px !important;
+    }
+}
+
+/* Dark Mode Support (if needed) */
+@media (prefers-color-scheme: dark) {
+    .custom-swal-popup {
+        background: #2d3748 !important;
+        color: #e2e8f0 !important;
+    }
+
+    .custom-swal-title {
+        color: #f7fafc !important;
+    }
+
+    .custom-swal-text {
+        color: #cbd5e0 !important;
+    }
+
+    .custom-swal-toast {
+        background: #2d3748 !important;
+        color: #e2e8f0 !important;
+    }
+
+    .custom-swal-toast-title {
+        color: #f7fafc !important;
+    }
+
+    .custom-swal-toast-text {
+        color: #cbd5e0 !important;
+    }
+}
+
+/* Animation Enhancements */
+.swal2-show {
+    animation: swal2-show 0.3s ease-out !important;
+}
+
+.swal2-hide {
+    animation: swal2-hide 0.15s ease-in !important;
+}
+
+@keyframes swal2-show {
+    0% {
+        transform: scale(0.7) translateY(-20px);
+        opacity: 0;
+    }
+
+    100% {
+        transform: scale(1) translateY(0);
+        opacity: 1;
+    }
+}
+
+@keyframes swal2-hide {
+    0% {
+        transform: scale(1) translateY(0);
+        opacity: 1;
+    }
+
+    100% {
+        transform: scale(0.9) translateY(-10px);
+        opacity: 0;
+    }
+}

@@ -1,0 +1,119 @@
+@import 'styles/vuexy-vars';
+@import '../../styles/report-common.scss';
+
+$purple: #7367F0;
+
+.financial-statement {
+  max-width: 600px;
+
+  .statement-section {
+    margin-bottom: 20px;
+    padding: 16px;
+    background: $bg-page;
+    border-radius: $radius-card;
+
+    h3 {
+      font-size: 14px;
+      font-weight: 600;
+      color: $text-card-title;
+      margin: 0 0 12px 0;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    &.highlight {
+      background: rgba($purple, 0.08);
+      border: 1px solid rgba($purple, 0.2);
+    }
+
+    &.success {
+      background: rgba($success, 0.08);
+      border: 1px solid rgba($success, 0.2);
+    }
+  }
+
+  .line-item {
+    display: flex;
+    justify-content: space-between;
+    padding: 8px 0;
+    font-size: 14px;
+    color: $text-body;
+
+    &.total {
+      font-weight: 600;
+      font-size: 16px;
+      color: $text-card-title;
+      border-top: 1px solid #ddd;
+      padding-top: 12px;
+      margin-top: 8px;
+    }
+
+    .amount {
+      font-weight: 600;
+      
+      &.positive { color: $success; }
+      &.negative { color: $danger; }
+    }
+
+    .percent {
+      color: $purple;
+      font-weight: 500;
+    }
+  }
+}
+
+.balance-sheet-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 20px;
+
+  .bs-section {
+    padding: 20px;
+    background: $bg-page;
+    border-radius: $radius-card;
+    border: $border-card;
+
+    h3 {
+      font-size: 16px;
+      font-weight: 600;
+      color: $text-card-title;
+      margin: 0 0 16px 0;
+      padding-bottom: 12px;
+      border-bottom: 2px solid $purple;
+    }
+
+    .line-item {
+      display: flex;
+      justify-content: space-between;
+      padding: 10px 0;
+      font-size: 14px;
+      color: $text-body;
+      border-bottom: 1px dashed #eee;
+
+      &:last-child {
+        border-bottom: none;
+      }
+
+      &.total {
+        font-weight: 600;
+        font-size: 15px;
+        color: $text-card-title;
+        background: rgba($purple, 0.05);
+        margin: 12px -12px -12px;
+        padding: 12px;
+        border-radius: 0 0 6px 6px;
+      }
+
+      .amount {
+        font-weight: 500;
+        color: $text-card-title;
+      }
+    }
+  }
+}
+
+.report-tabs {
+  .mat-mdc-tab-body-wrapper {
+    padding-top: 20px;
+  }
+}

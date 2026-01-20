@@ -1,0 +1,29 @@
+<div class="reports-dashboard">
+  <div class="dashboard-header">
+    <h1>Reports & Analytics</h1>
+    <p class="subtitle">Comprehensive business insights and reporting</p>
+  </div>
+
+  <div class="reports-grid">
+    @for (category of reportCategories; track category.title) {
+      <div class="report-card" [routerLink]="category.route">
+        <div class="card-icon" [ngClass]="category.color">
+          <mat-icon>{{ category.icon }}</mat-icon>
+        </div>
+        <div class="card-content">
+          <h2>{{ category.title }}</h2>
+          <p class="description">{{ category.description }}</p>
+          <div class="report-list">
+            @for (report of category.reports.slice(0, 4); track report) {
+              <span class="report-tag">{{ report }}</span>
+            }
+            @if (category.reports.length > 4) {
+              <span class="more-tag">+{{ category.reports.length - 4 }} more</span>
+            }
+          </div>
+        </div>
+        <mat-icon class="arrow-icon">chevron_right</mat-icon>
+      </div>
+    }
+  </div>
+</div>

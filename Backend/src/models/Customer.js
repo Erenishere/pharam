@@ -159,7 +159,9 @@ customerSchema.index({ isActive: 1 });
 customerSchema.index({ 'contactInfo.city': 1 });
 customerSchema.index({ 'contactInfo.town': 1 });
 customerSchema.index({ 'financialInfo.creditLimit': 1 });
-customerSchema.index({ dueInvoiceQty: 1 }); // Phase 2 - Due invoice tracking
+customerSchema.index({ dueInvoiceQty: 1 });
+customerSchema.index({ name: 'text', code: 'text', 'contactInfo.phone': 'text', 'contactInfo.email': 'text' });
+customerSchema.index({ code: 1, name: 1, isActive: 1 });
 
 // Virtual for full contact info
 customerSchema.virtual('fullAddress').get(function () {

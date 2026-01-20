@@ -1,5 +1,6 @@
 const express = require('express');
 const warehouseController = require('../controllers/warehouseController');
+const batchController = require('../controllers/batchController');
 const auth = require('../middleware/auth');
 
 const router = express.Router();
@@ -24,5 +25,6 @@ router
 
 router.patch('/:id/toggle-status', warehouseController.toggleWarehouseStatus);
 router.get('/statistics', warehouseController.getWarehouseStatistics);
+router.get('/:id/batches', batchController.getBatchesByLocation);
 
 module.exports = router;

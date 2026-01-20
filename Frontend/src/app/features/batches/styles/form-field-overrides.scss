@@ -1,0 +1,225 @@
+// Form Field Overrides for Batch Management
+// This file ensures all form fields have visible #7367F0 borders and placeholders
+
+@import './batch-enhanced-theme';
+
+// Global form field overrides for batch management
+.batch-management-module,
+.expiry-tracker-container,
+.filters-card {
+
+    // Target all Material form fields
+    .mat-mdc-form-field {
+
+        // Force visible borders with #7367F0 color
+        .mdc-notched-outline {
+
+            .mdc-notched-outline__leading,
+            .mdc-notched-outline__notch,
+            .mdc-notched-outline__trailing {
+                border-color: $batch-primary !important;
+                border-width: 1px !important;
+                border-style: solid !important;
+            }
+        }
+
+        // Enhanced focus state
+        &.mat-focused {
+            .mdc-notched-outline {
+
+                .mdc-notched-outline__leading,
+                .mdc-notched-outline__notch,
+                .mdc-notched-outline__trailing {
+                    border-color: $batch-primary !important;
+                    border-width: 2px !important;
+                }
+            }
+        }
+
+        // Hover state
+        &:hover:not(.mat-focused) {
+            .mdc-notched-outline {
+
+                .mdc-notched-outline__leading,
+                .mdc-notched-outline__notch,
+                .mdc-notched-outline__trailing {
+                    border-color: $batch-primary !important;
+                }
+            }
+        }
+
+        // Label styling - force visibility and #7367F0 color
+        .mat-mdc-floating-label,
+        mat-label {
+            color: $batch-primary !important;
+            opacity: 1 !important;
+            visibility: visible !important;
+            display: block !important;
+        }
+
+        // Input and select styling
+        .mat-mdc-input-element,
+        .mat-mdc-select-trigger {
+            color: $batch-text-primary !important;
+            caret-color: $batch-primary !important;
+        }
+
+        // Placeholder styling with #7367F0
+        .mat-mdc-input-element {
+            &::placeholder {
+                color: $batch-primary !important;
+                opacity: 0.7 !important;
+                font-style: italic !important;
+            }
+
+            &::-webkit-input-placeholder {
+                color: $batch-primary !important;
+                opacity: 0.7 !important;
+                font-style: italic !important;
+            }
+
+            &::-moz-placeholder {
+                color: $batch-primary !important;
+                opacity: 0.7 !important;
+                font-style: italic !important;
+            }
+
+            &:-ms-input-placeholder {
+                color: $batch-primary !important;
+                opacity: 0.7 !important;
+                font-style: italic !important;
+            }
+        }
+
+        // Select placeholder styling
+        .mat-mdc-select-placeholder {
+            color: $batch-primary !important;
+            opacity: 0.7 !important;
+            font-style: italic !important;
+        }
+
+        // Select arrow styling
+        .mat-mdc-select-arrow {
+            color: $batch-primary !important;
+        }
+
+        // Hint text styling
+        .mat-mdc-form-field-hint {
+            color: $batch-text-muted !important;
+        }
+
+        // Error text styling
+        .mat-mdc-form-field-error {
+            color: $batch-status-expired !important;
+        }
+    }
+
+    // Specific targeting for outlined appearance
+    .mat-mdc-form-field.mat-form-field-appearance-outline {
+        .mdc-notched-outline {
+
+            .mdc-notched-outline__leading,
+            .mdc-notched-outline__notch,
+            .mdc-notched-outline__trailing {
+                border-color: $batch-primary !important;
+                border-width: 1px !important;
+            }
+        }
+
+        &.mat-focused {
+            .mdc-notched-outline {
+
+                .mdc-notched-outline__leading,
+                .mdc-notched-outline__notch,
+                .mdc-notched-outline__trailing {
+                    border-color: $batch-primary !important;
+                    border-width: 2px !important;
+                }
+            }
+        }
+    }
+
+    // CSS Custom Properties override
+    .mat-mdc-form-field {
+        --mdc-outlined-text-field-outline-color: #{$batch-primary} !important;
+        --mdc-outlined-text-field-focus-outline-color: #{$batch-primary} !important;
+        --mdc-outlined-text-field-hover-outline-color: #{$batch-primary} !important;
+        --mdc-outlined-text-field-label-text-color: #{$batch-primary} !important;
+        --mdc-outlined-text-field-focus-label-text-color: #{$batch-primary} !important;
+        --mat-form-field-label-text-color: #{$batch-primary} !important;
+        --mat-form-field-focus-label-text-color: #{$batch-primary} !important;
+        --mdc-outlined-text-field-input-text-placeholder-color: #{$batch-primary} !important;
+    }
+}
+
+// Specific overrides for expiry tracker form fields
+.expiry-tracker-container .config-form .mat-mdc-form-field {
+
+    // Ensure warning period and location filter fields are visible
+    .mdc-notched-outline {
+
+        .mdc-notched-outline__leading,
+        .mdc-notched-outline__notch,
+        .mdc-notched-outline__trailing {
+            border-color: $batch-primary !important;
+            border-width: 1px !important;
+            border-style: solid !important;
+            opacity: 1 !important;
+            visibility: visible !important;
+        }
+    }
+
+    // Force label visibility
+    .mat-mdc-floating-label,
+    mat-label {
+        color: $batch-primary !important;
+        opacity: 1 !important;
+        visibility: visible !important;
+        display: block !important;
+        font-weight: 500 !important;
+    }
+
+    // Force placeholder visibility
+    .mat-mdc-input-element::placeholder,
+    .mat-mdc-select-placeholder {
+        color: $batch-primary !important;
+        opacity: 0.7 !important;
+        font-style: italic !important;
+        visibility: visible !important;
+    }
+}
+
+// Dropdown panel styling
+.mat-mdc-select-panel {
+    background-color: $batch-bg-card !important;
+    border: 1px solid $batch-primary !important;
+    border-radius: 8px !important;
+
+    .mat-mdc-option {
+        color: $batch-text-primary !important;
+
+        &:hover {
+            background-color: rgba($batch-primary, 0.08) !important;
+        }
+
+        &.mat-selected {
+            background-color: rgba($batch-primary, 0.12) !important;
+            color: $batch-primary !important;
+        }
+    }
+}
+
+// Autocomplete panel styling
+.mat-mdc-autocomplete-panel {
+    background-color: $batch-bg-card !important;
+    border: 1px solid $batch-primary !important;
+    border-radius: 8px !important;
+
+    .mat-mdc-option {
+        color: $batch-text-primary !important;
+
+        &:hover {
+            background-color: rgba($batch-primary, 0.08) !important;
+        }
+    }
+}

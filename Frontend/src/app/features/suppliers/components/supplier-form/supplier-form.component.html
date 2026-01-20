@@ -1,0 +1,260 @@
+<div class="supplier-form-dialog">
+    <div class="dialog-header">
+        <h2 mat-dialog-title>
+            <mat-icon>{{ isEditMode ? 'edit' : 'add' }}</mat-icon>
+            {{ isEditMode ? 'Edit Supplier' : 'Create New Supplier' }}
+        </h2>
+        <button mat-icon-button mat-dialog-close>
+            <mat-icon>close</mat-icon>
+        </button>
+    </div>
+
+    <mat-dialog-content>
+        <!-- Error Display -->
+        <div class="form-error" *ngIf="error && !loading">
+            <mat-icon color="warn">error</mat-icon>
+            <span>{{ error }}</span>
+        </div>
+
+        <form [formGroup]="supplierForm" class="supplier-form">
+            
+            <!-- Basic Information Section -->
+            <div class="form-section">
+                <h3 class="section-title">Basic Information</h3>
+                
+                <div class="form-row">
+                    <mat-form-field appearance="outline" class="full-width">
+                        <mat-label>Supplier Code</mat-label>
+                        <input matInput formControlName="code" placeholder="Leave empty for auto-generation">
+                        <mat-icon matPrefix>tag</mat-icon>
+                        <mat-hint>Optional - Auto-generated if left empty</mat-hint>
+                    </mat-form-field>
+                </div>
+
+                <div class="form-row">
+                    <mat-form-field appearance="outline" class="full-width">
+                        <mat-label>Name *</mat-label>
+                        <input matInput formControlName="name" placeholder="Enter supplier name">
+                        <mat-icon matPrefix>business</mat-icon>
+                        <mat-error *ngIf="hasError('name', 'required')">
+                            {{ getErrorMessage('name') }}
+                        </mat-error>
+                        <mat-error *ngIf="hasError('name', 'minlength') || hasError('name', 'maxlength')">
+                            {{ getErrorMessage('name') }}
+                        </mat-error>
+                    </mat-form-field>
+                </div>
+
+                <div class="form-row">
+                    <mat-form-field appearance="outline" class="full-width">
+                        <mat-label>Type *</mat-label>
+                        <mat-select formControlName="type">
+                            <mat-option *ngFor="let type of types" [value]="type.value">
+                                {{ type.label }}
+                            </mat-option>
+                        </mat-select>
+                        <mat-icon matPrefix>category</mat-icon>
+                    </mat-form-field>
+                </div>
+
+                <div class="form-row">
+                    <mat-form-field appearance="outline" class="full-width">
+                        <mat-label>Route</mat-label>
+                        <input matInput formControlName="route" placeholder="Enter route">
+                        <mat-icon matPrefix>route</mat-icon>
+                    </mat-form-field>
+                </div>
+            </div>
+
+            <mat-divider></mat-divider>
+
+            <!-- Contact Information Section -->
+            <div class="form-section" formGroupName="contactInfo">
+                <h3 class="section-title">Contact Information</h3>
+                
+                <div class="form-row">
+                    <mat-form-field appearance="outline" class="full-width">
+                        <mat-label>Phone</mat-label>
+                        <input matInput formControlName="phone" placeholder="Enter phone number">
+                        <mat-icon matPrefix>phone</mat-icon>
+                        <mat-error *ngIf="hasError('contactInfo.phone', 'maxlength')">
+                            {{ getErrorMessage('contactInfo.phone') }}
+                        </mat-error>
+                    </mat-form-field>
+                </div>
+
+                <div class="form-row">
+                    <mat-form-field appearance="outline" class="full-width">
+                        <mat-label>Email</mat-label>
+                        <input matInput type="email" formControlName="email" placeholder="Enter email address">
+                        <mat-icon matPrefix>email</mat-icon>
+                        <mat-error *ngIf="hasError('contactInfo.email', 'email')">
+                            {{ getErrorMessage('contactInfo.email') }}
+                        </mat-error>
+                    </mat-form-field>
+                </div>
+
+                <div class="form-row">
+                    <mat-form-field appearance="outline" class="full-width">
+                        <mat-label>Address</mat-label>
+                        <textarea matInput formControlName="address" placeholder="Enter address" rows="2"></textarea>
+                        <mat-icon matPrefix>location_on</mat-icon>
+                        <mat-error *ngIf="hasError('contactInfo.address', 'maxlength')">
+                            {{ getErrorMessage('contactInfo.address') }}
+                        </mat-error>
+                    </mat-form-field>
+                </div>
+
+                <div class="form-row two-columns">
+                    <mat-form-field appearance="outline">
+                        <mat-label>City</mat-label>
+                        <input matInput formControlName="city" placeholder="Enter city">
+                        <mat-icon matPrefix>location_city</mat-icon>
+                    </mat-form-field>
+
+                    <mat-form-field appearance="outline">
+                        <mat-label>Country</mat-label>
+                        <input matInput formControlName="country" placeholder="Enter country">
+                        <mat-icon matPrefix>public</mat-icon>
+                    </mat-form-field>
+                </div>
+            </div>
+
+            <mat-divider></mat-divider>
+
+            <!-- Financial Information Section -->
+            <div class="form-section" formGroupName="financialInfo">
+                <h3 class="section-title">Financial Information</h3>
+                
+                <div class="form-row two-columns">
+                    <mat-form-field appearance="outline">
+                        <mat-label>Credit Limit</mat-label>
+                        <input matInput type="number" formControlName="creditLimit" placeholder="0">
+                        <mat-icon matPrefix>account_balance</mat-icon>
+                        <mat-error *ngIf="hasError('financialInfo.creditLimit', 'min')">
+                            {{ getErrorMessage('financialInfo.creditLimit') }}
+                        </mat-error>
+                    </mat-form-field>
+
+                    <mat-form-field appearance="outline">
+                        <mat-label>Payment Terms (days)</mat-label>
+                        <input matInput type="number" formControlName="paymentTerms" placeholder="30">
+                        <mat-icon matPrefix>calendar_today</mat-icon>
+                        <mat-error *ngIf="hasError('financialInfo.paymentTerms', 'min') || hasError('financialInfo.paymentTerms', 'max')">
+                            {{ getErrorMessage('financialInfo.paymentTerms') }}
+                        </mat-error>
+                    </mat-form-field>
+                </div>
+
+                <div class="form-row two-columns">
+                    <mat-form-field appearance="outline">
+                        <mat-label>Credit Days</mat-label>
+                        <input matInput type="number" formControlName="creditDays" placeholder="0">
+                        <mat-icon matPrefix>event</mat-icon>
+                        <mat-error *ngIf="hasError('financialInfo.creditDays', 'min') || hasError('financialInfo.creditDays', 'max')">
+                            {{ getErrorMessage('financialInfo.creditDays') }}
+                        </mat-error>
+                    </mat-form-field>
+
+                    <mat-form-field appearance="outline">
+                        <mat-label>Currency</mat-label>
+                        <mat-select formControlName="currency">
+                            <mat-option *ngFor="let currency of currencies" [value]="currency">
+                                {{ currency }}
+                            </mat-option>
+                        </mat-select>
+                        <mat-icon matPrefix>attach_money</mat-icon>
+                    </mat-form-field>
+                </div>
+
+                <div class="form-row two-columns">
+                    <mat-form-field appearance="outline">
+                        <mat-label>WHT Percent</mat-label>
+                        <input matInput type="number" formControlName="whtPercent" placeholder="0">
+                        <mat-icon matPrefix>percent</mat-icon>
+                        <mat-error *ngIf="hasError('financialInfo.whtPercent', 'min') || hasError('financialInfo.whtPercent', 'max')">
+                            {{ getErrorMessage('financialInfo.whtPercent') }}
+                        </mat-error>
+                    </mat-form-field>
+
+                    <mat-form-field appearance="outline">
+                        <mat-label>Advance Tax Rate</mat-label>
+                        <mat-select formControlName="advanceTaxRate">
+                            <mat-option *ngFor="let rate of advanceTaxRates" [value]="rate">
+                                {{ rate }}%
+                            </mat-option>
+                        </mat-select>
+                        <mat-icon matPrefix>calculate</mat-icon>
+                    </mat-form-field>
+                </div>
+
+                <div class="form-row">
+                    <mat-form-field appearance="outline" class="full-width">
+                        <mat-label>Tax Number</mat-label>
+                        <input matInput formControlName="taxNumber" placeholder="Enter tax number">
+                        <mat-icon matPrefix>receipt</mat-icon>
+                    </mat-form-field>
+                </div>
+
+                <div class="form-row two-columns">
+                    <mat-form-field appearance="outline">
+                        <mat-label>NTN</mat-label>
+                        <input matInput formControlName="ntn" placeholder="Enter NTN">
+                        <mat-icon matPrefix>badge</mat-icon>
+                    </mat-form-field>
+
+                    <mat-form-field appearance="outline">
+                        <mat-label>STRN</mat-label>
+                        <input matInput formControlName="strn" placeholder="Enter STRN">
+                        <mat-icon matPrefix>badge</mat-icon>
+                    </mat-form-field>
+                </div>
+
+                <div class="form-row two-columns">
+                    <mat-form-field appearance="outline">
+                        <mat-label>License No</mat-label>
+                        <input matInput formControlName="licenseNo" placeholder="Enter license number">
+                        <mat-icon matPrefix>card_membership</mat-icon>
+                    </mat-form-field>
+
+                    <mat-form-field appearance="outline">
+                        <mat-label>SRB No</mat-label>
+                        <input matInput formControlName="srbNo" placeholder="Enter SRB number">
+                        <mat-icon matPrefix>card_membership</mat-icon>
+                    </mat-form-field>
+                </div>
+
+                <div class="form-row">
+                    <mat-form-field appearance="outline" class="full-width">
+                        <mat-label>NIC Number</mat-label>
+                        <input matInput formControlName="nicNumber" placeholder="Enter NIC number">
+                        <mat-icon matPrefix>credit_card</mat-icon>
+                    </mat-form-field>
+                </div>
+
+                <div class="form-row">
+                    <mat-checkbox formControlName="isNonFiler" color="primary">
+                        Non-Filer
+                    </mat-checkbox>
+                </div>
+            </div>
+
+        </form>
+    </mat-dialog-content>
+
+    <mat-dialog-actions align="end">
+        <button mat-button (click)="onCancel()" [disabled]="loading">
+            <mat-icon>close</mat-icon>
+            Cancel
+        </button>
+        <button 
+            mat-raised-button 
+            color="primary" 
+            (click)="onSubmit()" 
+            [disabled]="loading || supplierForm.invalid">
+            <mat-spinner diameter="20" *ngIf="loading"></mat-spinner>
+            <mat-icon *ngIf="!loading">{{ isEditMode ? 'save' : 'add' }}</mat-icon>
+            {{ loading ? 'Saving...' : (isEditMode ? 'Update' : 'Create') }}
+        </button>
+    </mat-dialog-actions>
+</div>

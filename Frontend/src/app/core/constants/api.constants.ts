@@ -1,5 +1,7 @@
+import { environment } from '../../../environments/environment';
+
 export const API_CONFIG = {
-    BASE_URL: 'http://localhost:3000/api/v1',
+    BASE_URL: environment.apiUrl,
     ENDPOINTS: {
         AUTH: {
             LOGIN: '/auth/login',
@@ -28,6 +30,15 @@ export const API_CONFIG = {
             TOGGLE_STATUS: (id: string) => `/customers/${id}/toggle-status`,
             RESTORE: (id: string) => `/customers/${id}/restore`,
             STATISTICS: '/customers/statistics'
+        },
+        SUPPLIERS: {
+            BASE: '/suppliers',
+            BY_ID: (id: string) => `/suppliers/${id}`,
+            BY_CODE: (code: string) => `/suppliers/code/${code}`,
+            BY_TYPE: (type: string) => `/suppliers/type/${type}`,
+            TOGGLE_STATUS: (id: string) => `/suppliers/${id}/toggle-status`,
+            RESTORE: (id: string) => `/suppliers/${id}/restore`,
+            STATISTICS: '/suppliers/statistics'
         }
     }
 };

@@ -91,23 +91,33 @@ class AuthService {
    * @throws {Error} If authentication fails
    */
   async authenticate(identifier, password) {
+    console.log('[AuthService] authenticate() called with identifier:', identifier);
+
     // Find user by username or email
     const user = await User.findOne({
       $or: [{ username: identifier }, { email: identifier }],
     });
 
+    console.log('[AuthService] User found:', user ? 'YES' : 'NO');
+
     if (!user) {
+      console.log('[AuthService] No user found with identifier:', identifier);
       throw new Error('Invalid credentials');
     }
 
     // Check if user is active
     if (!user.isActive) {
+      console.log('[AuthService] User is inactive:', user.username);
       throw new Error('User account is inactive');
     }
 
     // Verify password
+    console.log('[AuthService] Verifying password...');
     const isPasswordValid = await user.comparePassword(password);
+    console.log('[AuthService] Password valid:', isPasswordValid);
+
     if (!isPasswordValid) {
+      console.log('[AuthService] Invalid password for:', identifier);
       throw new Error('Invalid credentials');
     }
 
@@ -123,6 +133,8 @@ class AuthService {
     const refreshToken = this.generateRefreshToken({
       userId: user._id,
     });
+
+    console.log('[AuthService] Authentication successful for:', identifier);
 
     return {
       user: user.toJSON(),

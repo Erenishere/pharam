@@ -1,0 +1,34 @@
+@import 'styles/vuexy-vars';
+@import '../../styles/report-common.scss';
+
+.turnover-summary {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: 16px;
+
+  .turnover-item {
+    display: flex;
+    justify-content: space-between;
+    padding: 20px;
+    background: $bg-page;
+    border-radius: $radius-card;
+    border: $border-card;
+
+    .label {
+      color: $text-body;
+      font-size: 14px;
+    }
+
+    .value {
+      color: $primary;
+      font-weight: 600;
+      font-size: 18px;
+    }
+  }
+}
+
+.report-tabs {
+  .mat-mdc-tab-body-wrapper {
+    padding-top: 20px;
+  }
+}

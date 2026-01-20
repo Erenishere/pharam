@@ -42,6 +42,7 @@ class BatchService {
       unitCost,
       totalCost: quantity * unitCost,
       location: locationId,
+      warehouse: locationId,
       status: 'active'
     });
 
@@ -86,6 +87,16 @@ class BatchService {
   }
 
   /**
+   * Get all batches with filtering and pagination
+   * @param {Object} [filters] - Filter criteria
+   * @param {Object} [pagination] - Pagination options
+   * @returns {Promise<Object>} Object with batches array and pagination info
+   */
+  async getAllBatches(filters = {}, pagination = {}) {
+    return batchRepository.findAll(filters, pagination);
+  }
+
+  /**
    * Update batch
    * @param {string} id - Batch ID
    * @param {Object} updateData - Update data
@@ -93,44 +104,44 @@ class BatchService {
    */
   async updateBatch(id, updateData) {
     const batch = await this.getBatchById(id);
-    
+
     // Prevent certain fields from being updated
     const { quantity, remainingQuantity, totalCost, ...safeUpdates } = updateData;
-    
+
     // If unitCost is being updated, recalculate totalCost
     if (safeUpdates.unitCost !== undefined) {
       safeUpdates.totalCost = batch.quantity * safeUpdates.unitCost;
     }
-    
+
     // If expiryDate is being updated, validate it
     if (safeUpdates.expiryDate) {
       const expiryDate = new Date(safeUpdates.expiryDate);
       if (isNaN(expiryDate.getTime())) {
         throw new Error('Invalid expiry date');
       }
-      
+
       // If batch has manufacturingDate, ensure expiry is after manufacturing
       if (batch.manufacturingDate && expiryDate <= batch.manufacturingDate) {
         throw new Error('Expiry date must be after manufacturing date');
       }
     }
-    
+
     // If manufacturingDate is being updated, validate it
     if (safeUpdates.manufacturingDate) {
       const manufacturingDate = new Date(safeUpdates.manufacturingDate);
       if (isNaN(manufacturingDate.getTime())) {
         throw new Error('Invalid manufacturing date');
       }
-      
+
       // If batch has expiryDate, ensure manufacturing is before expiry
       if (batch.expiryDate && manufacturingDate >= batch.expiryDate) {
         throw new Error('Manufacturing date must be before expiry date');
       }
     }
-    
+
     // Update batch
     const updatedBatch = await batchRepository.update(id, safeUpdates);
-    
+
     // If location is being updated, adjust inventory
     if (safeUpdates.locationId && safeUpdates.locationId !== batch.location?.toString()) {
       // Remove from old location
@@ -147,7 +158,7 @@ class BatchService {
           }
         );
       }
-      
+
       // Add to new location
       await inventoryService.addStock(
         batch.item._id,
@@ -161,7 +172,7 @@ class BatchService {
         }
       );
     }
-    
+
     return updatedBatch;
   }
 
@@ -172,12 +183,12 @@ class BatchService {
    */
   async deleteBatch(id) {
     const batch = await this.getBatchById(id);
-    
+
     // Check if batch has remaining quantity
     if (batch.remainingQuantity > 0) {
       throw new Error('Cannot delete batch with remaining quantity');
     }
-    
+
     return batchRepository.delete(id);
   }
 
@@ -257,15 +268,15 @@ class BatchService {
    */
   async updateBatchQuantity(id, quantity, options = {}) {
     const batch = await this.getBatchById(id);
-    
+
     // If removing stock, check if enough is available
     if (quantity < 0 && Math.abs(quantity) > batch.remainingQuantity) {
       throw new Error('Insufficient quantity in batch');
     }
-    
+
     // Update batch quantity
     await batchRepository.updateQuantity(id, quantity);
-    
+
     // Update inventory if location is set
     if (batch.location) {
       if (quantity > 0) {
@@ -294,7 +305,7 @@ class BatchService {
         );
       }
     }
-    
+
     return this.getBatchById(id);
   }
 
@@ -323,21 +334,21 @@ class BatchService {
   async getNextBatchNumber(itemId) {
     // Get the item to use its code in the batch number
     const item = await itemService.getItemById(itemId);
-    
+
     // Format: ITEM-CODE-YYYYMMDD-XXX
     const date = new Date();
     const dateStr = `${date.getFullYear()}${String(date.getMonth() + 1).padStart(2, '0')}${String(date.getDate()).padStart(2, '0')}`;
-    
+
     // Find the highest sequence number for today
     const today = new Date();
     today.setHours(0, 0, 0, 0);
-    
+
     const batches = await batchRepository.findByItemId(itemId);
     const todayBatches = batches.filter(batch => {
       const batchDate = new Date(batch.createdAt);
       return batchDate >= today && batch.batchNumber.startsWith(`${item.code}-${dateStr}`);
     });
-    
+
     const sequence = String(todayBatches.length + 1).padStart(3, '0');
     return `${item.code}-${dateStr}-${sequence}`;
   }

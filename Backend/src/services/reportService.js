@@ -4,6 +4,18 @@ const Customer = require('../models/Customer');
 const Supplier = require('../models/Supplier');
 const Budget = require('../models/Budget');
 
+const normalizeStartDate = (dateStr) => {
+  const date = new Date(dateStr);
+  date.setHours(0, 0, 0, 0);
+  return date;
+};
+
+const normalizeEndDate = (dateStr) => {
+  const date = new Date(dateStr);
+  date.setHours(23, 59, 59, 999);
+  return date;
+};
+
 /**
  * Report Service
  * Handles business logic for report generation
@@ -23,7 +35,7 @@ class ReportService {
 
     const query = {
       type: 'sales',
-      invoiceDate: { $gte: new Date(startDate), $lte: new Date(endDate) },
+      invoiceDate: { $gte: normalizeStartDate(startDate), $lte: normalizeEndDate(endDate) },
       status: { $ne: 'cancelled' },
     };
 
@@ -43,9 +55,20 @@ class ReportService {
 
     const summary = {
       totalInvoices: invoices.length,
-      totalAmount: invoices.reduce((sum, inv) => sum + inv.totals.grandTotal, 0),
-      totalDiscount: invoices.reduce((sum, inv) => sum + inv.totals.totalDiscount, 0),
-      totalTax: invoices.reduce((sum, inv) => sum + inv.totals.totalTax, 0),
+      totalAmount: invoices.reduce((sum, inv) => {
+        let grandTotal = inv.totals?.grandTotal;
+        if (!grandTotal && grandTotal !== 0) {
+          // Heuristic 1: Reconstruct from totals
+          grandTotal = (inv.totals?.subtotal || 0) + (inv.totals?.totalTax || 0) - (inv.totals?.totalDiscount || 0);
+          // Heuristic 2: Sum from items (Ultimate fallback)
+          if (!grandTotal && grandTotal !== 0 && inv.items?.length > 0) {
+            grandTotal = inv.items.reduce((s, i) => s + (i.lineTotal || 0), 0) + (inv.totals?.totalTax || 0);
+          }
+        }
+        return sum + (grandTotal || 0);
+      }, 0),
+      totalDiscount: invoices.reduce((sum, inv) => sum + (inv.totals?.totalDiscount || 0), 0),
+      totalTax: invoices.reduce((sum, inv) => sum + (inv.totals?.totalTax || 0), 0),
     };
 
     let groupedData = [];
@@ -82,7 +105,7 @@ class ReportService {
 
     const query = {
       type: 'purchase',
-      invoiceDate: { $gte: new Date(startDate), $lte: new Date(endDate) },
+      invoiceDate: { $gte: normalizeStartDate(startDate), $lte: normalizeEndDate(endDate) },
       status: { $ne: 'cancelled' },
     };
 
@@ -97,9 +120,13 @@ class ReportService {
 
     const summary = {
       totalInvoices: invoices.length,
-      totalAmount: invoices.reduce((sum, inv) => sum + inv.totals.grandTotal, 0),
-      totalDiscount: invoices.reduce((sum, inv) => sum + inv.totals.totalDiscount, 0),
-      totalTax: invoices.reduce((sum, inv) => sum + inv.totals.totalTax, 0),
+      totalAmount: invoices.reduce((sum, inv) => {
+        const grandTotal = inv.totals?.grandTotal ||
+          ((inv.totals?.subtotal || 0) + (inv.totals?.totalTax || 0) - (inv.totals?.totalDiscount || 0));
+        return sum + grandTotal;
+      }, 0),
+      totalDiscount: invoices.reduce((sum, inv) => sum + (inv.totals?.totalDiscount || 0), 0),
+      totalTax: invoices.reduce((sum, inv) => sum + (inv.totals?.totalTax || 0), 0),
     };
 
     let groupedData = [];
@@ -186,9 +213,9 @@ class ReportService {
       }
 
       grouped[customerId].invoiceCount++;
-      grouped[customerId].totalAmount += invoice.totals.grandTotal;
-      grouped[customerId].totalDiscount += invoice.totals.totalDiscount;
-      grouped[customerId].totalTax += invoice.totals.totalTax;
+      grouped[customerId].totalAmount += (invoice.totals?.grandTotal || 0);
+      grouped[customerId].totalDiscount += (invoice.totals?.totalDiscount || 0);
+      grouped[customerId].totalTax += (invoice.totals?.totalTax || 0);
     });
 
     return Object.values(grouped);
@@ -214,9 +241,9 @@ class ReportService {
       }
 
       grouped[supplierId].invoiceCount++;
-      grouped[supplierId].totalAmount += invoice.totals.grandTotal;
-      grouped[supplierId].totalDiscount += invoice.totals.totalDiscount;
-      grouped[supplierId].totalTax += invoice.totals.totalTax;
+      grouped[supplierId].totalAmount += (invoice.totals?.grandTotal || 0);
+      grouped[supplierId].totalDiscount += (invoice.totals?.totalDiscount || 0);
+      grouped[supplierId].totalTax += (invoice.totals?.totalTax || 0);
     });
 
     return Object.values(grouped);
@@ -241,8 +268,8 @@ class ReportService {
           };
         }
 
-        grouped[itemId].quantity += item.quantity;
-        grouped[itemId].totalAmount += item.lineTotal;
+        grouped[itemId].quantity += (item.quantity || 0);
+        grouped[itemId].totalAmount += (item.lineTotal || 0);
         grouped[itemId].invoiceCount++;
       });
     });
@@ -270,9 +297,9 @@ class ReportService {
       }
 
       grouped[dateKey].invoiceCount++;
-      grouped[dateKey].totalAmount += invoice.totals.grandTotal;
-      grouped[dateKey].totalDiscount += invoice.totals.totalDiscount;
-      grouped[dateKey].totalTax += invoice.totals.totalTax;
+      grouped[dateKey].totalAmount += (invoice.totals?.grandTotal || 0);
+      grouped[dateKey].totalDiscount += (invoice.totals?.totalDiscount || 0);
+      grouped[dateKey].totalTax += (invoice.totals?.totalTax || 0);
     });
 
     return Object.values(grouped).sort((a, b) => a.date.localeCompare(b.date));
@@ -302,10 +329,10 @@ class ReportService {
       }
 
       grouped[salesmanKey].invoiceCount++;
-      grouped[salesmanKey].totalAmount += invoice.totals.grandTotal;
-      grouped[salesmanKey].totalDiscount += invoice.totals.totalDiscount;
-      grouped[salesmanKey].totalTax += invoice.totals.totalTax;
-      grouped[salesmanKey].totalSubtotal += invoice.totals.subtotal;
+      grouped[salesmanKey].totalAmount += (invoice.totals?.grandTotal || 0);
+      grouped[salesmanKey].totalDiscount += (invoice.totals?.totalDiscount || 0);
+      grouped[salesmanKey].totalTax += (invoice.totals?.totalTax || 0);
+      grouped[salesmanKey].totalSubtotal += (invoice.totals?.subtotal || 0);
     });
 
     return Object.values(grouped);
@@ -354,7 +381,7 @@ class ReportService {
 
     const query = {
       type: { $in: ['purchase', 'return_purchase'] },
-      invoiceDate: { $gte: new Date(startDate), $lte: new Date(endDate) },
+      invoiceDate: { $gte: normalizeStartDate(startDate), $lte: normalizeEndDate(endDate) },
       status: 'confirmed',
     };
 
@@ -366,33 +393,14 @@ class ReportService {
       .populate('supplierId', 'code name')
       .sort({ invoiceDate: 1 });
 
-    // Initialize breakdown structure
-    const breakdown = {
-      gst18: {
-        rate: 18,
-        invoiceCount: 0,
-        taxableAmount: 0,
-        gstAmount: 0,
-        totalAmount: 0,
-        invoices: []
-      },
-      gst4: {
-        rate: 4,
-        invoiceCount: 0,
-        taxableAmount: 0,
-        gstAmount: 0,
-        totalAmount: 0,
-        invoices: []
-      },
-      total: {
-        invoiceCount: 0,
-        taxableAmount: 0,
-        gstAmount: 0,
-        totalAmount: 0
-      }
+    const byTaxRate = {};
+    let totalStats = {
+      invoiceCount: 0,
+      taxableAmount: 0,
+      gstAmount: 0,
+      totalAmount: 0
     };
 
-    // Process each invoice
     invoices.forEach(invoice => {
       const invoiceData = {
         invoiceId: invoice._id,
@@ -401,75 +409,75 @@ class ReportService {
         supplierCode: invoice.supplierId?.code,
         supplierName: invoice.supplierId?.name,
         type: invoice.type,
-        gst18Amount: 0,
-        gst4Amount: 0,
-        gst18Taxable: 0,
-        gst4Taxable: 0
+        taxAmountsByRate: {}
       };
 
-      // Process invoice items
       invoice.items.forEach(item => {
-        const gstRate = item.gstRate || 18; // Default to 18% if not specified
+        const gstRate = item.gstRate || 18;
         const lineTotal = Math.abs(item.quantity * item.unitPrice);
         const discount = item.discount || 0;
         const taxableAmount = lineTotal - discount;
         const gstAmount = (taxableAmount * gstRate) / 100;
 
-        if (gstRate === 18) {
-          invoiceData.gst18Taxable += taxableAmount;
-          invoiceData.gst18Amount += gstAmount;
-        } else if (gstRate === 4) {
-          invoiceData.gst4Taxable += taxableAmount;
-          invoiceData.gst4Amount += gstAmount;
+        const rateKey = `gst${gstRate}`;
+        if (!byTaxRate[rateKey]) {
+          byTaxRate[rateKey] = {
+            rate: gstRate,
+            invoiceCount: 0,
+            taxableAmount: 0,
+            gstAmount: 0,
+            totalAmount: 0,
+            invoices: []
+          };
+        }
+
+        if (!invoiceData.taxAmountsByRate[rateKey]) {
+          invoiceData.taxAmountsByRate[rateKey] = { taxable: 0, gst: 0 };
+        }
+        invoiceData.taxAmountsByRate[rateKey].taxable += taxableAmount;
+        invoiceData.taxAmountsByRate[rateKey].gst += gstAmount;
+      });
+
+      Object.keys(invoiceData.taxAmountsByRate).forEach(rateKey => {
+        const rateData = invoiceData.taxAmountsByRate[rateKey];
+        if (rateData.gst > 0) {
+          byTaxRate[rateKey].invoiceCount++;
+          byTaxRate[rateKey].taxableAmount += rateData.taxable;
+          byTaxRate[rateKey].gstAmount += rateData.gst;
+          byTaxRate[rateKey].totalAmount += rateData.taxable + rateData.gst;
+          byTaxRate[rateKey].invoices.push({
+            ...invoiceData,
+            taxableAmount: rateData.taxable,
+            gstAmount: rateData.gst
+          });
         }
       });
 
-      // Add to GST 18% breakdown if applicable
-      if (invoiceData.gst18Amount > 0) {
-        breakdown.gst18.invoiceCount++;
-        breakdown.gst18.taxableAmount += invoiceData.gst18Taxable;
-        breakdown.gst18.gstAmount += invoiceData.gst18Amount;
-        breakdown.gst18.totalAmount += invoiceData.gst18Taxable + invoiceData.gst18Amount;
-        breakdown.gst18.invoices.push({
-          ...invoiceData,
-          taxableAmount: invoiceData.gst18Taxable,
-          gstAmount: invoiceData.gst18Amount
-        });
-      }
-
-      // Add to GST 4% breakdown if applicable
-      if (invoiceData.gst4Amount > 0) {
-        breakdown.gst4.invoiceCount++;
-        breakdown.gst4.taxableAmount += invoiceData.gst4Taxable;
-        breakdown.gst4.gstAmount += invoiceData.gst4Amount;
-        breakdown.gst4.totalAmount += invoiceData.gst4Taxable + invoiceData.gst4Amount;
-        breakdown.gst4.invoices.push({
-          ...invoiceData,
-          taxableAmount: invoiceData.gst4Taxable,
-          gstAmount: invoiceData.gst4Amount
-        });
-      }
-
-      // Update totals
-      breakdown.total.invoiceCount++;
-      breakdown.total.taxableAmount += invoiceData.gst18Taxable + invoiceData.gst4Taxable;
-      breakdown.total.gstAmount += invoiceData.gst18Amount + invoiceData.gst4Amount;
-      breakdown.total.totalAmount += breakdown.total.taxableAmount + breakdown.total.gstAmount;
+      totalStats.invoiceCount++;
+      Object.values(invoiceData.taxAmountsByRate).forEach(rateData => {
+        totalStats.taxableAmount += rateData.taxable;
+        totalStats.gstAmount += rateData.gst;
+        totalStats.totalAmount += rateData.taxable + rateData.gst;
+      });
     });
 
-    // Round all amounts to 2 decimal places
-    ['gst18', 'gst4', 'total'].forEach(key => {
-      if (breakdown[key]) {
-        breakdown[key].taxableAmount = Math.round(breakdown[key].taxableAmount * 100) / 100;
-        breakdown[key].gstAmount = Math.round(breakdown[key].gstAmount * 100) / 100;
-        breakdown[key].totalAmount = Math.round(breakdown[key].totalAmount * 100) / 100;
-      }
+    Object.keys(byTaxRate).forEach(key => {
+      byTaxRate[key].taxableAmount = Math.round(byTaxRate[key].taxableAmount * 100) / 100;
+      byTaxRate[key].gstAmount = Math.round(byTaxRate[key].gstAmount * 100) / 100;
+      byTaxRate[key].totalAmount = Math.round(byTaxRate[key].totalAmount * 100) / 100;
     });
+
+    totalStats.taxableAmount = Math.round(totalStats.taxableAmount * 100) / 100;
+    totalStats.gstAmount = Math.round(totalStats.gstAmount * 100) / 100;
+    totalStats.totalAmount = Math.round(totalStats.totalAmount * 100) / 100;
 
     return {
       reportType: 'purchase_gst_breakdown',
       period: { startDate, endDate },
-      breakdown,
+      breakdown: {
+        byTaxRate,
+        total: totalStats
+      },
       generatedAt: new Date()
     };
   }
@@ -522,7 +530,7 @@ class ReportService {
 
     const query = {
       type: invoiceType,
-      invoiceDate: { $gte: new Date(startDate), $lte: new Date(endDate) },
+      invoiceDate: { $gte: normalizeStartDate(startDate), $lte: normalizeEndDate(endDate) },
       status: { $ne: 'cancelled' }
     };
 
@@ -809,7 +817,7 @@ class ReportService {
 
     const invoices = await Invoice.find({
       type: { $in: ['purchase', 'return_purchase'] },
-      invoiceDate: { $gte: new Date(startDate), $lte: new Date(endDate) },
+      invoiceDate: { $gte: normalizeStartDate(startDate), $lte: normalizeEndDate(endDate) },
       status: 'confirmed'
     })
       .populate('supplierId', 'code name')
@@ -828,16 +836,7 @@ class ReportService {
           supplierCode: invoice.supplierId.code,
           supplierName: invoice.supplierId.name,
           invoiceCount: 0,
-          gst18: {
-            taxableAmount: 0,
-            gstAmount: 0,
-            totalAmount: 0
-          },
-          gst4: {
-            taxableAmount: 0,
-            gstAmount: 0,
-            totalAmount: 0
-          },
+          byTaxRate: {},
           total: {
             taxableAmount: 0,
             gstAmount: 0,
@@ -849,7 +848,6 @@ class ReportService {
       const supplier = supplierMap[supplierId];
       supplier.invoiceCount++;
 
-      // Process items
       invoice.items.forEach(item => {
         const gstRate = item.gstRate || 18;
         const lineTotal = Math.abs(item.quantity * item.unitPrice);
@@ -857,15 +855,19 @@ class ReportService {
         const taxableAmount = lineTotal - discount;
         const gstAmount = (taxableAmount * gstRate) / 100;
 
-        if (gstRate === 18) {
-          supplier.gst18.taxableAmount += taxableAmount;
-          supplier.gst18.gstAmount += gstAmount;
-          supplier.gst18.totalAmount += taxableAmount + gstAmount;
-        } else if (gstRate === 4) {
-          supplier.gst4.taxableAmount += taxableAmount;
-          supplier.gst4.gstAmount += gstAmount;
-          supplier.gst4.totalAmount += taxableAmount + gstAmount;
+        const rateKey = `gst${gstRate}`;
+        if (!supplier.byTaxRate[rateKey]) {
+          supplier.byTaxRate[rateKey] = {
+            rate: gstRate,
+            taxableAmount: 0,
+            gstAmount: 0,
+            totalAmount: 0
+          };
         }
+
+        supplier.byTaxRate[rateKey].taxableAmount += taxableAmount;
+        supplier.byTaxRate[rateKey].gstAmount += gstAmount;
+        supplier.byTaxRate[rateKey].totalAmount += taxableAmount + gstAmount;
 
         supplier.total.taxableAmount += taxableAmount;
         supplier.total.gstAmount += gstAmount;
@@ -873,17 +875,18 @@ class ReportService {
       });
     });
 
-    // Convert to array and round amounts
     const suppliers = Object.values(supplierMap).map(supplier => {
-      ['gst18', 'gst4', 'total'].forEach(key => {
-        supplier[key].taxableAmount = Math.round(supplier[key].taxableAmount * 100) / 100;
-        supplier[key].gstAmount = Math.round(supplier[key].gstAmount * 100) / 100;
-        supplier[key].totalAmount = Math.round(supplier[key].totalAmount * 100) / 100;
+      Object.keys(supplier.byTaxRate).forEach(key => {
+        supplier.byTaxRate[key].taxableAmount = Math.round(supplier.byTaxRate[key].taxableAmount * 100) / 100;
+        supplier.byTaxRate[key].gstAmount = Math.round(supplier.byTaxRate[key].gstAmount * 100) / 100;
+        supplier.byTaxRate[key].totalAmount = Math.round(supplier.byTaxRate[key].totalAmount * 100) / 100;
       });
+      supplier.total.taxableAmount = Math.round(supplier.total.taxableAmount * 100) / 100;
+      supplier.total.gstAmount = Math.round(supplier.total.gstAmount * 100) / 100;
+      supplier.total.totalAmount = Math.round(supplier.total.totalAmount * 100) / 100;
       return supplier;
     });
 
-    // Sort by total amount descending
     suppliers.sort((a, b) => b.total.totalAmount - a.total.totalAmount);
 
     return {
@@ -893,8 +896,7 @@ class ReportService {
       summary: {
         totalSuppliers: suppliers.length,
         totalInvoices: suppliers.reduce((sum, s) => sum + s.invoiceCount, 0),
-        totalGST18: suppliers.reduce((sum, s) => sum + s.gst18.gstAmount, 0),
-        totalGST4: suppliers.reduce((sum, s) => sum + s.gst4.gstAmount, 0),
+        totalGST: suppliers.reduce((sum, s) => sum + s.total.gstAmount, 0),
         grandTotal: suppliers.reduce((sum, s) => sum + s.total.totalAmount, 0)
       },
       generatedAt: new Date()
@@ -921,7 +923,6 @@ class ReportService {
       throw new Error('Start date and end date are required');
     }
 
-    // Get scheme definition
     const Scheme = require('../models/Scheme');
     const scheme = await Scheme.findById(schemeId)
       .populate('company', 'name code')
@@ -933,10 +934,9 @@ class ReportService {
       throw new Error('Scheme not found');
     }
 
-    // Build query for invoices
     const query = {
       type: invoiceType,
-      invoiceDate: { $gte: new Date(startDate), $lte: new Date(endDate) },
+      invoiceDate: { $gte: normalizeStartDate(startDate), $lte: normalizeEndDate(endDate) },
       status: { $ne: 'cancelled' }
     };
 
@@ -976,9 +976,13 @@ class ReportService {
 
         // Check if item is applicable for this scheme
         let isApplicable = true;
-        if (scheme.applicableItems && scheme.applicableItems.length > 0) {
+
+        // Safety check for deleted items
+        if (!item.itemId) {
+          isApplicable = false;
+        } else if (scheme.applicableItems && scheme.applicableItems.length > 0) {
           isApplicable = scheme.applicableItems.some(
-            applicableItem => applicableItem._id.toString() === item.itemId._id.toString()
+            applicableItem => applicableItem && applicableItem._id && applicableItem._id.toString() === item.itemId._id.toString()
           );
         }
 
@@ -1031,7 +1035,7 @@ class ReportService {
             name: invoice.claimAccountId.name,
             accountNumber: invoice.claimAccountId.accountNumber
           } : null,
-          totalAmount: invoice.totals.grandTotal,
+          totalAmount: invoice.totals ? invoice.totals.grandTotal : 0,
           schemeItems: invoiceSchemeItems,
           schemeSummary: {
             scheme1Quantity: invoiceScheme1Qty,
@@ -1107,7 +1111,7 @@ class ReportService {
 
     // Build query
     const query = {
-      invoiceDate: { $gte: new Date(startDate), $lte: new Date(endDate) },
+      invoiceDate: { $gte: normalizeStartDate(startDate), $lte: normalizeEndDate(endDate) },
       status: { $ne: 'cancelled' }
     };
 
@@ -1206,15 +1210,19 @@ class ReportService {
         discount1Amount: Math.round(invoiceDiscount1 * 100) / 100,
         discount2Amount: Math.round(invoiceDiscount2 * 100) / 100,
         totalDiscount: Math.round((invoiceDiscount1 + invoiceDiscount2) * 100) / 100,
-        grandTotal: invoice.totals.grandTotal
+        grandTotal: invoice.totals ? invoice.totals.grandTotal : 0
       };
 
       // Process Discount 1
       if (hasDiscount1 && (discountType === 'all' || discountType === 'discount1')) {
         breakdown.discount1.invoiceCount++;
         breakdown.discount1.totalAmount += invoiceDiscount1;
-        breakdown.discount1.byInvoiceType[invoice.type].invoiceCount++;
-        breakdown.discount1.byInvoiceType[invoice.type].amount += invoiceDiscount1;
+
+        if (breakdown.discount1.byInvoiceType[invoice.type]) {
+          breakdown.discount1.byInvoiceType[invoice.type].invoiceCount++;
+          breakdown.discount1.byInvoiceType[invoice.type].amount += invoiceDiscount1;
+        }
+
         breakdown.discount1.invoices.push({
           ...invoiceData,
           discountAmount: invoiceData.discount1Amount
@@ -1225,8 +1233,11 @@ class ReportService {
       if (hasDiscount2 && (discountType === 'all' || discountType === 'discount2')) {
         breakdown.discount2.invoiceCount++;
         breakdown.discount2.totalAmount += invoiceDiscount2;
-        breakdown.discount2.byInvoiceType[invoice.type].invoiceCount++;
-        breakdown.discount2.byInvoiceType[invoice.type].amount += invoiceDiscount2;
+
+        if (breakdown.discount2.byInvoiceType[invoice.type]) {
+          breakdown.discount2.byInvoiceType[invoice.type].invoiceCount++;
+          breakdown.discount2.byInvoiceType[invoice.type].amount += invoiceDiscount2;
+        }
 
         // Group by claim account
         if (invoice.claimAccountId) {
@@ -1307,7 +1318,7 @@ class ReportService {
    * @param {string} params.claimAccountId - Filter by specific claim account (optional)
    * @returns {Promise<Object>} Discount breakdown report
    */
-  async getDiscountBreakdown(params) {
+  async _getDiscountBreakdownAlt(params) {
     const { startDate, endDate, invoiceType = 'all', discountType = 'all', claimAccountId } = params;
 
     if (!startDate || !endDate) {
@@ -1316,7 +1327,7 @@ class ReportService {
 
     // Build query
     const query = {
-      invoiceDate: { $gte: new Date(startDate), $lte: new Date(endDate) },
+      invoiceDate: { $gte: normalizeStartDate(startDate), $lte: normalizeEndDate(endDate) },
       status: { $ne: 'cancelled' }
     };
 
@@ -1527,7 +1538,7 @@ class ReportService {
 
     // Build query
     const query = {
-      invoiceDate: { $gte: new Date(startDate), $lte: new Date(endDate) },
+      invoiceDate: { $gte: normalizeStartDate(startDate), $lte: normalizeEndDate(endDate) },
       status: { $in: ['confirmed', 'paid'] }
     };
 
@@ -1797,7 +1808,7 @@ class ReportService {
     }
 
     const query = {
-      invoiceDate: { $gte: new Date(startDate), $lte: new Date(endDate) },
+      invoiceDate: { $gte: normalizeStartDate(startDate), $lte: normalizeEndDate(endDate) },
       status: { $ne: 'cancelled' }
     };
 

@@ -239,12 +239,14 @@ const createSalesInvoice = async (req, res) => {
       || error.message.includes('Insufficient stock')
       || error.message.includes('exceeds customer credit limit')
       || error.message.includes('not active')
+      || error.code === 'ITEM_NOT_FOUND'
     ) {
-      return res.status(400).json({
+      return res.status(error.statusCode || 400).json({
         success: false,
         error: {
-          code: 'VALIDATION_ERROR',
+          code: error.code || 'VALIDATION_ERROR',
           message: error.message,
+          itemId: error.itemId
         },
         timestamp: new Date().toISOString(),
       });

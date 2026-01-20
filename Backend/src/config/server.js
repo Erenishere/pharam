@@ -27,15 +27,18 @@ class ServerConfig {
     // Security middleware
     this.app.use(helmet());
 
-    // CORS configuration
-    this.app.use(
-      cors({
-        origin: process.env.CORS_ORIGIN || 'http://localhost:8080',
-        credentials: true,
-        methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH'],
-        allowedHeaders: ['Content-Type', 'Authorization'],
-      }),
-    );
+    // CORS configuration - Allow all origins for development
+    const corsOptions = {
+      origin: function (origin, callback) {
+        // Allow all origins in development
+        callback(null, true);
+      },
+      credentials: true,
+      methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
+      allowedHeaders: ['Content-Type', 'Authorization'],
+      optionsSuccessStatus: 200,
+    };
+    this.app.use(cors(corsOptions));
 
     // Rate limiting
     const limiter = rateLimit({
@@ -63,6 +66,24 @@ class ServerConfig {
   }
 
   setupRoutes() {
+    // Handle preflight requests
+    this.app.options('*', cors());
+
+    // Root endpoint
+    this.app.get('/', (req, res) => {
+      res.status(200).json({
+        success: true,
+        message: 'Pharam API Server',
+        version: '1.0.0',
+        endpoints: {
+          health: '/health',
+          api: '/api',
+          docs: '/api/docs',
+        },
+        timestamp: new Date().toISOString(),
+      });
+    });
+
     // Health check endpoint
     this.app.get('/health', (req, res) => {
       res.status(200).json({

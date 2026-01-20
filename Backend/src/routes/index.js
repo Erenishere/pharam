@@ -64,7 +64,7 @@ router.use('/v1/users', userRoutes);
 router.use('/v1/customers', customerRoutes);
 router.use('/v1/suppliers', supplierRoutes);
 router.use('/v1/items', itemRoutes);
-router.use('/v1', batchRoutes); // Batch routes are mounted at root to support nested routes
+router.use('/v1/batches', batchRoutes); // Batch routes mounted at /v1/batches
 // router.use('/v1/tax', taxRoutes); // Tax calculation routes
 router.use('/v1/invoices/sales', salesInvoiceRoutes); // Sales invoice routes
 router.use('/v1/invoices/purchase', purchaseInvoiceRoutes); // Purchase invoice routes
@@ -74,6 +74,7 @@ router.use('/v1/cashbook', cashbookRoutes); // Cash book routes
 router.use('/v1/reports', reportRoutes); // Reporting and analytics routes
 router.use('/v1/stock-movements', stockMovementRoutes); // Stock movement routes
 router.use('/v1/monitoring', monitoringRoutes); // Monitoring and health check routes
+router.use('/v1/warehouses', warehouseRoutes); // Warehouse routes (mounted at /api/v1/warehouses)
 router.use('/warehouses', warehouseRoutes); // Warehouse routes (mounted at /api/warehouses to match task requirements)
 router.use('/inventory', itemRoutes); // Inventory routes (mounted at /api/inventory to support /api/inventory/transfer)
 router.use('/schemes', schemeRoutes); // Scheme routes (mounted at /api/schemes)

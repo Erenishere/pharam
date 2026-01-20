@@ -1,0 +1,206 @@
+<div class="report-container">
+  <div class="report-header">
+    <div class="header-left">
+      <button mat-icon-button class="back-btn" routerLink="/reports">
+        <mat-icon>arrow_back</mat-icon>
+      </button>
+      <h1>Tax Reports</h1>
+    </div>
+    <div class="header-actions">
+      <button mat-stroked-button class="refresh-btn" (click)="loadReport()">
+        <mat-icon>refresh</mat-icon> Refresh
+      </button>
+    </div>
+  </div>
+
+  <div class="filters-card">
+    <div class="filters-row">
+      <mat-form-field class="filter-field" appearance="outline">
+        <mat-label>Start Date</mat-label>
+        <input matInput [matDatepicker]="startPicker" [(ngModel)]="startDate">
+        <mat-datepicker-toggle matIconSuffix [for]="startPicker"></mat-datepicker-toggle>
+        <mat-datepicker #startPicker></mat-datepicker>
+      </mat-form-field>
+
+      <mat-form-field class="filter-field" appearance="outline">
+        <mat-label>End Date</mat-label>
+        <input matInput [matDatepicker]="endPicker" [(ngModel)]="endDate">
+        <mat-datepicker-toggle matIconSuffix [for]="endPicker"></mat-datepicker-toggle>
+        <mat-datepicker #endPicker></mat-datepicker>
+      </mat-form-field>
+
+      <div class="filter-actions">
+        <button mat-raised-button color="primary" (click)="applyFilters()">Apply</button>
+        <button mat-stroked-button (click)="resetFilters()">Reset</button>
+      </div>
+    </div>
+  </div>
+
+  @if (loading) {
+    <div class="loading-container">
+      <mat-spinner diameter="48"></mat-spinner>
+      <p>Loading tax data...</p>
+    </div>
+  } @else {
+    <div class="summary-cards">
+      <div class="summary-card">
+        <div class="icon-wrapper purple">
+          <mat-icon>percent</mat-icon>
+        </div>
+        <div class="card-content">
+          <div class="label">GST 18%</div>
+          <div class="value">{{ formatCurrency(taxSummary?.summary?.totalGst18) }}</div>
+        </div>
+      </div>
+
+      <div class="summary-card">
+        <div class="icon-wrapper info">
+          <mat-icon>percent</mat-icon>
+        </div>
+        <div class="card-content">
+          <div class="label">GST 4%</div>
+          <div class="value">{{ formatCurrency(taxSummary?.summary?.totalGst4) }}</div>
+        </div>
+      </div>
+
+      <div class="summary-card">
+        <div class="icon-wrapper warning">
+          <mat-icon>account_balance</mat-icon>
+        </div>
+        <div class="card-content">
+          <div class="label">Advance Tax</div>
+          <div class="value">{{ formatCurrency(taxSummary?.summary?.totalAdvanceTax) }}</div>
+        </div>
+      </div>
+
+      <div class="summary-card">
+        <div class="icon-wrapper danger">
+          <mat-icon>warning</mat-icon>
+        </div>
+        <div class="card-content">
+          <div class="label">Non-Filer GST</div>
+          <div class="value">{{ formatCurrency(taxSummary?.summary?.totalNonFilerGst) }}</div>
+        </div>
+      </div>
+
+      <div class="summary-card">
+        <div class="icon-wrapper success">
+          <mat-icon>receipt_long</mat-icon>
+        </div>
+        <div class="card-content">
+          <div class="label">Net Tax Liability</div>
+          <div class="value">{{ formatCurrency(taxSummary?.summary?.netTaxLiability) }}</div>
+        </div>
+      </div>
+    </div>
+
+    <mat-tab-group [(selectedIndex)]="activeTab" class="report-tabs">
+      <mat-tab label="GST Summary">
+        <div class="data-card">
+          <div class="card-header">
+            <h2>GST Breakdown</h2>
+          </div>
+          <div class="table-container">
+            @if (taxSummary?.gstBreakdown?.length > 0) {
+              <table>
+                <thead>
+                  <tr>
+                    <th>GST Rate</th>
+                    <th class="text-right">Taxable Amount</th>
+                    <th class="text-right">Tax Amount</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  @for (row of taxSummary.gstBreakdown; track row.rate) {
+                    <tr>
+                      <td>{{ row.rate }}</td>
+                      <td class="text-right">{{ formatCurrency(row.taxableAmount) }}</td>
+                      <td class="text-right amount">{{ formatCurrency(row.taxAmount) }}</td>
+                    </tr>
+                  }
+                </tbody>
+              </table>
+            } @else {
+              <div class="empty-state">
+                <mat-icon>inbox</mat-icon>
+                <p>No GST data available</p>
+              </div>
+            }
+          </div>
+        </div>
+      </mat-tab>
+
+      <mat-tab label="Advance Tax">
+        <div class="data-card">
+          <div class="card-header">
+            <h2>Advance Tax Breakdown (0.5% / 2.5%)</h2>
+          </div>
+          <div class="table-container">
+            @if (taxSummary?.advanceTaxBreakdown?.length > 0) {
+              <table>
+                <thead>
+                  <tr>
+                    <th>Type</th>
+                    <th class="text-right">Amount</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  @for (row of taxSummary.advanceTaxBreakdown; track row.type) {
+                    <tr>
+                      <td>{{ row.type }}</td>
+                      <td class="text-right amount">{{ formatCurrency(row.amount) }}</td>
+                    </tr>
+                  }
+                </tbody>
+              </table>
+            } @else {
+              <div class="empty-state">
+                <mat-icon>inbox</mat-icon>
+                <p>No advance tax data available</p>
+              </div>
+            }
+          </div>
+        </div>
+      </mat-tab>
+
+      <mat-tab label="Tax Compliance">
+        <div class="data-card">
+          <div class="card-header">
+            <h2>SRB/FBR Tax Compliance</h2>
+          </div>
+          <div class="card-body">
+            @if (taxCompliance) {
+              <div class="compliance-grid">
+                <div class="compliance-item">
+                  <span class="label">SRB Status:</span>
+                  <span class="value" [class.positive]="taxCompliance.srbCompliant" [class.negative]="!taxCompliance.srbCompliant">
+                    {{ taxCompliance.srbCompliant ? 'Compliant' : 'Non-Compliant' }}
+                  </span>
+                </div>
+                <div class="compliance-item">
+                  <span class="label">FBR Status:</span>
+                  <span class="value" [class.positive]="taxCompliance.fbrCompliant" [class.negative]="!taxCompliance.fbrCompliant">
+                    {{ taxCompliance.fbrCompliant ? 'Compliant' : 'Non-Compliant' }}
+                  </span>
+                </div>
+                <div class="compliance-item">
+                  <span class="label">Total Tax Filed:</span>
+                  <span class="value">{{ formatCurrency(taxCompliance.totalTaxFiled) }}</span>
+                </div>
+                <div class="compliance-item">
+                  <span class="label">Outstanding Amount:</span>
+                  <span class="value negative">{{ formatCurrency(taxCompliance.outstandingAmount) }}</span>
+                </div>
+              </div>
+            } @else {
+              <div class="empty-state">
+                <mat-icon>inbox</mat-icon>
+                <p>No compliance data available</p>
+              </div>
+            }
+          </div>
+        </div>
+      </mat-tab>
+    </mat-tab-group>
+  }
+</div>

@@ -6,6 +6,7 @@ const stockMovementRepository = require('../repositories/stockMovementRepository
 const ledgerService = require('./ledgerService');
 const discountCalculationService = require('./discountCalculationService');
 const Item = require('../models/Item');
+const Warehouse = require('../models/Warehouse');
 
 /**
  * Sales Invoice Service
@@ -27,7 +28,7 @@ class SalesInvoiceService {
    * @returns {Promise<Object>} Created invoice
    */
   async createSalesInvoice(invoiceData) {
-    const { customerId, items, createdBy, invoiceDate, dueDate, notes, poId, poNumber, salesmanId } = invoiceData;
+    const { customerId, items, createdBy, invoiceDate, dueDate, notes, poId, poNumber, salesmanId, status: requestedStatus } = invoiceData;
 
     // Validate required fields
     if (!customerId) {
@@ -69,7 +70,7 @@ class SalesInvoiceService {
     // Generate invoice number
     const invoiceNumber = await invoiceRepository.generateInvoiceNumber('sales');
 
-    // Prepare invoice data
+    // Prepare invoice data - always start as 'draft'
     const invoice = {
       invoiceNumber,
       type: 'sales',
@@ -88,7 +89,24 @@ class SalesInvoiceService {
     };
 
     // Create invoice
-    return invoiceRepository.create(invoice);
+    const createdInvoice = await invoiceRepository.create(invoice);
+
+    // If frontend requested 'confirmed' status (e.g., POS/walk-in sales),
+    // automatically confirm the invoice to handle inventory updates
+    if (requestedStatus === 'confirmed') {
+      try {
+        const confirmResult = await this.confirmSalesInvoice(createdInvoice._id, createdBy);
+        return confirmResult.invoice;
+      } catch (confirmError) {
+        // If confirmation fails, the invoice remains as draft
+        // Log the error but return the draft invoice
+        console.error('Auto-confirm failed for invoice:', createdInvoice._id, confirmError.message);
+        // Re-throw the error so frontend knows the full process didn't complete
+        throw confirmError;
+      }
+    }
+
+    return createdInvoice;
   }
 
   /**
@@ -143,9 +161,23 @@ class SalesInvoiceService {
       }
 
       // Get item details
-      const itemDetails = await itemService.getItemById(itemId);
+      console.log(`[DEBUG] Processing item with ID: "${itemId}"`);
+      let itemDetails;
+      try {
+        itemDetails = await itemService.getItemById(itemId);
+      } catch (error) {
+        if (error.message === 'Item not found') {
+          const missingItemError = new Error(`Item with ID ${itemId} was not found in the database. It may have been deleted or is from a stale session.`);
+          missingItemError.code = 'ITEM_NOT_FOUND';
+          missingItemError.statusCode = 400;
+          missingItemError.itemId = itemId;
+          throw missingItemError;
+        }
+        throw error;
+      }
+
       if (!itemDetails.isActive) {
-        throw new Error(`Item ${itemDetails.name} is not active`);
+        throw new Error(`Item ${itemDetails.name} (ID: ${itemId}) is not active and cannot be sold.`);
       }
 
       // Validate warehouse and check stock availability if warehouse is specified
@@ -170,8 +202,8 @@ class SalesInvoiceService {
         }
       } else {
         // Check overall stock availability if no warehouse specified
-        if (!itemDetails.checkStockAvailability(quantity)) {
-          throw new Error(`Insufficient stock for item ${itemDetails.name}. Available: ${itemDetails.inventory.currentStock}`);
+        if (!itemDetails.inventory || itemDetails.inventory.currentStock < quantity) {
+          throw new Error(`Insufficient stock for item ${itemDetails.name}. Available: ${itemDetails.inventory?.currentStock || 0}`);
         }
       }
 
@@ -674,13 +706,13 @@ class SalesInvoiceService {
     for (const item of items) {
       const itemDetails = await itemService.getItemById(item.itemId);
 
-      if (!itemDetails.checkStockAvailability(item.quantity)) {
+      if (!itemDetails.inventory || itemDetails.inventory.currentStock < item.quantity) {
         validationErrors.push({
           itemId: item.itemId,
           itemName: itemDetails.name,
           itemCode: itemDetails.code,
           requested: item.quantity,
-          available: itemDetails.inventory.currentStock
+          available: itemDetails.inventory?.currentStock || 0
         });
       }
     }
@@ -707,13 +739,28 @@ class SalesInvoiceService {
   async createStockMovementsForInvoice(invoice, userId) {
     const movements = [];
 
+    // Get default warehouse (first active one) to fallback to if item has no warehouse
+    let defaultWarehouseId = null;
+    const defaultWarehouse = await Warehouse.findOne({ isActive: true }).sort({ createdAt: 1 });
+    if (defaultWarehouse) {
+      defaultWarehouseId = defaultWarehouse._id;
+    }
+
     for (const item of invoice.items) {
+      // Use item-specific warehouse or fallback to default
+      const warehouseId = item.warehouseId || defaultWarehouseId;
+
+      if (!warehouseId) {
+        throw new Error('No active warehouse found to assign stock movement. Please ensure at least one warehouse exists.');
+      }
+
       const movementData = {
         itemId: item.itemId,
         movementType: 'out',
         quantity: item.quantity, // Positive quantity, type indicates direction
         referenceType: 'sales_invoice',
         referenceId: invoice._id,
+        warehouse: warehouseId, // Required field
         batchInfo: item.batchInfo || {},
         movementDate: invoice.invoiceDate || new Date(),
         notes: `Sales invoice ${invoice.invoiceNumber} - Customer: ${invoice.customerId}`,

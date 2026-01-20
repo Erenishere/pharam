@@ -2,6 +2,24 @@ const Customer = require('../models/Customer');
 
 const customers = [
   {
+    code: 'CUST-WALKIN',
+    name: 'Walk-In Customer',
+    type: 'customer',
+    contactInfo: {
+      phone: 'N/A',
+      email: 'walkin@pharma.com',
+      address: 'Counter Sale',
+      city: 'Local',
+      country: 'Pakistan',
+    },
+    financialInfo: {
+      creditLimit: 0,
+      paymentTerms: 0,
+      currency: 'PKR',
+    },
+    isActive: true,
+  },
+  {
     code: 'CUST000001',
     name: 'ABC Trading Company',
     type: 'customer',

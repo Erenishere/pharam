@@ -4,6 +4,7 @@ import { RouterModule } from '@angular/router';
 import { MatSidenavModule, MatSidenav } from '@angular/material/sidenav';
 import { NavbarComponent } from '../header/navbar.component';
 import { SidebarComponent } from '../sidebar/sidebar.component';
+import { BreadcrumbComponent } from '../../shared/components/breadcrumb/breadcrumb.component';
 
 @Component({
   selector: 'app-main-layout',
@@ -13,7 +14,8 @@ import { SidebarComponent } from '../sidebar/sidebar.component';
     RouterModule,
     MatSidenavModule,
     NavbarComponent,
-    SidebarComponent
+    SidebarComponent,
+    BreadcrumbComponent
   ],
   template: `
     <div class="main-layout">
@@ -25,6 +27,7 @@ import { SidebarComponent } from '../sidebar/sidebar.component';
         </mat-sidenav>
         
         <mat-sidenav-content class="main-content">
+          <app-breadcrumb></app-breadcrumb>
           <router-outlet></router-outlet>
         </mat-sidenav-content>
       </mat-sidenav-container>

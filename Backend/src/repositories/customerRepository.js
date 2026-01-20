@@ -9,14 +9,14 @@ class CustomerRepository {
    * Find customer by ID
    */
   async findById(id) {
-    return Customer.findById(id);
+    return Customer.findById(id).lean();
   }
 
   /**
    * Find customer by code
    */
   async findByCode(code) {
-    return Customer.findOne({ code: code.toUpperCase() });
+    return Customer.findOne({ code: code.toUpperCase() }).lean();
   }
 
   /**
@@ -37,14 +37,14 @@ class CustomerRepository {
       query.skip(options.skip);
     }
 
-    return query.exec();
+    return query.lean().exec();
   }
 
   /**
    * Find all active customers
    */
   async findAllActive() {
-    return Customer.find({ isActive: true }).sort({ name: 1 });
+    return Customer.find({ isActive: true }).sort({ name: 1 }).lean();
   }
 
   /**
@@ -153,7 +153,7 @@ class CustomerRepository {
       queryBuilder.skip(parseInt(options.skip, 10));
     }
 
-    return queryBuilder.exec();
+    return queryBuilder.lean().exec();
   }
 
   /**
@@ -233,7 +233,7 @@ class CustomerRepository {
     const skip = (page - 1) * limit;
 
     const [customers, total] = await Promise.all([
-      Customer.find(filters).sort(sort).skip(skip).limit(limit),
+      Customer.find(filters).sort(sort).skip(skip).limit(limit).lean(),
       Customer.countDocuments(filters),
     ]);
 

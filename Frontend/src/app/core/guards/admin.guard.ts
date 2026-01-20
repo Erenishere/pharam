@@ -1,7 +1,7 @@
 import { inject } from '@angular/core';
 import { Router, CanActivateFn } from '@angular/router';
 import { AuthService } from '../services/auth.service';
-import { STORAGE_KEYS } from '../constants/api.constants';
+import { UserRole } from '../models/user.model';
 
 export const adminGuard: CanActivateFn = (route, state) => {
     const authService = inject(AuthService);
@@ -14,29 +14,19 @@ export const adminGuard: CanActivateFn = (route, state) => {
         return false;
     }
 
-    // Get user from localStorage synchronously
-    const userStr = localStorage.getItem(STORAGE_KEYS.USER);
-    if (!userStr) {
-        console.log('[AdminGuard] No user in localStorage, redirecting to login');
-        router.navigate(['/login']);
-        return false;
+    const currentUser = authService.currentUserValue;
+    const role = currentUser?.role?.toLowerCase();
+
+    console.log('[AdminGuard] User role:', role);
+    console.log('[AdminGuard] Current user:', currentUser);
+
+    if (role === UserRole.ADMIN || role === 'admin') {
+        console.log('[AdminGuard] Access granted for admin');
+        return true;
     }
 
-    try {
-        const user = JSON.parse(userStr);
-        console.log('[AdminGuard] User role:', user.role);
-
-        if (user && user.role === 'admin') {
-            console.log('[AdminGuard] Access granted');
-            return true;
-        }
-
-        console.log('[AdminGuard] User is not admin, redirecting to dashboard');
-        router.navigate(['/dashboard']);
-        return false;
-    } catch (error) {
-        console.error('[AdminGuard] Error parsing user:', error);
-        router.navigate(['/login']);
-        return false;
-    }
+    console.log('[AdminGuard] User is not admin, redirecting to dashboard');
+    // For non-admins, redirect to dashboard. dashboardGuard will further handle sales role if needed.
+    router.navigate(['/dashboard']);
+    return false;
 };

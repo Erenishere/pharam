@@ -3,7 +3,7 @@
     <div class="card">
       <div class="card-body">
         <a href="javascript:void(0);" class="brand-logo">
-          <h2 class="brand-text">PharmaSys</h2>
+          <h2 class="brand-text">Industraders</h2>
         </a>
 
         <h4 class="card-title">Welcome! 👋</h4>
@@ -13,7 +13,7 @@
           <div class="form-group">
             <label for="identifier" class="form-label">Username or Email</label>
             <input type="text" class="form-control" id="identifier" formControlName="identifier"
-              placeholder="john@example.com" autofocus tabindex="1" />
+              placeholder="john@example.com" autofocus tabindex="1" autocomplete="username" />
             <div *ngIf="loginForm.get('identifier')?.invalid && loginForm.get('identifier')?.touched"
               class="text-danger">
               Username or email is required (min 3 characters)
@@ -28,7 +28,7 @@
               </a>
             </div>
             <input type="password" class="form-control" id="password" formControlName="password"
-              placeholder="············" tabindex="2" />
+              placeholder="············" tabindex="2" autocomplete="current-password" />
             <div *ngIf="loginForm.get('password')?.invalid && loginForm.get('password')?.touched" class="text-danger">
               Password is required (min 6 characters)
             </div>
