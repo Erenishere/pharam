@@ -48,7 +48,7 @@ import { StockMovement, StockMovementStatistics, LowStockItem, StockMovementQuer
     MatCardModule
   ],
   templateUrl: './stock-movements.component.html',
-  styleUrl: './stock-movements.component.scss'
+  styleUrls: ['./stock-movements.component.scss']
 })
 export class StockMovementsComponent implements OnInit, OnDestroy {
   activeTab = 0;

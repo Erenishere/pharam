@@ -49,7 +49,7 @@ import { CashReceipt, CashPayment, CashBookQueryParams } from '../models/cashboo
     MatCardModule
   ],
   templateUrl: './cashbook.component.html',
-  styleUrl: './cashbook.component.scss'
+  styleUrls: ['./cashbook.component.scss']
 })
 export class CashBookComponent implements OnInit, OnDestroy {
   activeTab = 0;
@@ -212,6 +212,9 @@ export class CashBookComponent implements OnInit, OnDestroy {
         next: (response) => {
           this.paymentsDataSource.data = response.data || [];
           this.totalPayments = response.pagination?.totalItems || 0;
+        },
+        error: () => {
+          this.toastService.error('Failed to load payments');
         }
       });
   }
