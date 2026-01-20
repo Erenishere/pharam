@@ -9,53 +9,57 @@
   <mat-card-content>
     <form [formGroup]="filterForm" class="filters-form">
 
-      <!-- Quick Search Redesign -->
-      <div class="search-row">
-        <div class="search-container">
-          <mat-icon class="search-icon">search</mat-icon>
-          <input type="text" formControlName="itemSearch" placeholder="Search by item name, code, or batch number..."
-            [matAutocomplete]="itemAuto" class="batch-search-input" #searchInput>
-
-          <div class="search-actions">
-            <button mat-icon-button *ngIf="filterForm.get('itemSearch')?.value"
-              (click)="filterForm.get('itemSearch')?.setValue(''); searchInput.focus()" type="button"
-              matTooltip="Clear search">
+      <!-- Standardized Filters Section -->
+      <div class="filters-section">
+        <div class="search-filters">
+          <mat-form-field appearance="outline" class="search-field">
+            <mat-label>Search batches</mat-label>
+            <input matInput formControlName="itemSearch" placeholder="Search by item name, code, or batch number..."
+              [matAutocomplete]="itemAuto" #searchInput>
+            <mat-icon matSuffix>search</mat-icon>
+            
+            <button mat-icon-button matSuffix *ngIf="filterForm.get('itemSearch')?.value"
+              (click)="filterForm.get('itemSearch')?.setValue(''); searchInput.focus(); $event.stopPropagation()" 
+              type="button" matTooltip="Clear search" class="clear-button">
               <mat-icon>close</mat-icon>
             </button>
-            <div class="search-divider"></div>
-            <button mat-icon-button type="button" (click)="toggleAdvancedFilters()"
-              [matTooltip]="showAdvancedFilters ? 'Hide filters' : 'Show filters'" [class.active]="showAdvancedFilters">
-              <mat-icon>tune</mat-icon>
-            </button>
-          </div>
+          </mat-form-field>
+
+          <mat-autocomplete #itemAuto="matAutocomplete" [displayWith]="displayItemFn"
+            panelClass="batch-autocomplete-panel">
+            <mat-option *ngFor="let item of filteredItems$ | async" [value]="item">
+              <div class="item-option">
+                <div class="item-info">
+                  <span class="item-name">{{ item.name }}</span>
+                  <span class="item-code">{{ item.code }}</span>
+                </div>
+              </div>
+            </mat-option>
+            <mat-option *ngIf="(filteredItems$ | async)?.length === 0 && filterForm.get('itemSearch')?.value?.length >= 2"
+              disabled>
+              No items found
+            </mat-option>
+          </mat-autocomplete>
         </div>
 
-        <mat-autocomplete #itemAuto="matAutocomplete" [displayWith]="displayItemFn"
-          panelClass="batch-autocomplete-panel">
-          <mat-option *ngFor="let item of filteredItems$ | async" [value]="item">
-            <div class="item-option">
-              <div class="item-info">
-                <span class="item-name">{{ item.name }}</span>
-                <span class="item-code">{{ item.code }}</span>
-              </div>
-            </div>
-          </mat-option>
-          <mat-option *ngIf="(filteredItems$ | async)?.length === 0 && filterForm.get('itemSearch')?.value?.length >= 2"
-            disabled>
-            No items found
-          </mat-option>
-        </mat-autocomplete>
+        <div class="action-buttons">
+          <button mat-raised-button color="primary" type="button" (click)="applyFilters()">
+            <mat-icon>search</mat-icon>
+            Apply
+          </button>
+          <button mat-stroked-button type="button" (click)="clearFilters()">
+            <mat-icon>clear</mat-icon>
+            Clear
+          </button>
+          <button mat-button type="button" (click)="toggleAdvancedFilters()" [class.active]="showAdvancedFilters">
+            <mat-icon>tune</mat-icon>
+            {{ showAdvancedFilters ? 'Hide' : 'Show' }} Advanced
+          </button>
+        </div>
       </div>
 
       <!-- Advanced Filters -->
       <mat-expansion-panel class="advanced-filters" [expanded]="showAdvancedFilters">
-        <mat-expansion-panel-header>
-          <mat-panel-title>
-            <mat-icon>tune</mat-icon>
-            Advanced Filters
-          </mat-panel-title>
-        </mat-expansion-panel-header>
-
         <!-- Location and Supplier Filters -->
         <div class="filter-row">
           <mat-form-field appearance="outline" class="half-width">
@@ -133,24 +137,7 @@
             <mat-checkbox formControlName="includeDepleted">Include Depleted Batches</mat-checkbox>
           </div>
         </div>
-
       </mat-expansion-panel>
-
-      <!-- Filter Actions -->
-      <div class="filter-actions">
-        <button mat-raised-button color="primary" type="button" (click)="applyFilters()">
-          <mat-icon>search</mat-icon>
-          Apply Filters
-        </button>
-        <button mat-button type="button" (click)="clearFilters()">
-          <mat-icon>clear</mat-icon>
-          Clear All
-        </button>
-        <button mat-button type="button" (click)="toggleAdvancedFilters()">
-          <mat-icon>{{ showAdvancedFilters ? 'expand_less' : 'expand_more' }}</mat-icon>
-          {{ showAdvancedFilters ? 'Hide' : 'Show' }} Advanced
-        </button>
-      </div>
 
     </form>
   </mat-card-content>

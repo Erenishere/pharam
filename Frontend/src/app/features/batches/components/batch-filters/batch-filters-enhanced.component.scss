@@ -6,6 +6,7 @@
     background-color: $batch-bg-card !important;
     box-shadow: $batch-shadow-card !important;
     border: 1px solid #EBE9F1;
+    margin-bottom: 24px;
 
     .mat-mdc-card-header {
         background-color: $batch-bg-header;
@@ -26,90 +27,97 @@
     }
 
     .mat-mdc-card-content {
-        padding: $batch-spacing-xxl;
+        padding: $batch-spacing-xl $batch-spacing-xxl;
     }
 }
 
-// Search Bar Redesign
-.search-row {
-    margin-bottom: $batch-spacing-xxl;
+// Standardized Filters Section Layout
+.filters-section {
     display: flex;
-    justify-content: center;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 24px;
+    margin-bottom: 8px;
+    flex-wrap: wrap;
 
-    .search-container {
+    .search-filters {
+        flex: 1;
+        min-width: 300px;
         display: flex;
-        align-items: center;
-        background: #ffffff;
-        border: 2px solid #EBE9F1;
-        border-radius: 12px;
-        padding: 0 0.75rem 0 1.5rem;
-        height: 60px;
-        width: 100%;
-        max-width: 800px;
-        transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
-        box-shadow: 0 4px 15px rgba(34, 41, 47, 0.08);
+        gap: 16px;
 
-        &:focus-within {
-            border-color: $batch-primary;
-            box-shadow: 0 8px 25px rgba(115, 103, 240, 0.18);
-            transform: translateY(-2px);
-        }
-
-        .search-icon {
-            color: $batch-primary;
-            margin-right: 1.25rem;
-            font-size: 24px;
-            width: 24px;
-            height: 24px;
-        }
-
-        .batch-search-input {
-            flex: 1;
-            border: none;
-            background: transparent;
-            font-size: 1.15rem;
-            outline: none;
-            color: $batch-text-primary;
-            height: 100%;
-            font-weight: 500;
-
-            &::placeholder {
-                color: $batch-text-muted;
-                font-weight: 400;
-                letter-spacing: 0.2px;
+        .search-field {
+            width: 100%;
+            
+            ::ng-deep {
+                .mdc-text-field--outline {
+                    background-color: #FFFFFF !important;
+                }
+                .mat-mdc-form-field-suffix {
+                    display: flex;
+                    align-items: center;
+                    gap: 4px;
+                    color: $batch-primary !important;
+                }
             }
         }
+    }
 
-        .search-actions {
+    .action-buttons {
+        display: flex;
+        gap: 12px;
+        align-items: center;
+        flex-shrink: 0;
+
+        button {
+            height: 48px;
+            padding: 0 20px;
+            border-radius: 6px;
+            font-weight: 500;
             display: flex;
             align-items: center;
-            gap: 0.5rem;
+            gap: 8px;
+            transition: all 0.2s ease;
 
-            .search-divider {
-                width: 1px;
-                height: 30px;
-                background: #EBE9F1;
-                margin: 0 0.75rem;
+            .mat-icon {
+                font-size: 20px;
+                width: 20px;
+                height: 20px;
             }
 
-            button {
-                color: $batch-text-secondary;
-                width: 42px;
-                height: 42px;
-
-                mat-icon {
-                    font-size: 22px;
-                }
+            &[color="primary"] {
+                background-color: $batch-primary !important;
+                color: #FFFFFF !important;
 
                 &:hover {
+                    background-color: $batch-primary-hover !important;
+                    box-shadow: 0 4px 12px rgba(115, 103, 240, 0.3);
+                    transform: translateY(-1px);
+                }
+            }
+
+            &.mat-mdc-stroked-button {
+                border-color: #D8D6DE;
+                color: $batch-text-secondary;
+
+                &:hover {
+                    background-color: #F8F7FA;
+                    border-color: $batch-primary;
                     color: $batch-primary;
-                    background: rgba($batch-primary, 0.1);
+                    transform: translateY(-1px);
+                }
+            }
+
+            &.mat-mdc-button:not(.mat-mdc-raised-button):not(.mat-mdc-stroked-button) {
+                color: $batch-primary;
+
+                &:hover {
+                    background-color: rgba(115, 103, 240, 0.08);
                 }
 
                 &.active {
-                    color: $batch-primary;
-                    background: rgba($batch-primary, 0.12);
-                    border: 1px solid rgba($batch-primary, 0.2);
+                    background-color: rgba(115, 103, 240, 0.12);
+                    font-weight: 600;
                 }
             }
         }
@@ -157,19 +165,25 @@
     display: flex;
     gap: $batch-spacing-xxl;
     flex-wrap: wrap;
+    padding: 16px;
+    background: #F8F7FA;
+    border-radius: 8px;
+    border: 1px solid #EBE9F1;
 
     .mat-mdc-checkbox {
-        .mdc-checkbox__native-control:enabled:checked~.mdc-checkbox__background {
-            background-color: $batch-primary !important;
-            border-color: $batch-primary !important;
+        ::ng-deep {
+            .mdc-checkbox__native-control:enabled:checked~.mdc-checkbox__background {
+                background-color: $batch-primary !important;
+                border-color: $batch-primary !important;
+            }
+
+            .mdc-form-field>label {
+                color: $batch-text-primary !important;
+                font-weight: 500;
+            }
         }
 
-        .mdc-form-field>label {
-            color: $batch-text-primary !important;
-            font-weight: 500;
-        }
-
-        &:hover .mdc-form-field>label {
+        &:hover ::ng-deep .mdc-form-field>label {
             color: $batch-text-card-title !important;
         }
     }
@@ -177,50 +191,24 @@
 
 // Advanced Filters Panel
 .advanced-filters {
-    margin: $batch-spacing-lg 0;
-    background-color: $batch-bg-card !important;
-    border-radius: $batch-radius-card;
+    margin-top: 16px;
+    background-color: #FFFFFF !important;
+    border-radius: 8px;
     border: 1px solid #EBE9F1;
     overflow: hidden;
     box-shadow: none;
 
-    &:not(.mat-expanded) {
-        border-color: #EBE9F1;
+    ::ng-deep .mat-expansion-panel-header {
+        display: none !important; // Hide the default header since we use a custom button
     }
 
     &.mat-expanded {
-        border-color: $batch-primary;
-        box-shadow: 0 4px 12px rgba(115, 103, 240, 0.1);
-    }
-
-    .mat-expansion-panel-header {
-        background-color: #F8F7FA !important;
-        height: 48px !important;
-        padding: 0 1.5rem !important;
-
-        .mat-panel-title {
-            color: $batch-text-secondary !important;
-            font-size: 0.95rem;
-            font-weight: 500;
-            display: flex;
-            align-items: center;
-            gap: 0.75rem;
-
-            .mat-icon {
-                font-size: 20px;
-                width: 20px;
-                height: 20px;
-                color: $batch-text-secondary !important;
-            }
-        }
-
-        &:hover {
-            background-color: #f1f0f5 !important;
-        }
+        border-color: #EBE9F1;
+        margin-bottom: 16px;
     }
 
     .mat-expansion-panel-content {
-        background-color: $batch-bg-card !important;
+        background-color: #FFFFFF !important;
 
         .mat-expansion-panel-body {
             padding: $batch-spacing-xl;
@@ -230,103 +218,16 @@
     // Advanced filters form fields
     .mat-mdc-form-field {
         @include batch-form-field;
-        background-color: $batch-bg-card !important;
+        width: 100%;
 
-        // All labels in advanced filters should be visible and purple
-        .mat-mdc-floating-label,
-        mat-label {
-            color: $batch-primary !important;
-            opacity: 1 !important;
-            visibility: visible !important;
-        }
-
-        &.mat-focused .mat-mdc-floating-label {
-            color: $batch-primary !important;
-        }
-
-        .mat-mdc-input-element {
-            color: $batch-text-primary !important;
-            caret-color: $batch-primary !important;
-
-            &::placeholder {
-                color: $batch-text-muted !important;
-                opacity: 1 !important;
-                font-style: normal !important;
+        ::ng-deep {
+            .mat-mdc-floating-label,
+            mat-label {
+                color: $batch-text-secondary !important;
             }
-        }
 
-        .mat-mdc-select-value-text {
-            color: $batch-text-primary !important;
-        }
-
-        .mat-mdc-select-placeholder {
-            color: $batch-text-muted !important;
-        }
-
-        .mat-mdc-select-arrow {
-            color: $batch-primary !important;
-        }
-
-        // Date picker styling
-        .mat-datepicker-toggle {
-            color: $batch-primary !important;
-        }
-
-        .mat-datepicker-toggle-default-icon {
-            color: $batch-primary !important;
-        }
-
-        .mat-mdc-form-field-hint {
-            color: $batch-text-muted !important;
-        }
-    }
-}
-
-// Filter Actions
-.filter-actions {
-    display: flex;
-    justify-content: flex-end;
-    gap: $batch-spacing-lg;
-    padding-top: $batch-spacing-xl;
-    border-top: 1px solid #EBE9F1;
-    margin-top: $batch-spacing-xxl;
-
-    button {
-        height: 40px;
-        padding: 0 1.5rem;
-        border-radius: 6px;
-        font-weight: 500;
-        display: flex;
-        align-items: center;
-        gap: 0.5rem;
-
-        .mat-icon {
-            font-size: 18px;
-            width: 18px;
-            height: 18px;
-        }
-
-        &[color="primary"],
-        &.mat-mdc-raised-button {
-            background-color: $batch-primary !important;
-            color: #ffffff !important;
-            border: none;
-
-            &:hover {
-                background-color: $batch-primary-hover !important;
-                box-shadow: 0 4px 12px rgba(115, 103, 240, 0.3);
-            }
-        }
-
-        &.mat-mdc-button:not(.mat-mdc-raised-button) {
-            color: $batch-text-secondary !important;
-            border: 1px solid #D8D6DE;
-            background: transparent;
-
-            &:hover {
-                background-color: #F8F7FA !important;
-                border-color: #B9B9C3;
-                color: $batch-text-primary !important;
+            &.mat-focused .mat-mdc-floating-label {
+                color: $batch-primary !important;
             }
         }
     }
@@ -336,195 +237,55 @@
 .item-option {
     display: flex;
     flex-direction: column;
-    padding: $batch-spacing-sm 0;
+    padding: 4px 0;
 
     .item-name {
         font-weight: 500;
         color: $batch-text-primary;
+        line-height: 1.2;
     }
 
     .item-code {
-        font-size: 12px;
+        font-size: 11px;
         color: $batch-text-secondary;
     }
 }
 
-// Status Chips in Select Options
-.mat-mdc-chip {
-    &.status-active {
-        @include batch-status-badge('active');
-    }
-
-    &.status-expired {
-        @include batch-status-badge('expired');
-    }
-
-    &.status-depleted {
-        @include batch-status-badge('depleted');
-    }
-
-    &.status-quarantined {
-        @include batch-status-badge('quarantined');
-    }
-}
-
-// Dropdown Panels
-.mat-mdc-select-panel {
-    background-color: $batch-bg-card !important;
-    border: 1px solid #E0E0E0;
-    box-shadow: $batch-shadow-card;
-    border-radius: $batch-radius-card;
-
-    .mat-mdc-option {
-        background-color: $batch-bg-card !important;
-        color: $batch-text-primary !important;
-
-        &:hover {
-            background-color: $batch-primary-lighter !important;
-        }
-
-        &.mat-selected {
-            background-color: $batch-primary-light !important;
-            color: $batch-primary !important;
-        }
-    }
-}
-
-.mat-mdc-autocomplete-panel {
-    background-color: $batch-bg-card !important;
-    border: 1px solid #E0E0E0;
-    box-shadow: $batch-shadow-card;
-    border-radius: $batch-radius-card;
-
-    .mat-mdc-option {
-        color: $batch-text-primary !important;
-
-        &:hover {
-            background-color: $batch-primary-lighter !important;
-        }
-    }
-}
-
-// Enhanced Focus States
-.mat-mdc-form-field {
-    @include batch-focus-visible;
-}
-
-.mat-mdc-button,
-.mat-mdc-raised-button {
-    @include batch-focus-visible;
-}
-
 // Responsive Design
-@include batch-mobile {
+@media (max-width: 992px) {
+    .filters-section {
+        flex-direction: column;
+        align-items: stretch;
+
+        .action-buttons {
+            justify-content: flex-start;
+        }
+    }
+}
+
+@media (max-width: 600px) {
+    .action-buttons {
+        flex-direction: column;
+        align-items: stretch;
+
+        button {
+            width: 100%;
+        }
+    }
+
     .filter-row {
         flex-direction: column;
-
+        
         .half-width {
             width: 100%;
         }
     }
-
-    .filter-actions {
-        flex-direction: column;
-        align-items: stretch;
-
-        .mat-mdc-button,
-        .mat-mdc-raised-button {
-            width: 100%;
-        }
-    }
-
-    .checkbox-row {
-        flex-direction: column;
-        gap: $batch-spacing-md;
-    }
-
-    .filters-card {
-
-        .mat-mdc-card-header,
-        .mat-mdc-card-content {
-            padding: $batch-spacing-lg;
-        }
-    }
 }
 
-@include batch-tablet {
-    .filter-row {
-        flex-wrap: wrap;
-    }
-
-    .checkbox-row {
-        justify-content: space-between;
-    }
-}
-
-// High Contrast Mode
-@include batch-high-contrast {
-    .filters-card {
-        border-width: 2px;
-    }
-
-    .mat-mdc-form-field {
-
-        .mdc-notched-outline__leading,
-        .mdc-notched-outline__notch,
-        .mdc-notched-outline__trailing {
-            border-width: 2px !important;
-        }
-    }
-}
-
-// Print Styles
-@media print {
-    .filter-actions {
-        display: none;
-    }
-
-    .advanced-filters {
-        .mat-expansion-panel-header {
-            display: none;
-        }
-
-        .mat-expansion-panel-content {
-            display: block !important;
-        }
-    }
-}
-
-// Animation Enhancements
-.mat-mdc-form-field {
-    @include batch-smooth-transition;
-}
-
-.mat-mdc-button,
-.mat-mdc-raised-button {
-    @include batch-smooth-transition;
-}
-
-.advanced-filters {
-    .mat-expansion-panel-header {
-        @include batch-smooth-transition;
-    }
-}
-
-// Custom Scrollbar for Dropdowns
-.mat-mdc-select-panel,
-.mat-mdc-autocomplete-panel {
-    &::-webkit-scrollbar {
-        width: 6px;
-    }
-
-    &::-webkit-scrollbar-track {
-        background: $batch-bg-header;
-    }
-
-    &::-webkit-scrollbar-thumb {
-        background: $batch-primary;
-        border-radius: 3px;
-
-        &:hover {
-            background: $batch-primary-hover;
-        }
-    }
+// Global Mat Autocomplete Panel Override
+::ng-deep .batch-autocomplete-panel {
+    border-radius: 8px !important;
+    margin-top: 4px !important;
+    box-shadow: 0 4px 20px rgba(34, 41, 47, 0.15) !important;
+    border: 1px solid #EBE9F1 !important;
 }

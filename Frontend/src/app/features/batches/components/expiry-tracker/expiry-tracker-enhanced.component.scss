@@ -32,147 +32,85 @@
     }
 }
 
-// Configuration Form Styling
-.config-form {
+// Standardized Filters Section Layout (Matches Batch Filters)
+.filters-section {
     display: flex;
-    gap: $batch-spacing-lg;
+    justify-content: space-between;
     align-items: flex-start;
-    flex-wrap: wrap;
+    gap: 24px;
     margin-top: $batch-spacing-xl;
+    flex-wrap: wrap;
 
-    .mat-mdc-form-field {
-        @include batch-form-field;
-        min-width: 200px;
+    .search-filters {
         flex: 1;
+        min-width: 300px;
+        display: flex;
+        gap: 16px;
 
-        // Enhanced border styling with #7367F0 - always visible
-        .mdc-notched-outline__leading,
-        .mdc-notched-outline__notch,
-        .mdc-notched-outline__trailing {
-            border-color: $batch-primary !important;
-            border-width: 1px !important;
+        .warning-field {
+            flex: 0 0 200px;
         }
 
-        // Focus state with thicker border
-        &.mat-focused {
+        .location-field {
+            flex: 1;
+        }
 
-            .mdc-notched-outline__leading,
-            .mdc-notched-outline__notch,
-            .mdc-notched-outline__trailing {
-                border-color: $batch-primary !important;
-                border-width: 2px !important;
+        .mat-mdc-form-field {
+            @include batch-form-field;
+
+            ::ng-deep {
+                .mdc-text-field--outline {
+                    background-color: #FFFFFF !important;
+                }
+                .mat-mdc-form-field-suffix {
+                    color: $batch-primary !important;
+                }
             }
         }
+    }
 
-        // Hover state
-        &:hover:not(.mat-focused) {
+    .action-buttons {
+        display: flex;
+        gap: 12px;
+        align-items: center;
+        flex-shrink: 0;
 
-            .mdc-notched-outline__leading,
-            .mdc-notched-outline__notch,
-            .mdc-notched-outline__trailing {
-                border-color: $batch-primary !important;
+        button {
+            height: 48px;
+            padding: 0 20px;
+            border-radius: 6px;
+            font-weight: 500;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            @include batch-smooth-transition;
+
+            &[color="primary"] {
+                background-color: $batch-primary !important;
+                color: #FFFFFF !important;
+
+                &:hover:not(:disabled) {
+                    background-color: $batch-primary-hover !important;
+                    box-shadow: 0 4px 12px rgba(115, 103, 240, 0.3);
+                    transform: translateY(-1px);
+                }
             }
         }
-
-        // Label styling - always visible and purple
-        .mat-mdc-floating-label {
-            color: $batch-primary !important;
-            opacity: 1 !important;
-            visibility: visible !important;
-        }
-
-        &.mat-focused .mat-mdc-floating-label {
-            color: $batch-primary !important;
-        }
-
-        // Alternative label selectors
-        mat-label {
-            color: $batch-primary !important;
-            opacity: 1 !important;
-            visibility: visible !important;
-        }
-
-        // Input text styling
-        .mat-mdc-input-element {
-            color: $batch-text-primary !important;
-            caret-color: $batch-primary !important;
-
-            // Enhanced placeholder styling with #7367F0
-            &::placeholder {
-                color: $batch-primary !important;
-                opacity: 0.7 !important;
-                font-style: italic;
-            }
-
-            &::-webkit-input-placeholder {
-                color: $batch-primary !important;
-                opacity: 0.7 !important;
-                font-style: italic;
-            }
-
-            &::-moz-placeholder {
-                color: $batch-primary !important;
-                opacity: 0.7 !important;
-                font-style: italic;
-            }
-
-            &:-ms-input-placeholder {
-                color: $batch-primary !important;
-                opacity: 0.7 !important;
-                font-style: italic;
-            }
-        }
-
-        // Select field styling
-        .mat-mdc-select-value-text {
-            color: $batch-text-primary !important;
-        }
-
-        .mat-mdc-select-placeholder {
-            color: $batch-primary !important;
-            opacity: 0.7 !important;
-            font-style: italic;
-        }
-
-        .mat-mdc-select-arrow {
-            color: $batch-primary !important;
-        }
-
-        // Hint text styling
-        .mat-mdc-form-field-hint {
-            color: $batch-text-muted !important;
-        }
-
-        // CSS Custom Properties for Material Design Components
-        --mdc-outlined-text-field-outline-color: #{$batch-primary} !important;
-        --mdc-outlined-text-field-focus-outline-color: #{$batch-primary} !important;
-        --mdc-outlined-text-field-hover-outline-color: #{$batch-primary} !important;
-        --mdc-outlined-text-field-label-text-color: #{$batch-primary} !important;
-        --mdc-outlined-text-field-focus-label-text-color: #{$batch-primary} !important;
-        --mat-form-field-label-text-color: #{$batch-primary} !important;
-        --mat-form-field-focus-label-text-color: #{$batch-primary} !important;
     }
 }
 
-// Action Buttons Styling
-.action-buttons {
+// Configuration Form Styling
+.config-form {
     display: flex;
-    gap: $batch-spacing-sm;
-    align-items: flex-end;
-    margin-top: $batch-spacing-sm;
-
-    .mat-mdc-raised-button {
-        @include batch-button-primary;
-        white-space: nowrap;
-    }
+    flex-direction: column;
 }
 
 // Summary Cards Grid
 .summary-cards {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
     gap: $batch-spacing-lg;
-    margin-bottom: $batch-spacing-xxl;
+    margin: $batch-spacing-xxl 0;
 
     .summary-card {
         @include batch-card;
@@ -203,6 +141,7 @@
 // Location Summary Card
 .location-summary-card {
     @include batch-card;
+    margin-bottom: $batch-spacing-xxl;
 
     .mat-mdc-card-title {
         display: flex;
@@ -226,14 +165,15 @@
     justify-content: space-between;
     align-items: center;
     padding: $batch-spacing-md;
-    border: 1px solid #E0E0E0;
+    border: 1px solid #EBE9F1;
     border-radius: $batch-radius-card;
-    background-color: $batch-bg-header;
+    background-color: #F8F7FA;
     @include batch-smooth-transition;
 
     &:hover {
-        background-color: $batch-primary-lighter;
+        background-color: #FFFFFF;
         border-color: $batch-primary;
+        box-shadow: 0 4px 12px rgba(34, 41, 47, 0.08);
     }
 
     .location-info {
@@ -310,26 +250,14 @@
 
     &.critical {
         border-left-color: $batch-status-critical;
-
-        .batch-card {
-            @include batch-expiry-card('critical');
-        }
     }
 
     &.warning {
         border-left-color: $batch-status-warning;
-
-        .batch-card {
-            @include batch-expiry-card('warning');
-        }
     }
 
     &.normal {
         border-left-color: $batch-status-normal;
-
-        .batch-card {
-            @include batch-expiry-card('normal');
-        }
     }
 
     .mat-mdc-card-title {
@@ -350,6 +278,7 @@
     overflow-x: auto;
     border-radius: $batch-radius-card;
     margin-top: $batch-spacing-lg;
+    border: 1px solid #EBE9F1;
 }
 
 .batch-table {
@@ -376,7 +305,7 @@
         }
 
         .item-code {
-            font-size: 12px;
+            font-size: 11px;
             color: $batch-text-secondary;
         }
     }
@@ -387,12 +316,12 @@
         gap: $batch-spacing-xs;
 
         .remaining {
-            font-weight: 500;
+            font-weight: 600;
             color: $batch-text-primary;
         }
 
         .unit {
-            font-size: 12px;
+            font-size: 11px;
             color: $batch-text-secondary;
         }
     }
@@ -404,8 +333,8 @@
         }
 
         .days-remaining {
-            font-size: 12px;
-            font-weight: 500;
+            font-size: 11px;
+            font-weight: 600;
             margin-top: 2px;
 
             &.expired {
@@ -430,44 +359,26 @@
         .location-name {
             font-weight: 500;
             color: $batch-text-primary;
+            font-size: 13px;
         }
 
         .location-code {
-            font-size: 12px;
+            font-size: 11px;
             color: $batch-text-secondary;
-        }
-    }
-
-    // Status Chips
-    .mat-mdc-chip {
-        &.status-active {
-            @include batch-status-badge('active');
-        }
-
-        &.status-expired {
-            @include batch-status-badge('expired');
-        }
-
-        &.status-depleted {
-            @include batch-status-badge('depleted');
-        }
-
-        &.status-quarantined {
-            @include batch-status-badge('quarantined');
         }
     }
 
     .actions {
         display: flex;
-        gap: $batch-spacing-xs;
+        gap: 8px;
 
         .mat-mdc-icon-button {
-            color: $batch-primary !important;
+            color: $batch-text-secondary !important;
             @include batch-smooth-transition;
 
             &:hover {
-                background-color: $batch-primary-light !important;
-                color: $batch-primary-hover !important;
+                background-color: $batch-primary-lighter !important;
+                color: $batch-primary !important;
             }
         }
     }
@@ -487,11 +398,12 @@
         height: 48px;
         color: $batch-status-normal;
         margin-bottom: $batch-spacing-lg;
+        opacity: 0.5;
     }
 
     p {
         margin: 0;
-        font-size: 16px;
+        font-size: 14px;
     }
 }
 
@@ -508,7 +420,7 @@
     display: flex;
     flex-direction: column;
     align-items: center;
-    padding: 40px;
+    padding: 60px 40px;
     text-align: center;
 
     .mat-icon {
@@ -517,12 +429,14 @@
         height: 64px;
         color: $batch-status-normal;
         margin-bottom: $batch-spacing-lg;
+        opacity: 0.3;
     }
 
     h3 {
         margin: 0 0 $batch-spacing-sm 0;
         color: $batch-text-primary;
         font-weight: 600;
+        font-size: 20px;
     }
 
     p {
@@ -532,25 +446,29 @@
 }
 
 // Responsive Design
-@include batch-mobile {
+@media (max-width: 992px) {
+    .filters-section {
+        flex-direction: column;
+        align-items: stretch;
+
+        .search-filters {
+            flex-direction: column;
+            
+            .warning-field {
+                flex: none;
+                width: 100%;
+            }
+        }
+    }
+}
+
+@media (max-width: 600px) {
     .expiry-tracker-container {
         padding: $batch-spacing-lg;
     }
 
     .summary-cards {
         grid-template-columns: 1fr;
-    }
-
-    .config-form {
-        flex-direction: column;
-
-        .mat-mdc-form-field {
-            width: 100%;
-        }
-    }
-
-    .batch-table {
-        min-width: 600px;
     }
 
     .location-summary-grid {
@@ -564,37 +482,6 @@
     }
 }
 
-@include batch-tablet {
-    .summary-cards {
-        grid-template-columns: repeat(2, 1fr);
-    }
-
-    .location-summary-grid {
-        grid-template-columns: repeat(2, 1fr);
-    }
-}
-
-// Accessibility Enhancements
-@include batch-high-contrast {
-
-    .batch-card,
-    .summary-card,
-    .group-card {
-        border-width: 2px;
-    }
-
-    .batch-link {
-        text-decoration: underline;
-    }
-}
-
-// Focus Management
-.mat-mdc-button,
-.mat-mdc-icon-button,
-.batch-link {
-    @include batch-focus-visible;
-}
-
 // Print Styles
 @media print {
     .expiry-tracker-container {
@@ -603,12 +490,8 @@
     }
 
     .action-buttons,
-    .actions {
+    .actions,
+    .filters-section {
         display: none;
-    }
-
-    .summary-cards,
-    .expiry-groups {
-        break-inside: avoid;
     }
 }

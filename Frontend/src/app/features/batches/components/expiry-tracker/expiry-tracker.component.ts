@@ -72,31 +72,36 @@ export interface LocationSummary {
         
         <mat-card-content>
           <form [formGroup]="configForm" class="config-form">
-            <mat-form-field appearance="outline">
-              <mat-label>Warning Period (Days)</mat-label>
-              <input matInput type="number" formControlName="warningPeriod" 
-                     min="1" max="365" placeholder="30">
-              <mat-hint>Show batches expiring within this many days (1-365)</mat-hint>
-            </mat-form-field>
+            <div class="filters-section">
+              <div class="search-filters">
+                <mat-form-field appearance="outline" class="warning-field">
+                  <mat-label>Warning Period (Days)</mat-label>
+                  <input matInput type="number" formControlName="warningPeriod" 
+                         min="1" max="365" placeholder="30">
+                  <mat-icon matSuffix>schedule</mat-icon>
+                  <mat-hint>Show batches expiring within 1-365 days</mat-hint>
+                </mat-form-field>
 
-            <mat-form-field appearance="outline">
-              <mat-label>Filter by Location</mat-label>
-              <mat-select formControlName="selectedLocationIds" multiple>
-                <mat-option value="">All Locations</mat-option>
-                <mat-option *ngFor="let location of locationOptions$ | async" [value]="location.value">
-                  {{ location.label }} ({{ location.type }})
-                </mat-option>
-              </mat-select>
-              <mat-hint>Select specific locations to filter expiring batches</mat-hint>
-            </mat-form-field>
+                <mat-form-field appearance="outline" class="location-field">
+                  <mat-label>Filter by Location</mat-label>
+                  <mat-select formControlName="selectedLocationIds" multiple>
+                    <mat-option *ngFor="let location of locationOptions$ | async" [value]="location.value">
+                      {{ location.label }} ({{ location.type }})
+                    </mat-option>
+                  </mat-select>
+                  <mat-icon matSuffix>location_on</mat-icon>
+                  <mat-hint>Select specific locations to filter</mat-hint>
+                </mat-form-field>
+              </div>
 
-            <div class="action-buttons">
-              <button mat-raised-button color="primary" 
-                      (click)="exportExpiringBatches()"
-                      [disabled]="(expiryGroups$ | async)?.length === 0">
-                <mat-icon>download</mat-icon>
-                Export Report
-              </button>
+              <div class="action-buttons">
+                <button mat-raised-button color="primary" 
+                        (click)="exportExpiringBatches()"
+                        [disabled]="(expiryGroups$ | async)?.length === 0">
+                  <mat-icon>download</mat-icon>
+                  Export Report
+                </button>
+              </div>
             </div>
           </form>
         </mat-card-content>
