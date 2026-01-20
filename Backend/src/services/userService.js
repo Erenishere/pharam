@@ -1,5 +1,6 @@
 const userRepository = require('../repositories/userRepository');
 const authService = require('./authService');
+const Salesman = require('../models/Salesman');
 
 /**
  * User Service
@@ -131,6 +132,21 @@ class UserService {
       role,
       isActive: userData.isActive !== undefined ? userData.isActive : true,
     });
+
+    // Auto-create Salesman record for sales role users
+    if (role === 'sales') {
+      try {
+        await Salesman.create({
+          name: username,
+          email: email,
+          userId: user._id,
+          commissionRate: 0,
+          isActive: true,
+        });
+      } catch (salesmanError) {
+        console.error('Failed to create salesman record:', salesmanError.message);
+      }
+    }
 
     return user;
   }
