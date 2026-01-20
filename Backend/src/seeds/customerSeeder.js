@@ -95,6 +95,25 @@ const customers = [
     },
     isActive: true,
   },
+  {
+    code: 'CUST-WALKIN',
+    name: 'Walk-In Customer',
+    type: 'customer', // specifically 'customer' so it shows in search
+    contactInfo: {
+      phone: '000-0000000',
+      email: 'walkin@store.com',
+      address: 'Counter Sale',
+      city: 'Karachi',
+      country: 'Pakistan',
+    },
+    financialInfo: {
+      creditLimit: 10000000, // High limit for cash sales
+      paymentTerms: 0,
+      taxNumber: '',
+      currency: 'PKR',
+    },
+    isActive: true,
+  }
 ];
 
 module.exports = {

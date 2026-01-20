@@ -29,19 +29,24 @@ import { User } from '../../core/models/user.model';
         <mat-icon>menu</mat-icon>
       </button>
 
-      <!-- search -->
-      <div class="search-input-container">
+      <!-- search (Hidden for Salesman) -->
+      <div class="search-input-container" *ngIf="!isSalesman">
         <input type="text" placeholder="Search…" />
+      </div>
+
+      <!-- Company Name (Visible for Salesman) -->
+      <div class="company-branding" *ngIf="isSalesman">
+        <h2 style="margin: 0; color: #5e50ee; font-weight: 600;">Indus Pharma</h2>
       </div>
 
       <span class="spacer"></span>
 
-      <!-- search icon -->
-      <button mat-icon-button class="icon-btn">
+      <!-- search icon (Hidden for Salesman) -->
+      <button mat-icon-button class="icon-btn" *ngIf="!isSalesman">
         <mat-icon>search</mat-icon>
       </button>
-
-      <span class="spacer"></span>
+      
+      <span class="spacer" *ngIf="!isSalesman"></span>
 
       <!-- RIGHT CORNER GROUP -->
       <div class="right-group">
@@ -96,6 +101,10 @@ export class NavbarComponent implements OnInit {
 
   ngOnInit(): void {
     this.authService.currentUser$.subscribe(user => this.currentUser = user);
+  }
+
+  get isSalesman(): boolean {
+    return this.currentUser?.role === 'sales';
   }
 
   logout(): void {

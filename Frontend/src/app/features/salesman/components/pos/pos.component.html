@@ -24,8 +24,7 @@
                 <div class="search-input-container">
                     <mat-icon class="search-icon">search</mat-icon>
                     <input [formControl]="customerControl" [matAutocomplete]="customerAuto"
-                        placeholder="Search by name, code, or phone (F3)..." class="customer-search-input"
-                        #customerInput>
+                        placeholder="Search by name, code, or phone..." class="customer-search-input">
                     <mat-spinner diameter="18" *ngIf="isSearchingCustomers"></mat-spinner>
                     <button mat-icon-button class="clear-btn" *ngIf="customerControl.value"
                         (click)="clearCustomer(); $event.stopPropagation()">
@@ -52,7 +51,7 @@
 
             <!-- Selected Customer Display -->
             <div class="selected-customer-badge" *ngIf="selectedCustomer">
-                <div class="customer-avatar">{{ selectedCustomer?.name ? selectedCustomer.name.charAt(0) : '?' }}</div>
+                <div class="customer-avatar">{{ selectedCustomer.name?.charAt(0) }}</div>
                 <div class="customer-info">
                     <span class="name">{{ selectedCustomer.name }}</span>
                     <span class="code">{{ selectedCustomer.code }}</span>
@@ -93,8 +92,7 @@
                             <div class="prod-meta">
                                 <span class="price">{{ formatCurrency(item.pricing?.salePrice || item.salePrice)
                                     }}</span>
-                                <span class="stock-badge" [ngClass]="getStockStatusClass(item)">{{ item.stock ||
-                                    item.inventory?.currentStock || 0 }} {{ item.unit
+                                <span class="stock-badge" [class.low]="item.stock < 10">{{ item.stock }} {{ item.unit
                                     }}</span>
                             </div>
                         </div>
@@ -121,25 +119,8 @@
                             <td>
                                 <div class="cell-desc">
                                     <span class="main-text">{{ item.name }}</span>
-                                    <div class="batch-row">
-                                        <span class="sub-text">{{ item.manufacturer || 'N/A' }}</span>
-                                        <select *ngIf="item.availableBatches && item.availableBatches.length > 1"
-                                            class="batch-select" [ngModel]="item.selectedBatch"
-                                            (ngModelChange)="onBatchChange(item._id, $event)">
-                                            <option *ngFor="let batch of item.availableBatches"
-                                                [value]="batch.batchNumber"
-                                                [class.expired]="isExpired(batch.expiryDate)"
-                                                [class.expiring]="isExpiringSoon(batch.expiryDate)">
-                                                {{ batch.batchNumber }} ({{ batch.expiryDate | date:'MM/yy' }}) - {{
-                                                batch.stock }}
-                                            </option>
-                                        </select>
-                                        <span *ngIf="!item.availableBatches || item.availableBatches.length <= 1"
-                                            class="batch-label" [class.expired]="isExpired(item.selectedExpiry)"
-                                            [class.expiring]="isExpiringSoon(item.selectedExpiry)">
-                                            {{ item.selectedBatch || 'No Batch' }}
-                                        </span>
-                                    </div>
+                                    <span class="sub-text">{{ item.manufacturer || 'N/A' }} | {{ item.selectedBatch ||
+                                        'No Batch' }}</span>
                                 </div>
                             </td>
                             <td class="text-right numeric">{{ formatCurrency(item.salePrice) }}</td>
@@ -165,7 +146,7 @@
                             </td>
                         </tr>
                         <tr *ngIf="cart().length === 0">
-                            <td colspan="7">
+                            <td colspan="6">
                                 <div class="empty-state">
                                     <mat-icon>shopping_basket</mat-icon>
                                     <p>Your cart is empty. Start by searching for a product.</p>
@@ -208,26 +189,15 @@
 
             <div class="process-actions">
                 <button mat-flat-button class="process-btn"
-                    [disabled]="isSubmitting || isSearchingCustomers || cart().length === 0 || !selectedCustomer"
-                    (click)="submitInvoice()" matTooltip="Press F9 to submit">
-                    <span *ngIf="!isSubmitting && !isSearchingCustomers">PROCESS INVOICE (F9)</span>
-                    <span *ngIf="isSearchingCustomers">Loading Customer...</span>
+                    [disabled]="isSubmitting || cart().length === 0 || !selectedCustomer" (click)="submitInvoice()">
+                    <span *ngIf="!isSubmitting">PROCESS INVOICE</span>
                     <mat-spinner diameter="24" *ngIf="isSubmitting" class="spinner-white"></mat-spinner>
                 </button>
 
-                <button mat-stroked-button (click)="clearCart()" [disabled]="cart().length === 0"
-                    matTooltip="Press Ctrl+Delete to clear">
+                <button mat-stroked-button (click)="clearCart()" [disabled]="cart().length === 0">
                     <mat-icon>restart_alt</mat-icon>
                     Clear Cart
                 </button>
-
-                <div class="keyboard-hints">
-                    <span><strong>F2</strong> Product</span>
-                    <span><strong>F3</strong> Customer</span>
-                    <span><strong>F9</strong> Submit</span>
-                    <span><strong>F10</strong> Preview</span>
-                    <span><strong>Esc</strong> Close</span>
-                </div>
             </div>
         </div>
     </div>

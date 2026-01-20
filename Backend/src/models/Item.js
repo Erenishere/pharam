@@ -32,8 +32,8 @@ const itemSchema = new mongoose.Schema({
     trim: true,
     maxlength: [20, 'Unit cannot exceed 20 characters'],
     enum: {
-      values: ['piece', 'kg', 'gram', 'liter', 'ml', 'meter', 'cm', 'box', 'pack', 'dozen'],
-      message: 'Unit must be one of: piece, kg, gram, liter, ml, meter, cm, box, pack, dozen',
+      values: ['piece', 'kg', 'gram', 'liter', 'ml', 'meter', 'cm', 'box', 'pack', 'dozen', 'bottle', 'tube', 'strip', 'tablet', 'capsule', 'pair'],
+      message: 'Unit must be one of: piece, kg, gram, liter, ml, meter, cm, box, pack, dozen, bottle, tube, strip, tablet, capsule, pair',
     },
   },
   pricing: {
@@ -81,6 +81,13 @@ const itemSchema = new mongoose.Schema({
       default: 0,
       min: [0, 'Current stock cannot be negative'],
     },
+    batches: [{
+      batchNumber: { type: String, required: true },
+      expiryDate: { type: Date, required: true },
+      stock: { type: Number, required: true, min: 0 },
+      costPrice: { type: Number }, // Batch specific cost can vary
+      salePrice: { type: Number }  // Batch specific sale price
+    }],
     minimumStock: {
       type: Number,
       default: 0,
@@ -109,6 +116,11 @@ const itemSchema = new mongoose.Schema({
       validator: Number.isInteger,
       message: 'Pack size must be a whole number',
     },
+  },
+  // Phase 2 - Manufacturer (User Request)
+  manufacturer: {
+    type: String,
+    trim: true
   },
   // Phase 2 - Warranty Management (Requirement 32 - Task 76.5)
   defaultWarrantyMonths: {
@@ -139,6 +151,7 @@ itemSchema.index({ name: 1 });
 itemSchema.index({ category: 1 });
 itemSchema.index({ isActive: 1 });
 itemSchema.index({ 'inventory.currentStock': 1 });
+itemSchema.index({ 'inventory.batches.batchNumber': 1 }); // New Index
 itemSchema.index({ 'pricing.salePrice': 1 });
 itemSchema.index({ barcode: 1 }, { unique: true, sparse: true });
 itemSchema.index({ packSize: 1 });
@@ -161,6 +174,7 @@ itemSchema.virtual('stockStatus').get(function () {
 
 // Instance method to check stock availability
 itemSchema.methods.checkStockAvailability = function (quantity) {
+  // Check total stock
   return this.inventory.currentStock >= quantity;
 };
 
@@ -183,6 +197,44 @@ itemSchema.methods.updateStock = function (quantity, operation = 'add') {
     this.inventory.currentStock = Math.max(0, this.inventory.currentStock - quantity);
   }
   return this.save();
+};
+
+// Instance method to update batch-specific stock (FEFO enforcement)
+// This method deducts from a specific batch AND updates global currentStock
+itemSchema.methods.updateBatchStock = function (batchNumber, quantity, operation = 'subtract') {
+  // Find the batch by batchNumber
+  const batch = this.inventory.batches.find(b => b.batchNumber === batchNumber);
+
+  if (batch) {
+    // Update batch-specific stock
+    if (operation === 'subtract') {
+      batch.stock = Math.max(0, batch.stock - quantity);
+    } else if (operation === 'add') {
+      batch.stock += quantity;
+    }
+  } else {
+    // If batch not found, log warning but still proceed with global stock update
+    console.warn(`Batch ${batchNumber} not found for item ${this.code}. Updating global stock only.`);
+  }
+
+  // Also update global currentStock to keep it in sync
+  if (operation === 'subtract') {
+    this.inventory.currentStock = Math.max(0, this.inventory.currentStock - quantity);
+  } else if (operation === 'add') {
+    this.inventory.currentStock += quantity;
+  }
+
+  return this.save();
+};
+
+// Instance method to check batch stock availability
+itemSchema.methods.checkBatchStockAvailability = function (batchNumber, quantity) {
+  const batch = this.inventory.batches.find(b => b.batchNumber === batchNumber);
+  if (batch) {
+    return batch.stock >= quantity;
+  }
+  // Fallback to global stock if batch not found
+  return this.inventory.currentStock >= quantity;
 };
 
 // Static method to find low stock items
@@ -225,5 +277,11 @@ itemSchema.pre('save', function (next) {
   }
   next();
 });
+
+// compound index for efficient searching
+itemSchema.index({ name: 'text', code: 'text', description: 'text', barcode: 'text' });
+itemSchema.index({ code: 1 });
+itemSchema.index({ barcode: 1 });
+itemSchema.index({ category: 1 });
 
 module.exports = mongoose.model('Item', itemSchema);

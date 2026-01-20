@@ -44,11 +44,10 @@ export class LoginComponent {
                     console.log('[LoginComponent] Login response received:', response);
                     this.isLoading = false;
                     if (response.success) {
-                        const userRole = response.data.user.role?.toLowerCase();
-                        console.log('[LoginComponent] Login successful, user role:', userRole);
-                        
-                        if (userRole === 'sales') {
-                            this.router.navigate(['/salesman/dashboard']);
+                        console.log('[LoginComponent] Login successful, navigating to dashboard');
+                        const user = response.data.user;
+                        if (user.role === 'sales') {
+                            this.router.navigate(['/salesman/pos']);
                         } else {
                             this.router.navigate(['/dashboard']);
                         }

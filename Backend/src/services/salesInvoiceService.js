@@ -790,13 +790,22 @@ class SalesInvoiceService {
         throw new Error(`Item not found: ${item.itemId}`);
       }
 
-      if (operation === 'subtract') {
-        itemDoc.inventory.currentStock = Math.max(0, itemDoc.inventory.currentStock - item.quantity);
-      } else if (operation === 'add') {
-        itemDoc.inventory.currentStock += item.quantity;
+      // Check if batch info is available for batch-specific stock update
+      const batchNumber = item.batchInfo?.batchNumber;
+
+      if (batchNumber && typeof itemDoc.updateBatchStock === 'function') {
+        // Use batch-specific stock update (FEFO enforcement)
+        await itemDoc.updateBatchStock(batchNumber, item.quantity, operation);
+      } else {
+        // Fallback to global stock update
+        if (operation === 'subtract') {
+          itemDoc.inventory.currentStock = Math.max(0, itemDoc.inventory.currentStock - item.quantity);
+        } else if (operation === 'add') {
+          itemDoc.inventory.currentStock += item.quantity;
+        }
+        await itemDoc.save();
       }
 
-      await itemDoc.save();
       updatedItems.push(itemDoc);
     }
 
