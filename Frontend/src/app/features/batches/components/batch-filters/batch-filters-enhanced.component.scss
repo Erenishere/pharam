@@ -30,52 +30,86 @@
     }
 }
 
+// Search Bar Redesign
+.search-row {
+    margin-bottom: $batch-spacing-xxl;
+
+    .search-container {
+        display: flex;
+        align-items: center;
+        background: #ffffff;
+        border: 1px solid #EBE9F1;
+        border-radius: 8px;
+        padding: 0 0.5rem 0 1.25rem;
+        height: 54px;
+        transition: all 0.2s ease-in-out;
+        box-shadow: 0 2px 8px rgba(34, 41, 47, 0.05);
+
+        &:focus-within {
+            border-color: $batch-primary;
+            box-shadow: 0 4px 12px rgba(115, 103, 240, 0.15);
+        }
+
+        .search-icon {
+            color: $batch-primary;
+            margin-right: 1rem;
+        }
+
+        .batch-search-input {
+            flex: 1;
+            border: none;
+            background: transparent;
+            font-size: 1.1rem;
+            outline: none;
+            color: $batch-text-primary;
+            height: 100%;
+
+            &::placeholder {
+                color: $batch-text-muted;
+                font-weight: 400;
+            }
+        }
+
+        .search-actions {
+            display: flex;
+            align-items: center;
+            gap: 0.25rem;
+
+            .search-divider {
+                width: 1px;
+                height: 24px;
+                background: #EBE9F1;
+                margin: 0 0.5rem;
+            }
+
+            button {
+                color: $batch-text-secondary;
+
+                &:hover {
+                    color: $batch-primary;
+                    background: rgba($batch-primary, 0.08);
+                }
+
+                &.active {
+                    color: $batch-primary;
+                    background: rgba($batch-primary, 0.08);
+                }
+            }
+        }
+    }
+}
+
 // Filters Form Layout
 .filters-form {
     display: flex;
     flex-direction: column;
-    gap: $batch-spacing-lg;
 }
 
 .filter-row {
     display: flex;
     gap: $batch-spacing-lg;
+    margin-bottom: $batch-spacing-lg;
     align-items: flex-start;
-
-    // Enhanced search field styling (first row)
-    &:first-child {
-        margin-top: $batch-spacing-xl;
-
-        .mat-mdc-form-field {
-            @include batch-search-field;
-
-            // Hide label by default for search field
-            .mat-mdc-floating-label {
-                opacity: 0 !important;
-                visibility: hidden !important;
-                transition: opacity 0.2s ease, visibility 0.2s ease !important;
-            }
-
-            // Show label only when focused
-            &.mat-focused .mat-mdc-floating-label {
-                opacity: 1 !important;
-                visibility: visible !important;
-                color: $batch-primary !important;
-            }
-
-            // Enhanced placeholder styling
-            .mat-mdc-input-element::placeholder {
-                color: $batch-primary !important;
-                opacity: 0.7 !important;
-                font-style: italic;
-            }
-
-            // Search icon styling
-            .mat-icon {
-                color: $batch-primary !important;
-            }
-        }
-    }
 }
 
 // Filter Section Headers
@@ -129,41 +163,42 @@
     margin: $batch-spacing-lg 0;
     background-color: $batch-bg-card !important;
     border-radius: $batch-radius-card;
-    box-shadow: $batch-shadow-elevated;
+    border: 1px solid #EBE9F1;
+    overflow: hidden;
+    box-shadow: none;
+
+    &:not(.mat-expanded) {
+        border-color: #EBE9F1;
+    }
+
+    &.mat-expanded {
+        border-color: $batch-primary;
+        box-shadow: 0 4px 12px rgba(115, 103, 240, 0.1);
+    }
 
     .mat-expansion-panel-header {
-        background-color: $batch-bg-header !important;
-        border-radius: $batch-radius-card $batch-radius-card 0 0;
+        background-color: #F8F7FA !important;
+        height: 48px !important;
+        padding: 0 1.5rem !important;
 
         .mat-panel-title {
-            color: $batch-text-primary !important;
+            color: $batch-text-secondary !important;
+            font-size: 0.95rem;
             font-weight: 500;
             display: flex;
             align-items: center;
-            gap: $batch-spacing-sm;
+            gap: 0.75rem;
 
             .mat-icon {
-                color: $batch-primary !important;
+                font-size: 20px;
+                width: 20px;
+                height: 20px;
+                color: $batch-text-secondary !important;
             }
-        }
-
-        // Expansion indicator styling
-        .mat-expansion-indicator::after,
-        .mat-expansion-indicator,
-        .mat-icon {
-            color: $batch-primary !important;
         }
 
         &:hover {
-            .mat-panel-title {
-                color: $batch-text-card-title !important;
-            }
-
-            .mat-expansion-indicator::after,
-            .mat-expansion-indicator,
-            .mat-icon {
-                color: $batch-primary-hover !important;
-            }
+            background-color: #f1f0f5 !important;
         }
     }
 
@@ -233,18 +268,50 @@
 // Filter Actions
 .filter-actions {
     display: flex;
-    gap: $batch-spacing-md;
-    align-items: center;
-    margin-top: $batch-spacing-lg;
-    padding-top: $batch-spacing-lg;
-    border-top: 1px solid #E0E0E0;
+    justify-content: flex-end;
+    gap: $batch-spacing-lg;
+    padding-top: $batch-spacing-xl;
+    border-top: 1px solid #EBE9F1;
+    margin-top: $batch-spacing-xxl;
 
-    .mat-mdc-raised-button {
-        @include batch-button-primary;
-    }
+    button {
+        height: 40px;
+        padding: 0 1.5rem;
+        border-radius: 6px;
+        font-weight: 500;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
 
-    .mat-mdc-button {
-        @include batch-button-outline;
+        .mat-icon {
+            font-size: 18px;
+            width: 18px;
+            height: 18px;
+        }
+
+        &[color="primary"],
+        &.mat-mdc-raised-button {
+            background-color: $batch-primary !important;
+            color: #ffffff !important;
+            border: none;
+
+            &:hover {
+                background-color: $batch-primary-hover !important;
+                box-shadow: 0 4px 12px rgba(115, 103, 240, 0.3);
+            }
+        }
+
+        &.mat-mdc-button:not(.mat-mdc-raised-button) {
+            color: $batch-text-secondary !important;
+            border: 1px solid #D8D6DE;
+            background: transparent;
+
+            &:hover {
+                background-color: #F8F7FA !important;
+                border-color: #B9B9C3;
+                color: $batch-text-primary !important;
+            }
+        }
     }
 }
 

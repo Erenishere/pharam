@@ -5,28 +5,46 @@
       Batch Filters
     </mat-card-title>
   </mat-card-header>
-  
+
   <mat-card-content>
     <form [formGroup]="filterForm" class="filters-form">
-      
-      <!-- Quick Search -->
-      <div class="filter-row">
-        <mat-form-field appearance="outline" class="full-width">
-          <mat-label>Search Items</mat-label>
-          <input matInput 
-                 formControlName="itemSearch" 
-                 placeholder="Type item name, code, or batch number to search..."
-                 [matAutocomplete]="itemAuto">
-          <mat-icon matSuffix>search</mat-icon>
-          <mat-autocomplete #itemAuto="matAutocomplete" [displayWith]="displayItemFn">
-            <mat-option *ngFor="let item of filteredItems$ | async" [value]="item">
-              <div class="item-option">
-                <div class="item-name">{{ item.name }}</div>
-                <div class="item-code">{{ item.code }}</div>
+
+      <!-- Quick Search Redesign -->
+      <div class="search-row">
+        <div class="search-container">
+          <mat-icon class="search-icon">search</mat-icon>
+          <input type="text" formControlName="itemSearch" placeholder="Search by item name, code, or batch number..."
+            [matAutocomplete]="itemAuto" class="batch-search-input" #searchInput>
+
+          <div class="search-actions">
+            <button mat-icon-button *ngIf="filterForm.get('itemSearch')?.value"
+              (click)="filterForm.get('itemSearch')?.setValue(''); searchInput.focus()" type="button"
+              matTooltip="Clear search">
+              <mat-icon>close</mat-icon>
+            </button>
+            <div class="search-divider"></div>
+            <button mat-icon-button type="button" (click)="toggleAdvancedFilters()"
+              [matTooltip]="showAdvancedFilters ? 'Hide filters' : 'Show filters'" [class.active]="showAdvancedFilters">
+              <mat-icon>tune</mat-icon>
+            </button>
+          </div>
+        </div>
+
+        <mat-autocomplete #itemAuto="matAutocomplete" [displayWith]="displayItemFn"
+          panelClass="batch-autocomplete-panel">
+          <mat-option *ngFor="let item of filteredItems$ | async" [value]="item">
+            <div class="item-option">
+              <div class="item-info">
+                <span class="item-name">{{ item.name }}</span>
+                <span class="item-code">{{ item.code }}</span>
               </div>
-            </mat-option>
-          </mat-autocomplete>
-        </mat-form-field>
+            </div>
+          </mat-option>
+          <mat-option *ngIf="(filteredItems$ | async)?.length === 0 && filterForm.get('itemSearch')?.value?.length >= 2"
+            disabled>
+            No items found
+          </mat-option>
+        </mat-autocomplete>
       </div>
 
       <!-- Advanced Filters -->

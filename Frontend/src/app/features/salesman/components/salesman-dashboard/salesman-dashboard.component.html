@@ -1,0 +1,129 @@
+<div class="salesman-dashboard">
+  <!-- Loading State -->
+  <div *ngIf="loading" class="loading-container">
+    <mat-spinner diameter="50"></mat-spinner>
+    <p>Loading dashboard...</p>
+  </div>
+
+  <!-- Error State -->
+  <div *ngIf="error && !loading" class="error-container">
+    <mat-icon>error_outline</mat-icon>
+    <p>{{ error }}</p>
+    <button mat-raised-button color="primary" (click)="loadDashboardData()">
+      Retry
+    </button>
+  </div>
+
+  <!-- Dashboard Content -->
+  <div *ngIf="!loading && !error" class="dashboard-content">
+    <!-- Header -->
+    <div class="dashboard-header">
+      <div class="welcome-section">
+        <h1>Welcome back, {{ salesman?.name }}!</h1>
+        <p class="subtitle">{{ salesman?.code }} • Commission Rate: {{ salesman?.commissionRate }}%</p>
+      </div>
+      <button mat-raised-button color="primary" class="pos-button" (click)="navigateToPOS()">
+        <mat-icon>point_of_sale</mat-icon>
+        New Sale
+      </button>
+    </div>
+
+    <!-- Quick Stats -->
+    <div class="stats-grid">
+      <mat-card class="stat-card sales-card">
+        <div class="stat-icon">
+          <mat-icon>trending_up</mat-icon>
+        </div>
+        <div class="stat-content">
+          <h3>Total Sales</h3>
+          <p class="stat-value">{{ formatCurrency(performance?.stats?.totalSales || 0) }}</p>
+          <p class="stat-label">This Month</p>
+        </div>
+      </mat-card>
+
+      <mat-card class="stat-card invoices-card">
+        <div class="stat-icon">
+          <mat-icon>receipt_long</mat-icon>
+        </div>
+        <div class="stat-content">
+          <h3>Invoices</h3>
+          <p class="stat-value">{{ performance?.stats?.totalInvoices || 0 }}</p>
+          <p class="stat-label">{{ performance?.stats?.confirmedInvoices || 0 }} Confirmed</p>
+        </div>
+      </mat-card>
+
+      <mat-card class="stat-card commission-card">
+        <div class="stat-icon">
+          <mat-icon>account_balance_wallet</mat-icon>
+        </div>
+        <div class="stat-content">
+          <h3>Est. Commission</h3>
+          <p class="stat-value">{{ formatCurrency((performance?.stats?.totalSales || 0) * (salesman?.commissionRate ||
+            0) / 100) }}</p>
+          <p class="stat-label">Based on {{ salesman?.commissionRate }}%</p>
+        </div>
+      </mat-card>
+
+      <mat-card class="stat-card pending-card">
+        <div class="stat-icon">
+          <mat-icon>pending_actions</mat-icon>
+        </div>
+        <div class="stat-content">
+          <h3>Pending Amount</h3>
+          <p class="stat-value">{{ formatCurrency(performance?.stats?.pendingAmount || 0) }}</p>
+          <p class="stat-label">{{ performance?.stats?.paidInvoices || 0 }} Paid</p>
+        </div>
+      </mat-card>
+    </div>
+
+    <!-- Quick Actions -->
+    <div class="quick-actions">
+      <h2>Quick Actions</h2>
+      <div class="actions-grid">
+        <mat-card class="action-card" (click)="navigateToPOS()">
+          <mat-icon>point_of_sale</mat-icon>
+          <h3>Create Invoice</h3>
+          <p>Start a new sale</p>
+        </mat-card>
+
+        <mat-card class="action-card" (click)="navigateToSalesHistory()">
+          <mat-icon>history</mat-icon>
+          <h3>Sales History</h3>
+          <p>View past invoices</p>
+        </mat-card>
+
+        <mat-card class="action-card" (click)="navigateToCommission()">
+          <mat-icon>payments</mat-icon>
+          <h3>Commission</h3>
+          <p>Track your earnings</p>
+        </mat-card>
+
+        <mat-card class="action-card" (click)="navigateToProfile()">
+          <mat-icon>person</mat-icon>
+          <h3>My Profile</h3>
+          <p>View profile details</p>
+        </mat-card>
+      </div>
+    </div>
+
+    <!-- Performance Summary -->
+    <mat-card class="performance-summary" *ngIf="performance">
+      <h2>Performance Summary</h2>
+      <div class="summary-grid">
+        <div class="summary-item">
+          <span class="label">Average Invoice Value</span>
+          <span class="value">{{ formatCurrency(performance.stats.averageInvoiceValue || 0) }}</span>
+        </div>
+        <div class="summary-item">
+          <span class="label">Confirmed Invoices</span>
+          <span class="value">{{ performance.stats.confirmedInvoices || 0 }}</span>
+        </div>
+        <div class="summary-item">
+          <span class="label">Payment Success Rate</span>
+          <span class="value">{{ performance.stats.totalInvoices > 0 ? ((performance.stats.paidInvoices /
+            performance.stats.totalInvoices) * 100).toFixed(1) : '0.0' }}%</span>
+        </div>
+      </div>
+    </mat-card>
+  </div>
+</div>
