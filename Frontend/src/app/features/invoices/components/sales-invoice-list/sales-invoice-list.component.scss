@@ -1,6 +1,8 @@
+@import '../../../../../styles/vuexy-vars';
+
 .sales-invoice-container {
   padding: 24px;
-  background-color: #F8F7FA;
+  background-color: $bg-page;
   min-height: calc(100vh - 80px);
 }
 
