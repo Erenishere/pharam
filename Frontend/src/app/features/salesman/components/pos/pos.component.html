@@ -51,7 +51,7 @@
 
             <!-- Selected Customer Display -->
             <div class="selected-customer-badge" *ngIf="selectedCustomer">
-                <div class="customer-avatar">{{ selectedCustomer.name?.charAt(0) }}</div>
+                <div class="customer-avatar">{{ selectedCustomer.name.charAt(0) }}</div>
                 <div class="customer-info">
                     <span class="name">{{ selectedCustomer.name }}</span>
                     <span class="code">{{ selectedCustomer.code }}</span>

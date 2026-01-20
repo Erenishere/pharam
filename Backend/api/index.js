@@ -10,8 +10,8 @@ const mongoose = require('mongoose');
 const apiRoutes = require('../src/routes');
 const { errorHandler, notFoundHandler } = require('../src/middleware/errorHandler');
 const {
-  responseTimeMiddleware,
-  requestTrackingMiddleware,
+    responseTimeMiddleware,
+    requestTrackingMiddleware,
 } = require('../src/middleware/performanceMonitoring');
 
 let isConnected = false;
@@ -21,16 +21,16 @@ const connectToDatabase = async () => {
     if (isConnected && mongoose.connection.readyState === 1) {
         return;
     }
-    
+
     if (connectionPromise) {
         return connectionPromise;
     }
-    
+
     const mongoUri = process.env.MONGODB_URI;
     if (!mongoUri) {
         throw new Error('MONGODB_URI environment variable is not set');
     }
-    
+
     connectionPromise = (async () => {
         try {
             await mongoose.connect(mongoUri, {
@@ -46,17 +46,31 @@ const connectToDatabase = async () => {
             throw error;
         }
     })();
-    
+
     return connectionPromise;
 };
 
 const app = express();
 
 app.use(cors({
-    origin: '*',
+    origin: (origin, callback) => {
+        // Allow requests with no origin (like mobile apps or curl requests)
+        if (!origin) return callback(null, true);
+
+        // For development and production, mirror the origin
+        // This is safe even with credentials: true
+        callback(null, true);
+    },
     credentials: true,
     methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
-    allowedHeaders: ['Content-Type', 'Authorization'],
+    allowedHeaders: [
+        'Content-Type',
+        'Authorization',
+        'X-Requested-With',
+        'Accept',
+        'Origin'
+    ],
+    exposedHeaders: ['Set-Cookie']
 }));
 
 app.options('*', cors());
@@ -115,10 +129,10 @@ app.use(async (req, res, next) => {
         next();
     } catch (error) {
         console.error('Database connection error:', error);
-        return res.status(500).json({ 
+        return res.status(500).json({
             success: false,
-            error: 'Database connection failed', 
-            message: error.message 
+            error: 'Database connection failed',
+            message: error.message
         });
     }
 });

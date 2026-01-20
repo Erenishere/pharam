@@ -5,6 +5,8 @@ import { MatSidenavModule } from '@angular/material/sidenav';
 import { MatListModule } from '@angular/material/list';
 import { MatIconModule } from '@angular/material/icon';
 import { MatBadgeModule } from '@angular/material/badge';
+import { MatDividerModule } from '@angular/material/divider';
+import { Subject } from 'rxjs';
 import { AuthService } from '../../core/services/auth.service';
 
 @Component({
@@ -16,7 +18,8 @@ import { AuthService } from '../../core/services/auth.service';
     MatSidenavModule,
     MatListModule,
     MatIconModule,
-    MatBadgeModule
+    MatBadgeModule,
+    MatDividerModule
   ],
   template: `
     <div class="sidebar-header">
@@ -75,10 +78,11 @@ import { AuthService } from '../../core/services/auth.service';
       <mat-divider *ngIf="isAdmin || isSalesman"></mat-divider>
 
       <!-- Salesman Specific -->
-      <a mat-list-item routerLink="/salesman/pos" routerLinkActive="active">
-        <mat-icon matListItemIcon>point_of_sale</mat-icon>
-        <span matListItemTitle>Salesman POS</span>
-      </a>
+      <ng-container *ngIf="isSalesman">
+        <a mat-list-item routerLink="/salesman/pos" routerLinkActive="active">
+          <mat-icon matListItemIcon>point_of_sale</mat-icon>
+          <span matListItemTitle>Salesman POS</span>
+        </a>
 
         <a mat-list-item routerLink="/suppliers" routerLinkActive="active">
           <mat-icon matListItemIcon>local_shipping</mat-icon>
@@ -123,5 +127,12 @@ export class SidebarComponent implements OnInit, OnDestroy {
 
   constructor(private authService: AuthService) {
     // TODO: Load user count from service
+  }
+
+  ngOnInit(): void {}
+
+  ngOnDestroy(): void {
+    this.destroy$.next();
+    this.destroy$.complete();
   }
 }

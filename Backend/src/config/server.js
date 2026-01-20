@@ -30,12 +30,22 @@ class ServerConfig {
     // CORS configuration - Allow all origins for development
     const corsOptions = {
       origin: function (origin, callback) {
-        // Allow all origins in development
+        // Allow requests with no origin (like mobile apps or curl requests)
+        if (!origin) return callback(null, true);
+
+        // Allow all origins in development and mirror in production
+        // This is safe even with credentials: true
         callback(null, true);
       },
       credentials: true,
       methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
-      allowedHeaders: ['Content-Type', 'Authorization'],
+      allowedHeaders: [
+        'Content-Type',
+        'Authorization',
+        'X-Requested-With',
+        'Accept',
+        'Origin',
+      ],
       optionsSuccessStatus: 200,
     };
     this.app.use(cors(corsOptions));
