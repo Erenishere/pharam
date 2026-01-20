@@ -1,4 +1,4 @@
 export const environment = {
-    production: false,
-    apiUrl: 'http://localhost:3001/api/v1'
+    production: true,
+    apiUrl: 'https://pharam-ie0yvprjd-adeel-umers-projects.vercel.app/api/v1'
 };
